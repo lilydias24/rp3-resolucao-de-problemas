@@ -1,0 +1,20 @@
+[
+    {
+        "id_movimento": 1,
+        "id_produto": 1,
+        "id_pessoa": 1,
+        "tipo_pessoa": "cliente",
+        "tipo_movimento": "saida",
+        "quantidade": 2,
+        "data": "2025-03-24"
+    },
+    {
+        "id_movimento": 2,
+        "id_produto": 1,
+        "id_pessoa": 2,
+        "tipo_pessoa": "fornecedor",
+        "tipo_movimento": "entrada",
+        "quantidade": 20,
+        "data": "2025-03-24"
+    }
+]
