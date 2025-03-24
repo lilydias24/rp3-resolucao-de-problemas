@@ -15,17 +15,50 @@ def salvar_dados(produtos):
     with open(produtos_arq, 'w') as dados:
         json.dump(produtos, dados, indent=4) 
 
+# Verificação do tipo de dado inserido.
+def validar_dado(tipo_dado, mensagem) : 
+    while True:
+        entrada = input(mensagem)
+        if tipo_dado == 'int':
+            if entrada.isdigit():
+                return int(entrada)
+            else: 
+                print('<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>')
+        elif tipo_dado == 'float':
+            try:
+                return float(entrada)
+            except ValueError:
+                print('<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
+        else: # No caso de strings
+            if entrada.strip():
+                return entrada
+            else:
+                print('<<<--- Formato de dado inválido! Tente novamente. --->>>')
+
 # Cadastramento de produtos no JSON
 def cadastrar_produto():
     produtos = transportar_dados()
-    produto_id = input('ID do Produto : ')
-    nome_prod =  input('Nome : ')
-    descricao =  input('Descrição : ')
-    valor =  input('Valor : ')
-    quant_estoque =  input('Quantidade em Estoque : ')
-    nivel_min =  input('Nível Mínimo de Estoque : ')
 
-    produtos.append({'ID' : produto_id, 'nome' : nome_prod, 'descricao' : descricao, 'valor' : valor, 'quant_estoque' : quant_estoque, 'nivel_min' : nivel_min})
+    # Verificação do ID
+    produto_id = validar_dado('int', 'ID do Produto : ')
+    if any(produto['ID'] == produto_id for produto in produtos) :
+        print('<<<--- ID duplicado! Tente novamente com um ID único. --->>>')
+        return
+
+    nome_prod =  validar_dado('str', 'Nome : ')
+    descricao =  validar_dado('str', 'Descrição : ')
+    valor =  validar_dado('float', 'Valor : ')
+    quant_estoque =  validar_dado('int', 'Quantidade em Estoque : ')
+    nivel_min =  validar_dado('int', 'Nível Mínimo de Estoque : ')
+
+    produtos.append({
+        'ID' : produto_id, 
+        'nome' : nome_prod, 
+        'descricao' : descricao, 
+        'valor' : valor, 
+        'quant_estoque' : quant_estoque, 
+        'nivel_min' : nivel_min
+    })
     salvar_dados(produtos)
     print('\n <<<--- Produto cadastrado com sucesso! --->>>')
 
@@ -41,14 +74,14 @@ def listar_produto():
 # Atualização de dados dos produtos existentes
 def atualizar_produto():
     produtos = transportar_dados()
-    produto_id = input('Informe o ID do produto que deseja atualizar : ')
+    produto_id = validar_dado('int', 'Informe o ID do produto que deseja atualizar : ')
     for produto in produtos:
         if produto['ID'] == produto_id:
-            produto['nome'] =  input('Informe o novo nome do produto : ')
-            produto['descricao'] =  input('Informe a nova descrição do produto : ') 
-            produto['valor'] =  input('Informe o novo valor do produto : ')
-            produto['quant_estoque'] =  input('Informe a nova quantidade de produto em estoque : ') # Integrar com a entrada e saída de produtos.
-            produto['nivel_min'] =  input('Informe a nova quantidade mínima para o produto no estoque : ') # Integrar com o controle de nível de estoque e função alerta.
+            produto['nome'] =  validar_dado('str', 'Informe o novo nome do produto : ')
+            produto['descricao'] =  validar_dado('str', 'Informe a nova descrição do produto : ') 
+            produto['valor'] =  validar_dado('float', 'Informe o novo valor do produto : ')
+            produto['quant_estoque'] =  validar_dado('int', 'Informe a nova quantidade de produto em estoque : ') # Integrar com a entrada e saída de produtos.
+            produto['nivel_min'] =  validar_dado('int', 'Informe a nova quantidade mínima para o produto no estoque : ') # Integrar com o controle de nível de estoque e função alerta.
             salvar_dados(produtos)
             print('\n <<<--- Registro do produto atualizado com sucesso! --->>>')
             return
@@ -57,7 +90,7 @@ def atualizar_produto():
 # Deleção de produtos existentes   
 def deletar_produto():
     produtos = transportar_dados()
-    produto_id = input('Informe o ID do produto que deseja deletar : ')
+    produto_id = validar_dado('int', 'Informe o ID do produto que deseja deletar : ')
 
     produtos = [produto for produto in produtos if produto['ID']!= produto_id]
     salvar_dados(produtos)
