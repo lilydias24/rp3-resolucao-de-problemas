@@ -1,0 +1,10 @@
+[
+    {
+        "ID": "1",
+        "nome": "prod1",
+        "descricao": "aleatorio",
+        "valor": "50",
+        "quant_estoque": "100",
+        "nivel_min": "10"
+    }
+]
