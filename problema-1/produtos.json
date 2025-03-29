@@ -1,0 +1,9 @@
+[
+    {
+        "ID": 1,
+        "nome": "Copo Stanley",
+        "valor": 100.0,
+        "estoque": 10,
+        "estoque_min": 5
+    }
+]
