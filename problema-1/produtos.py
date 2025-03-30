@@ -1,103 +1,129 @@
-import json
+import estoque
 
-produtos_arq = "problema-1\\produtos.json"
-
-# Conexão com armazenamento de produtos no JSON
-def transportar_dados():
-    try : 
-        with open(produtos_arq, 'r') as dados :
-            return json.load(dados)
-    except FileNotFoundError:
-        return []
-
-# Armazenamento dos produtos no JSON
-def salvar_dados(produtos): 
-    with open(produtos_arq, 'w') as dados:
-        json.dump(produtos, dados, indent=4) 
-
-# Verificação do tipo de dado inserido.
 def validar_dado(tipo_dado, mensagem) : 
+    """ Verifica o tipo de dado inserido pelo usuário."""
+    
     while True:
         entrada = input(mensagem)
         if tipo_dado == 'int':
             if entrada.isdigit():
                 return int(entrada)
             else: 
-                print('<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>')
+                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>')
         elif tipo_dado == 'float':
             try:
                 return float(entrada)
             except ValueError:
-                print('<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
-        else: # No caso de strings
+                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
+        else: 
             if entrada.strip():
                 return entrada
             else:
-                print('<<<--- Formato de dado inválido! Tente novamente. --->>>')
+                print(f'<<<--- Formato de dado inválido! Tente novamente. --->>>')
 
-# Cadastramento de produtos no JSON
 def cadastrar_produto():
-    produtos = transportar_dados()
+    """Cadastra um novo produto no estoque evitando IDs duplicados."""
+    
+    produto_id = validar_dado('int', 'ID do Produto: ')
+    nome_prod = validar_dado('str', 'Nome: ')
+    descricao = validar_dado('str', 'Descrição: ')
+    valor = validar_dado('float', 'Valor: ')
+    quant_estoque = validar_dado('int', 'Quantidade em Estoque: ')
+    nivel_min = validar_dado('int', 'Nível Mínimo de Estoque: ')
 
-    # Verificação do ID
-    produto_id = validar_dado('int', 'ID do Produto : ')
-    if any(produto['ID'] == produto_id for produto in produtos) :
-        print('<<<--- ID duplicado! Tente novamente com um ID único. --->>>')
+    estoque.create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel_min)
+
+def listar_produto():
+    """Lista todos os produtos cadastrados no estoque."""
+    
+    dados = estoque.transportar_dados()
+    produtos = dados.get('produtos', {})
+
+    if not produtos:
+        print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
         return
 
-    nome_prod =  validar_dado('str', 'Nome : ')
-    descricao =  validar_dado('str', 'Descrição : ')
-    valor =  validar_dado('float', 'Valor : ')
-    quant_estoque =  validar_dado('int', 'Quantidade em Estoque : ')
-    nivel_min =  validar_dado('int', 'Nível Mínimo de Estoque : ')
+    print('\n\t <<<--- Produtos Cadastrados no Estoque : --->>>\n')
+    
+    for produto_id, produto in produtos.items():
+        print(f'ID: {produto_id}')
+        print(f'Nome: {produto['nome']}')
+        print(f'Descrição: {produto['descricao']}')
+        print(f'Valor: R$ {produto['valor']:.2f}')
+        print(f'Quantidade em Estoque: {produto['quant_estoque']}')
+        print(f'Nível Mínimo: {produto['nivel_min']}')
+        print('-' * 30)
 
-    produtos.append({
-        'ID' : produto_id, 
-        'nome' : nome_prod, 
-        'descricao' : descricao, 
-        'valor' : valor, 
-        'quant_estoque' : quant_estoque, 
-        'nivel_min' : nivel_min
-    })
-    salvar_dados(produtos)
-    print('\n <<<--- Produto cadastrado com sucesso! --->>>')
-
-# Listagem dos produtos previamente cadastrados
-def listar_produto():
-    produtos = transportar_dados()
-    if produtos:
-        for produto in produtos:
-            print (produto)
-    else:
-         print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
-
-# Atualização de dados dos produtos existentes
 def atualizar_produto():
-    produtos = transportar_dados()
-    produto_id = validar_dado('int', 'Informe o ID do produto que deseja atualizar : ')
-    for produto in produtos:
-        if produto['ID'] == produto_id:
-            produto['nome'] =  validar_dado('str', 'Informe o novo nome do produto : ')
-            produto['descricao'] =  validar_dado('str', 'Informe a nova descrição do produto : ') 
-            produto['valor'] =  validar_dado('float', 'Informe o novo valor do produto : ')
-            produto['quant_estoque'] =  validar_dado('int', 'Informe a nova quantidade de produto em estoque : ') # Integrar com a entrada e saída de produtos.
-            produto['nivel_min'] =  validar_dado('int', 'Informe a nova quantidade mínima para o produto no estoque : ') # Integrar com o controle de nível de estoque e função alerta.
-            salvar_dados(produtos)
-            print('\n <<<--- Registro do produto atualizado com sucesso! --->>>')
-            return
-    print('\n <<<--- Produto não encontrado no sistema. --->>>')
+    """Atualiza os dados de um produto existente no estoque."""
+    
+    dados = estoque.transportar_dados()
+    produtos = dados.get('produtos', {})
 
-# Deleção de produtos existentes   
+    produto_id = validar_dado('int', 'Informe o ID do produto que deseja atualizar: ')
+    produto_id_str = str(produto_id)  
+
+    if produto_id_str not in produtos:
+        print(f'\n <<<--- Produto não encontrado no sistema. --->>>')
+        return
+
+    produto = produtos[produto_id_str] 
+
+    print("\n Deixe o campo vazio para manter o valor atual.")
+
+    novo_nome = input(f'Novo nome ({produto['nome']}): ').strip()
+    novo_descricao = input(f'Nova descrição ({produto['descricao']}): ').strip()
+    novo_valor = input(f'Novo valor ({produto['valor']}): ').strip()
+    novo_quantidade = input(f'Nova quantidade ({produto['quant_estoque']}): ').strip()
+    novo_nivel_min = input(f'Novo nível mínimo ({produto['nivel_min']}): ').strip()
+
+    """ Apenas altera os valores que foram preenchidos """
+    if novo_nome:
+        produto['nome'] = novo_nome
+    if novo_descricao:
+        produto['descricao'] = novo_descricao
+    if novo_valor.replace('.', '', 1).isdigit():
+        produto['valor'] = float(novo_valor)
+    if novo_quantidade.isdigit():
+        produto['quant_estoque'] = int(novo_quantidade)
+    if novo_nivel_min.isdigit():
+        produto['nivel_min'] = int(novo_nivel_min)
+
+    estoque.salvar_dados(dados)
+    print('\n <<<--- Registro do produto atualizado com sucesso! --->>>')
+
 def deletar_produto():
-    produtos = transportar_dados()
-    produto_id = validar_dado('int', 'Informe o ID do produto que deseja deletar : ')
+    """Remove um produto do estoque pelo ID."""
+    
+    dados = estoque.transportar_dados()
+    produtos = dados.get('produtos', {})
 
-    produtos = [produto for produto in produtos if produto['ID']!= produto_id]
-    salvar_dados(produtos)
-    print('\n <<<--- Produto deletado com sucesso! --->>>')
-    # consultar grupo sobre ação de deletar por modificação de status em ativo > inativo
+    produto_id = validar_dado('int', 'Informe o ID do produto que deseja deletar: ')
+    produto_id_str = str(produto_id)  
 
-# Index de acesso as opções disponíveis para os produtos
+    if produto_id_str not in produtos:
+        print('\n <<<--- Produto não encontrado no sistema. --->>>')
+        return
+
+    produto = produtos.get(produto_id_str, None)
+    
+    if not produto:
+        print('\n <<<--- Erro ao acessar o produto. --->>>')
+        return
+
+    """ Confirmar antes de excluir """
+    confirmacao = input(f'Tem certeza que deseja excluir o produto "{produto.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
+    if confirmacao != 's':
+        print('\n <<<--- Operação cancelada. --->>>')
+        return
+
+    del produtos[produto_id_str]
+    dados['produtos'] = produtos
+    estoque.salvar_dados(dados)
+
+    print('\n <<<--- Produto removido com sucesso! --->>>')
+
+""" Index de acesso as opções disponíveis para os produtos """
 def main():
     while True: 
         print('\n\t <<<--- Gerenciar Produtos --->>> ')

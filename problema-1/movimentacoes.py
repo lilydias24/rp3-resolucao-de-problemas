@@ -1,38 +1,25 @@
-import json
+from estoque import transportar_dados, salvar_dados
+from entrada import registrar_entrada
+from saida import registrar_saida
 from datetime import datetime
 
-produtos_arq = "problema-1\\produtos.json"
-movimentacoes_arq = "problema-1\\movimentacoes.json"
-
-# Conexão com JSON's
-def transportar_dados(arquivo):
-    try:
-        with open(arquivo, 'r') as dados:
-            return json.load(dados)
-    except FileNotFoundError:
-        return []
-
-# Armazenamento dos dados no JSON
-def salvar_dados(arquivo, dados):
-    with open(arquivo, 'w') as arq:
-        json.dump(dados, arq, indent=4)
-
-# Geração de ID único automático, para evitar conflitos
 def gerar_id(movimentacoes):
+    """ Gera ID único automático, para evitar conflitos"""
+    
     if not movimentacoes:
         return 1  # Retorna 1 se a lista estiver vazia
     maior_id = max(movimento['id_movimento'] for movimento in movimentacoes)
     return maior_id + 1  # Retorna o próximo ID disponível
 
-# Verificação do tipo de dado inserido.
 def validar_dado(tipo_dado, mensagem):
+    """ Verifica o tipo de dado inserido."""
+    
     while True:
-        entrada = input(mensagem)
+        entrada = input(mensagem).strip()
         if tipo_dado == 'int':
             if entrada.isdigit():
                 return int(entrada)
-            else:
-                print('<<<--- Formato de dado inválido! Insira um valor inteiro. --->>>')
+            print('<<<--- Formato de dado inválido! Insira um valor inteiro. --->>>')
         elif tipo_dado == 'float':
             try:
                 return float(entrada)
@@ -44,19 +31,19 @@ def validar_dado(tipo_dado, mensagem):
             except ValueError:
                 print('<<<--- Formato de data inválido! Use o formato AAAA-MM-DD. --->>>')
         else:  # Para strings
-            if entrada.strip():
+            if entrada:
                 return entrada
-            else:
-                print('<<<--- Formato de dado inválido! Insira um valor não vazio. --->>>')
+            print('<<<--- Formato de dado inválido! Insira um valor não vazio. --->>>')
 
-# Registro de movimentações no JSON
 def registrar_movimentacao():
-    produtos = transportar_dados(produtos_arq)
-    movimentacoes = transportar_dados(movimentacoes_arq)
+    """ Registro de movimentações no JSON """
+    
+    dados = transportar_dados()
+    produtos = dados.get('produtos', {})
+    movimentacoes = dados.get('movimentacoes', [])
 
-    # Verificação do ID
-    id_produto = validar_dado('int', 'ID do Produto: ')
-    if not any(produto['ID'] == id_produto for produto in produtos):
+    id_produto = str(validar_dado('int', 'ID do Produto: '))
+    if id_produto not in produtos:
         print('\n <<<--- Produto não encontrado no sistema! --->>>')
         return
 
@@ -77,26 +64,45 @@ def registrar_movimentacao():
         'data': data
     }
 
+    if tipo_movimento in ['entrada']:
+        registrar_entrada(id_produto, quantidade)
+    elif tipo_movimento in ['saida']:
+        registrar_saida(id_produto, quantidade)
+    else:
+        print(f'\n <<<--- Tipo de movimento inválido! --->>>') 
+        return
+
     movimentacoes.append(nova_movimentacao)
-    salvar_dados(movimentacoes_arq, movimentacoes)
+    dados['movimentacoes'] = movimentacoes
+    salvar_dados(dados)
     print('\n <<<--- Movimentação cadastrada com sucesso! --->>>')
 
-# Listagem das movimentações previamente registradas
 def listar_movimentacoes():
-    movimentacoes = transportar_dados(movimentacoes_arq)
+    """ Listagem das movimentações previamente registradas """
+
+    movimentacoes = transportar_dados().get('movimentacoes', [])
+    
     if movimentacoes:
         for movimentacao in movimentacoes:
             print(movimentacao)
     else:
         print('\n <<<--- Nenhuma movimentação registrada no sistema. --->>>')
 
-# Deleção de movimentações existentes   
 def deletar_movimentacao():
-    movimentacoes = transportar_dados(movimentacoes_arq)
+    """ Deleção de movimentações existentes """
+
+    dados = transportar_dados()
+    movimentacoes = dados.get('movimentacoes', [])
     movimentacao_id = validar_dado('int', 'Informe o ID da movimentação que deseja deletar : ')
 
-    movimentacoes = [movimentacao for movimentacao in movimentacoes if movimentacao['id_movimento']!= movimentacao_id]
-    salvar_dados(movimentacoes_arq, movimentacoes)
+    nova_mov = [mov for mov in movimentacoes if mov['id_movimento'] != movimentacao_id]
+    
+    if len(nova_mov) == len(movimentacoes):
+        print(f'\n <<<--- ID da movimentação não encontrado. Nenhuma alteração foi feita. --->>> ')
+        return
+    
+    dados['movimentacoes'] = nova_mov
+    salvar_dados(dados)
     print('\n <<<--- Movimentação deletada com sucesso! --->>>')
     # consultar grupo sobre ação de deletar por modificação de status em ativo > inativo
 
