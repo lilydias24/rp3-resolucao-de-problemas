@@ -98,4 +98,4 @@ def listar_estoque():
 
     print("\n <<<--- Produtos em Estoque --->>>")
     for id_produto, produto in produtos.items():
-        print(f"ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}")  # ✅ **Nova função adicionada**
+        print(f"ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}")
