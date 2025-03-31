@@ -1,13 +1,16 @@
 import json
 import os
 
+dir = os.path.dirname(os.path.abspath(__file__))  
+json_dir = os.path.join(dir, 'estoque.json')
+
 def transportar_dados():
     """Carrega os dados do arquivo JSON estoque.json
     - Verifica se existe o arquivo estoque.json disponível
     - se não cria um dicionário vazio."""
 
-    if os.path.exists('estoque.json'):
-        with open('estoque.json', 'r', encoding='utf-8') as file:
+    if os.path.exists(json_dir):
+        with open(json_dir, 'r', encoding='utf-8') as file:
             dados = json.load(file)
     else: 
         dados = {'produtos': {}, 'movimentacoes': []}
@@ -19,9 +22,9 @@ def transportar_dados():
     return dados
 
 def salvar_dados(dados):
-    """Salva os dados no arquivo JSON estoque.json."""
+    """Salva os dados no arquivo JSON estoque.json"""
     
-    with open('estoque.json', 'w', encoding='utf-8') as file:
+    with open(json_dir, 'w', encoding='utf-8') as file:
         json.dump(dados, file, indent=4, ensure_ascii=False)
 
 # Funções auxiliares para manipulação do estoque
@@ -58,6 +61,8 @@ def create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel
 def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=None):
     """Registra as entradas e/ou saídas de um produto."""
     
+    dados = transportar_dados()
+
     if tipo == 'entrada':
         from entrada import registrar_entrada
         registrar_entrada(codigo, quantidade)
@@ -76,26 +81,21 @@ def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=No
         'cliente': cliente
     }
     
-    dados = transportar_dados()
-    movimentacoes = dados.get('movimentacoes', [])
-    movimentacoes.append(movimentacao)
-    
-    dados['movimentacoes'] = movimentacoes
+    dados['movimentacoes'].append(movimentacao)
     salvar_dados(dados)
+
     print(f'<<<--- Movimentação registrada: {tipo} de {quantidade} unidades do produto {codigo}. --->>>')
 
-def gerar_relatorio():
-    """Gera um relatório das movimentações em formato CSV."""
-    
-    import csv
+def listar_estoque():
+    """Lista todos os produtos e suas quantidades disponíveis em estoque"""
+
     dados = transportar_dados()
     produtos = dados.get('produtos', {})
 
-    with open('relatorio.csv', 'w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Tipo', 'Código', 'Quantidade', 'Data'])
-        
-        for mov in dados.get('movimentacoes', []):
-            writer.writerow([mov['tipo_movimento'], mov['id_produto'], mov['quantidade'], mov['data']])
+    if not produtos:
+        print("\n <<<--- Nenhum produto cadastrado no sistema. --->>>")
+        return
 
-    print(f'Relatório gerado com sucesso!')
+    print("\n <<<--- Produtos em Estoque --->>>")
+    for id_produto, produto in produtos.items():
+        print(f"ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}")  # ✅ **Nova função adicionada**

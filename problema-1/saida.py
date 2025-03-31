@@ -28,10 +28,9 @@ def registrar_saida(id_produto, quantidade):
     }
 
     produto['saidas'].append(saida)
-    produto['quant_estoque'] -= quantidade # Atualiza o estoque
-    dados['movimentacoes'].append(saida)
-
+    produto['quant_estoque'] -= quantidade 
     salvar_dados(dados)
+    
     print(f"Saída registrada em {saida['data']}: {quantidade} unidades do produto {id_produto}.")
     print(f"Novo estoque do produto {id_produto}: {produto['quant_estoque']}")
 

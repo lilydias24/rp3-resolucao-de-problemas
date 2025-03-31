@@ -1,4 +1,5 @@
-from estoque import transportar_dados, salvar_dados
+from relatorio import gerar_relatorio
+from estoque import transportar_dados, salvar_dados, listar_estoque
 from entrada import registrar_entrada
 from saida import registrar_saida
 from datetime import datetime
@@ -112,7 +113,9 @@ def main():
         print('\n\t 1. Cadastrar Movimentação')
         print('\t 2. Listar Movimentações')
         print('\t 3. Deletar Movimentação')
-        print('\t 4. Sair')
+        print('\t 4. Visualizar Estoque Atual')
+        print('\t 5. Gerar Relatório de Movimentações')
+        print('\t 6. Sair')
         print('\n\t <<< ------------------------ >>> ')
 
         opcao = input('\n > Selecione uma opção: ')
@@ -124,6 +127,10 @@ def main():
         elif opcao == '3':
             deletar_movimentacao()
         elif opcao == '4':
+            listar_estoque()
+        elif opcao == '5':
+            gerar_relatorio()
+        elif opcao == '6':
             print('Retornando...')
             break
         else:

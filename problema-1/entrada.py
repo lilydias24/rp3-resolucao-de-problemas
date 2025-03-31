@@ -13,10 +13,6 @@ def registrar_entrada(id_produto, quantidade):
 
     produto = produtos[str(id_produto)]  # Busca o produto pelo ID (string)
     
-    # Garante que a chave 'entradas' exista
-    if 'entradas' not in produto:
-        produto['entradas'] = []
-    
     entrada = {
         'quantidade': quantidade,
         'data': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -25,5 +21,7 @@ def registrar_entrada(id_produto, quantidade):
     produto['entradas'].append(entrada)  
     produto['quant_estoque'] += quantidade  # Atualiza o estoque
     
-    salvar_dados(dados)  # Salva os dados atualizados no JSON
+    salvar_dados(dados) 
+    
     print(f"Entrada registrada: {quantidade} unidades do produto {id_produto}.")
+    print(f"Novo estoque do produto {id_produto}: {produto['quant_estoque']}") 
