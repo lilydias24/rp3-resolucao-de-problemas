@@ -1,0 +1,14 @@
+{
+    "movimentacoes": [
+        {
+            "id_movimento": 3,
+            "id_produto": "1",
+            "id_pessoa": 1,
+            "tipo_pessoa": "forencedor",
+            "tipo_movimento": "entrada",
+            "quantidade": 20,
+            "data": "2025-03-27"
+        }
+    ]
+
+}
