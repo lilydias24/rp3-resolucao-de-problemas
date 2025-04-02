@@ -1,42 +1,21 @@
 import estoque
 
-def validar_dado(tipo_dado, mensagem) : 
-    """ Verifica o tipo de dado inserido pelo usuário."""
-    
-    while True:
-        entrada = input(mensagem)
-        if tipo_dado == 'int':
-            if entrada.isdigit():
-                return int(entrada)
-            else: 
-                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>')
-        elif tipo_dado == 'float':
-            try:
-                return float(entrada)
-            except ValueError:
-                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
-        else: 
-            if entrada.strip():
-                return entrada
-            else:
-                print(f'<<<--- Formato de dado inválido! Tente novamente. --->>>')
-
 def cadastrar_produto():
     """Cadastra um novo produto no estoque evitando IDs duplicados."""
     
-    produto_id = validar_dado('int', 'ID do Produto: ')
-    nome_prod = validar_dado('str', 'Nome: ')
-    descricao = validar_dado('str', 'Descrição: ')
-    valor = validar_dado('float', 'Valor: ')
-    quant_estoque = validar_dado('int', 'Quantidade em Estoque: ')
-    nivel_min = validar_dado('int', 'Nível Mínimo de Estoque: ')
+    produto_id = estoque.validar_dado('int', 'ID do Produto: ')
+    nome_prod = estoque.validar_dado('str', 'Nome: ')
+    descricao = estoque.validar_dado('str', 'Descrição: ')
+    valor = estoque.validar_dado('float', 'Valor: ')
+    quant_estoque = estoque.validar_dado('int', 'Quantidade em Estoque: ')
+    nivel_min = estoque.validar_dado('int', 'Nível Mínimo de Estoque: ')
 
     estoque.create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel_min)
 
 def listar_produto():
     """Lista todos os produtos cadastrados no estoque."""
     
-    dados = estoque.transportar_dados()
+    dados = estoque.transportar_dados('estoque.json')
     produtos = dados.get('produtos', {})
 
     if not produtos:
@@ -57,10 +36,10 @@ def listar_produto():
 def atualizar_produto():
     """Atualiza os dados de um produto existente no estoque."""
     
-    dados = estoque.transportar_dados()
+    dados = estoque.transportar_dados('estoque.json')
     produtos = dados.get('produtos', {})
 
-    produto_id = validar_dado('int', 'Informe o ID do produto que deseja atualizar: ')
+    produto_id = estoque.validar_dado('int', 'Informe o ID do produto que deseja atualizar: ')
     produto_id_str = str(produto_id)  
 
     if produto_id_str not in produtos:
@@ -89,16 +68,16 @@ def atualizar_produto():
     if novo_nivel_min.isdigit():
         produto['nivel_min'] = int(novo_nivel_min)
 
-    estoque.salvar_dados(dados)
+    estoque.salvar_dados('estoque.json', dados)
     print('\n <<<--- Registro do produto atualizado com sucesso! --->>>')
 
 def deletar_produto():
     """Remove um produto do estoque pelo ID."""
     
-    dados = estoque.transportar_dados()
+    dados = estoque.transportar_dados('estoque.json')
     produtos = dados.get('produtos', {})
 
-    produto_id = validar_dado('int', 'Informe o ID do produto que deseja deletar: ')
+    produto_id = estoque.validar_dado('int', 'Informe o ID do produto que deseja deletar: ')
     produto_id_str = str(produto_id)  
 
     if produto_id_str not in produtos:
@@ -119,7 +98,7 @@ def deletar_produto():
 
     del produtos[produto_id_str]
     dados['produtos'] = produtos
-    estoque.salvar_dados(dados)
+    estoque.salvar_dados('estoque.json', dados)
 
     print('\n <<<--- Produto removido com sucesso! --->>>')
 

@@ -44,6 +44,15 @@
             "nivel_min": 20,
             "entradas": [],
             "saidas": []
+        },
+        "8": {
+            "nome": "macarrao",
+            "descricao": "massa",
+            "valor": 10.0,
+            "quant_estoque": 50,
+            "nivel_min": 10,
+            "entradas": [],
+            "saidas": []
         }
     }
 }
