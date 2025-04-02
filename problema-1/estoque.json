@@ -1,0 +1,121 @@
+{
+    "produtos": {
+        "7": {
+            "nome": "tetse",
+            "descricao": "testando",
+            "valor": 50.0,
+            "quant_estoque": 50,
+            "nivel_min": 20,
+            "entradas": [],
+            "saidas": []
+        },
+        "6": {
+            "nome": "aboobraa",
+            "descricao": "doadmks",
+            "valor": 2.0,
+            "quant_estoque": 50,
+            "nivel_min": 20,
+            "entradas": [],
+            "saidas": []
+        },
+        "1": {
+            "nome": "notebook",
+            "descricao": "pc",
+            "valor": 3000.0,
+            "quant_estoque": 20,
+            "nivel_min": 1,
+            "entradas": [
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 15:36:52"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 15:46:01"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 15:48:58"
+                }
+            ],
+            "saidas": [
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 15:57:39"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 19:20:11"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 19:20:46"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 19:21:39"
+                },
+                {
+                    "quantidade": 5,
+                    "data": "2025-03-31 20:35:45"
+                }
+            ]
+        },
+        "2": {
+            "nome": "produto",
+            "descricao": "teste",
+            "valor": 200.0,
+            "quant_estoque": 20,
+            "nivel_min": 2,
+            "entradas": [],
+            "saidas": []
+        }
+    },
+    "movimentacoes": [
+        {
+            "id_movimento": 3,
+            "id_produto": "1",
+            "id_pessoa": 1,
+            "tipo_pessoa": "fornecedor",
+            "tipo_movimento": "entrada",
+            "quantidade": 20,
+            "data": "2025-03-27"
+        },
+        {
+            "id_movimento": 4,
+            "id_produto": "2",
+            "id_pessoa": 1,
+            "tipo_pessoa": "fornecedor",
+            "tipo_movimento": "entrada",
+            "quantidade": 2,
+            "data": "2025-03-03"
+        },
+        {
+            "id_movimento": 5,
+            "id_produto": "2",
+            "id_pessoa": 1,
+            "tipo_pessoa": "cliente",
+            "tipo_movimento": "saida",
+            "quantidade": 4,
+            "data": "2025-03-06"
+        },
+        {
+            "id_movimento": 6,
+            "id_produto": "1",
+            "id_pessoa": 1,
+            "tipo_pessoa": "cliente",
+            "tipo_movimento": "saida",
+            "quantidade": 5,
+            "data": "2025-06-24"
+        },
+        {
+            "id_movimento": 7,
+            "id_produto": "1",
+            "id_pessoa": 1,
+            "tipo_pessoa": "cliente",
+            "tipo_movimento": "saida",
+            "quantidade": 10,
+            "data": "2025-03-31"
+        }
+    ]
+}
