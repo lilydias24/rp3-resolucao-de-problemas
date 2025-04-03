@@ -1,8 +1,8 @@
 from relatorio import gerar_relatorio
-from estoque import transportar_dados, salvar_dados, listar_estoque
 from entrada import registrar_entrada
 from saida import registrar_saida
 from datetime import datetime
+import estoque
 
 def gerar_id(movimentacoes):
     """ Gera ID único automático, para evitar conflitos"""
@@ -12,47 +12,24 @@ def gerar_id(movimentacoes):
     maior_id = max(movimento['id_movimento'] for movimento in movimentacoes)
     return maior_id + 1  # Retorna o próximo ID disponível
 
-def validar_dado(tipo_dado, mensagem):
-    """ Verifica o tipo de dado inserido."""
-    
-    while True:
-        entrada = input(mensagem).strip()
-        if tipo_dado == 'int':
-            if entrada.isdigit():
-                return int(entrada)
-            print('<<<--- Formato de dado inválido! Insira um valor inteiro. --->>>')
-        elif tipo_dado == 'float':
-            try:
-                return float(entrada)
-            except ValueError:
-                print('<<<--- Formato de dado inválido! Insira um valor decimal. --->>>')
-        elif tipo_dado == 'date':
-            try:
-                return datetime.strptime(entrada, '%Y-%m-%d').strftime('%Y-%m-%d')
-            except ValueError:
-                print('<<<--- Formato de data inválido! Use o formato AAAA-MM-DD. --->>>')
-        else:  # Para strings
-            if entrada:
-                return entrada
-            print('<<<--- Formato de dado inválido! Insira um valor não vazio. --->>>')
-
 def registrar_movimentacao():
     """ Registro de movimentações no JSON """
     
-    dados = transportar_dados()
-    produtos = dados.get('produtos', {})
-    movimentacoes = dados.get('movimentacoes', [])
+    dados1 = estoque.transportar_dados('estoque.json')
+    produtos = dados1.get('produtos', {})
+    dados2 = estoque.transportar_dados('movimentacoes.json')
+    movimentacoes = dados2.get('movimentacoes', [])
 
-    id_produto = str(validar_dado('int', 'ID do Produto: '))
+    id_produto = str(estoque.validar_dado('int', 'ID do Produto: '))
     if id_produto not in produtos:
         print('\n <<<--- Produto não encontrado no sistema! --->>>')
         return
 
-    id_pessoa = validar_dado('int', 'ID da Pessoa (Cliente ou Fornecedor): ')
-    tipo_pessoa = validar_dado('str', 'Tipo de Pessoa (Cliente/Fornecedor): ').lower()
-    tipo_movimento = validar_dado('str', 'Tipo de Movimento (Entrada/Saída): ').lower()
-    quantidade = validar_dado('int', 'Quantidade: ')
-    data = validar_dado('date', 'Data da Movimentação (AAAA-MM-DD): ')
+    id_pessoa = estoque.validar_dado('int', 'ID da Pessoa (Cliente ou Fornecedor): ')
+    tipo_pessoa = estoque.validar_dado('str', 'Tipo de Pessoa (Cliente/Fornecedor): ').lower()
+    tipo_movimento = estoque.validar_dado('str', 'Tipo de Movimento (Entrada/Saída): ').lower()
+    quantidade = estoque.validar_dado('int', 'Quantidade: ')
+    data = estoque.validar_dado('date', 'Data da Movimentação (AAAA-MM-DD): ')
 
     id_movimento = gerar_id(movimentacoes)
     nova_movimentacao = {
@@ -74,14 +51,14 @@ def registrar_movimentacao():
         return
 
     movimentacoes.append(nova_movimentacao)
-    dados['movimentacoes'] = movimentacoes
-    salvar_dados(dados)
+    dados2['movimentacoes'] = movimentacoes
+    estoque.salvar_dados('movimentacoes.json', dados2)
     print('\n <<<--- Movimentação cadastrada com sucesso! --->>>')
 
 def listar_movimentacoes():
     """ Listagem das movimentações previamente registradas """
 
-    movimentacoes = transportar_dados().get('movimentacoes', [])
+    movimentacoes = estoque.transportar_dados('movimentacoes.json').get('movimentacoes', [])
     
     if movimentacoes:
         for movimentacao in movimentacoes:
@@ -92,9 +69,9 @@ def listar_movimentacoes():
 def deletar_movimentacao():
     """ Deleção de movimentações existentes """
 
-    dados = transportar_dados()
+    dados = estoque.transportar_dados('movimentacoes.json')
     movimentacoes = dados.get('movimentacoes', [])
-    movimentacao_id = validar_dado('int', 'Informe o ID da movimentação que deseja deletar : ')
+    movimentacao_id = estoque.validar_dado('int', 'Informe o ID da movimentação que deseja deletar : ')
 
     nova_mov = [mov for mov in movimentacoes if mov['id_movimento'] != movimentacao_id]
     
@@ -103,7 +80,7 @@ def deletar_movimentacao():
         return
     
     dados['movimentacoes'] = nova_mov
-    salvar_dados(dados)
+    estoque.salvar_dados('movimentacoes.json', dados)
     print('\n <<<--- Movimentação deletada com sucesso! --->>>')
     # consultar grupo sobre ação de deletar por modificação de status em ativo > inativo
 
@@ -127,7 +104,7 @@ def main():
         elif opcao == '3':
             deletar_movimentacao()
         elif opcao == '4':
-            listar_estoque()
+            estoque.listar_estoque()
         elif opcao == '5':
             gerar_relatorio()
         elif opcao == '6':

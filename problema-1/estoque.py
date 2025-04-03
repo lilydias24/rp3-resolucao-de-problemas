@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime 
 
 dir_base = os.path.dirname(os.path.abspath(__file__))  
 # json_dir = os.path.join(dir_base, 'estoque.json')
@@ -52,6 +53,11 @@ def validar_dado(tipo_dado, mensagem) :
                 return float(entrada)
             except ValueError:
                 print(f'<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
+        elif tipo_dado == 'date':
+            try:
+                return datetime.strptime(entrada, '%Y-%m-%d').strftime('%Y-%m-%d')
+            except ValueError:
+                print('<<<--- Formato de data inválido! Use o formato AAAA-MM-DD. --->>>')
         else: 
             if entrada.strip():
                 return entrada
