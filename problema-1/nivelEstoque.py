@@ -1,55 +1,31 @@
 import json
+from estoque import transportar_dados
 
-
-ESTOQUE_FILE = "estoque2.json"
-
-def carregar_estoque():
-    """carrega os dados do estoque do arquivo json"""
-    try:
-        with open(ESTOQUE_FILE, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {"produtos": {}}  #retorna um estoque vazio se o arquivo não existir
-
-def salvar_estoque(estoque):
-    """salva os dados no arquivo json"""
-    with open(ESTOQUE_FILE, "w") as file:
-        json.dump(estoque, file, indent=4)
-
-def adicionar_produto(nome, quantidade, minimo):
-    """adiciona um novo produto ao estoque"""
-    estoque = carregar_estoque()
-    estoque["produtos"][nome] = {"quantidade": quantidade, "minimo": minimo}
-    salvar_estoque(estoque)
-    print(f"Produto {nome} adicionado com sucesso!")
-
-def atualizar_estoque(nome, quantidade):
-    """atualiza a quantidade de um produto no estoque"""
-    estoque = carregar_estoque()
-    if nome in estoque["produtos"]:
-        estoque["produtos"][nome]["quantidade"] = quantidade
-        salvar_estoque(estoque)
-        print(f"Quantidade de {nome} atualizada para {quantidade}.")
-    else:
-        print(f"Produto {nome} não encontrado.")
-
-def verificar_estoque():
-    """verifica e alerta se algum produto estiver abaixo do mínimo"""
-    estoque = carregar_estoque()
-    alertas = []
+def listar_produtos():
+    """Lista todos os produtos cadastrados no estoque e verifica o nível mínimo."""
     
-    for produto, info in estoque["produtos"].items():
-        if info["quantidade"] < info["minimo"]:
-            alertas.append(f"ALERTA: {produto} está abaixo do nível mínimo! ({info['quantidade']} disponíveis)")
+    dados = transportar_dados('estoque.json')
+    produtos = dados.get('produtos', {})
+
+    if not produtos:
+        print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
+        return
+
+    print('\n\t <<<--- Produtos Cadastrados no Estoque : --->>>\n')
     
-    if alertas:
-        print("\n".join(alertas))
-    else:
-        print("todos os produtos estão dentro dos níveis de segurança.")
+    for produto_id, produto in produtos.items():
+        print(f'ID: {produto_id}')
+        print(f'Nome: {produto["nome"]}')
+        print(f'Descrição: {produto["descricao"]}')
+        print(f'Valor: R$ {produto["valor"]:.2f}')
+        print(f'Quantidade em Estoque: {produto["quant_estoque"]}')
+        print(f'Nível Mínimo: {produto["nivel_min"]}')
+        
+        # verificação do nível mínimo
+        if produto["quant_estoque"] <= produto["nivel_min"]:
+            print("⚠️  ALERTA: Estoque abaixo do nível mínimo!")
+        
+        print('-' * 30)
 
-
-adicionar_produto("Arroz", 6, 5)
-adicionar_produto("Feijão", 7, 5)
-adicionar_produto("Óleo", 8, 2)
-
-verificar_estoque()  # na teoria tem que alertar sobre o feijao e o arroz
+# rodando a função para listar os produtos e alertar sobre estoques baixos
+listar_produtos()
