@@ -4,10 +4,15 @@
             "nome": "4",
             "descricao": "5",
             "valor": 5.0,
-            "quant_estoque": 6,
+            "quant_estoque": 4,
             "nivel_min": 6,
             "entradas": [],
-            "saidas": []
+            "saidas": [
+                {
+                    "quantidade": 2,
+                    "data": "2025-04-04 00:39:27"
+                }
+            ]
         },
         "4": {
             "nome": "5",
@@ -31,9 +36,14 @@
             "nome": "1",
             "descricao": "1",
             "valor": 1.0,
-            "quant_estoque": 1,
+            "quant_estoque": 100,
             "nivel_min": 1,
-            "entradas": [],
+            "entradas": [
+                {
+                    "quantidade": 99,
+                    "data": "2025-04-04 00:43:05"
+                }
+            ],
             "saidas": []
         },
         "6": {

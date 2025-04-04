@@ -182,9 +182,10 @@ def listar_estoque():
     produtos = dados.get('produtos', {})
 
     if not produtos:
-        print("\n <<<--- Nenhum produto cadastrado no sistema. --->>>")
+        print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
         return
 
-    print("\n <<<--- Produtos em Estoque --->>>")
+    print('\n\t <<<--- Produtos em Estoque --->>>')
+    print('\n')
     for id_produto, produto in produtos.items():
-        print(f"ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}")
+        print(f'\t ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}')
