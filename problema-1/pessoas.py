@@ -1,5 +1,28 @@
 import estoque
 
+def cadastrar_pessoa():
+    print('\t 1 - Cadastrar Cliente')
+    print('\t 2 - Cadastrar Fornecedor')
+    escolha = estoque.validar_dado('str', 'Informe o tipo de pessoa que deseja cadastrar: ').strip()
+    
+    if escolha == '1' :
+        tipo_pessoa = 'cliente'
+        nome = estoque.validar_dado('str', 'Nome: ')
+        doc = estoque.validar_dado('int', 'CPF: ')
+    elif escolha == '2' : 
+        tipo_pessoa = 'fornecedor'
+        nome = estoque.validar_dado('str', 'Razão social: ')
+        doc = estoque.validar_dado('int', 'CNPJ: ')
+    else:
+        print(f'\n <<<--- Formato de dado inválido, tente novamente. --->>>')
+        return
+    
+    status = estoque.validar_dado('str', 'status: ')
+    cep = estoque.validar_dado('int', 'CEP: ')
+    contato = estoque.validar_dado('int', 'Contato: ')
+    
+    estoque.create_pessoa(tipo_pessoa, nome, status, doc, cep, contato)
+
 def listar_pessoas():
         dados = estoque.transportar_dados('pessoas.json')
         pessoas = dados.get('pessoas', {})
@@ -13,37 +36,19 @@ def listar_pessoas():
         for pessoa_id, pessoa in pessoas.items():
             print('-' * 30)
             print(f'ID: {pessoa_id}')
-            print(f'Tipo de Pessoa: {pessoa['tipo_pessoa']}')
-            print(f'Nome: {pessoa['nome']}')
-            print(f'Status: {pessoa['status']}')
-            print(f'Documento: {pessoa['doc']}')
-            print(f'CEP: {pessoa['cep']}')
-            print(f'Contato: {pessoa['contato']}')
+            print(f'Tipo de Pessoa: {pessoa["tipo_pessoa"]}')
+            
+            if pessoa['tipo_pessoa'] == 'cliente':
+                print(f'Nome: {pessoa["nome"]}')
+                print(f'CPF: {pessoa["cpf"]}')
+            else:
+                print(f'Razão Social: {pessoa["razao_social"]}')
+                print(f'CNPJ: {pessoa["cnpj"]}')
+            
+            print(f'Status: {pessoa["status"]}')
+            print(f'CEP: {pessoa["cep"]}')
+            print(f'Contato: {pessoa["contato"]}')
             print('-' * 30)
-
-def cadastrar_pessoa():
-
-    pessoa_id = estoque.validar_dado('int', 'ID: ')
-
-    print('1 - Cadastrar Cliente \n2 - Cadastrar Fornecedor')
-
-    escolha = estoque.validar_dado('str', 'Informe o tipo de pessoa que deseja cadastrar: ').strip()
-    
-    if escolha == '1' :
-        tipo_pessoa = 'cliente'
-    elif escolha == '2' : 
-        tipo_pessoa = 'fornecedor'
-    else:
-        print(f'\n <<<--- Formato de dado inválido, tente novamente. --->>>')
-        return
-    
-    nome = estoque.validar_dado('str', 'Nome: ')
-    status = estoque.validar_dado('str', 'status: ')
-    doc = estoque.validar_dado('int', 'CPF ou CNPJ: ')
-    cep = estoque.validar_dado('int', 'CEP: ')
-    contato = estoque.validar_dado('int', 'Contato: ')
-    
-    estoque.create_pessoa(pessoa_id, tipo_pessoa, nome, status, doc, cep, contato)
 
 def alterar_pessoa():
      
@@ -61,19 +66,32 @@ def alterar_pessoa():
 
     print("\n Deixe o campo vazio para manter o valor atual.")
     
-    novo_nome = input(f'Novo Nome ({pessoa['nome']}): ').strip()
-    novo_status = input(f'Novo Status ({pessoa['status']}): ').strip()
-    novo_doc = input(f'Novo CPF ou CNPJ({pessoa['doc']}): ').strip()
-    novo_cep = input(f'Novo CEP ({pessoa['cep']}): ').strip()
-    novo_contato = input(f'Novo Contato ({pessoa['contato']}): ').strip()
+    if pessoa['tipo_pessoa'] == 'cliente':
+        novo_nome = input(f'Novo Nome ({pessoa["nome"]}): ').strip()
+        novo_doc = input(f'Novo CPF ({pessoa["cpf"]}): ').strip()
+    else:  
+        novo_nome = input(f'Nova Razão Social ({pessoa["razao_social"]}): ').strip()
+        novo_doc = input(f'Novo CNPJ ({pessoa["cnpj"]}): ').strip()
+
+    novo_status = input(f'Novo Status ({pessoa["status"]}): ').strip()
+    novo_cep = input(f'Novo CEP ({pessoa["cep"]}): ').strip()
+    novo_contato = input(f'Novo Contato ({pessoa["contato"]}): ').strip()
 
     """ Apenas altera os valores que foram preenchidos """
     if novo_nome:
-        pessoa['nome'] = novo_nome
+        if pessoa['tipo_pessoa'] == 'cliente':
+            pessoa['nome'] = novo_nome
+        else:
+            pessoa['razao_social'] = novo_nome
+
+    if novo_doc.isdigit():
+        if pessoa['tipo_pessoa'] == 'cliente':
+            pessoa['cpf'] = int(novo_doc)
+        else:
+            pessoa['cnpj'] = int(novo_doc)
+
     if novo_status:
         pessoa['status'] = novo_status
-    if novo_doc.isdigit():
-        pessoa['doc'] = int(novo_doc)
     if novo_cep.isdigit():
         pessoa['cep'] = int(novo_cep)
     if novo_contato.isdigit():
@@ -102,7 +120,7 @@ def excluir_pessoa():
         return
 
     """ Confirmar antes de excluir """
-    confirmacao = input(f'Tem certeza que deseja excluir a pessoa "{pessoa.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
+    confirmacao = input(f'Tem certeza que deseja excluir a pessoa "{pessoa.get('nome', '?')}"? (s/n): ').strip().lower()
     if confirmacao != 's':
         print('\n <<<--- Operação cancelada. --->>>')
         return
@@ -125,15 +143,15 @@ def main():
         opcao = input('\n > Selecione uma das opções acima : ')
 
         if opcao == '1' :
-            listar_pessoas()
-        elif opcao == '2' :
             cadastrar_pessoa()
+        elif opcao == '2' :
+            listar_pessoas()
         elif opcao == '3' :
             alterar_pessoa()
         elif opcao == '4' :
             excluir_pessoa()
         elif opcao == '5' :
-            print('Sair.')
+            print('Sair...')
             return 
         else : 
             print('Opção Inválida, tente novamente.')

@@ -3,7 +3,6 @@ import os
 from datetime import datetime 
 
 dir_base = os.path.dirname(os.path.abspath(__file__))  
-# json_dir = os.path.join(dir_base, 'estoque.json')
 
 def transportar_dados(name_json):
     """Carrega os dados do arquivo JSON necesário
@@ -71,11 +70,10 @@ def create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min):
     produtos = dados.get('produtos', {})
 
     if produtos: 
-        max_id = max(int(m) for m in produtos.keys())
-        novo_id = str(max_id + 1)
+        maior_id = max(int(maior) for maior in produtos.keys())
+        novo_id = str(maior_id + 1)
     else: 
         novo_id = '1' 
-
     
     """ Adiciona o novo produto ao dicionário"""
     produtos[novo_id] = {
@@ -93,33 +91,45 @@ def create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min):
     salvar_dados('estoque.json', dados)
     print(f'<<<--- Produto cadastrado com sucesso! ID atribuído: {novo_id} --->>>')
 
-def create_pessoa(pessoa_id, tipo_pessoa, nome, status, doc, cep, contato):
+def create_pessoa(tipo_pessoa, nome, status, doc, cep, contato):
     """Cadastra uma nova pessoa no estoque evitando duplicatas."""
     
     dados = transportar_dados('pessoas.json')
     pessoas = dados.get('pessoas', {})
 
+    if pessoas: 
+        maior_id = max(int(maior) for maior in pessoas.keys())
+        novo_id = str(maior_id + 1)
+    else: 
+        novo_id = '1' 
+
     """Converte o ID para string para garantir que a busca ocorra corretamente """
-    pessoa_id_str = str(pessoa_id)
+    pessoa_id_str = str(novo_id)
 
     if pessoa_id_str in pessoas:  
         print(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id}! --->>>')
         return
     
-    """ Adiciona a nova pessoa ao dicionário"""
-    pessoas[pessoa_id_str] = {
-        'tipo_pessoa' : tipo_pessoa,
-        'nome': nome,
+    nova_pessoa = {
+        'tipo_pessoa': tipo_pessoa,
         'status': status,
-        'doc': doc,
         'cep': cep,
-        'contato': contato
+        'contato': contato 
     }
 
-    """ Atualiza o JSON com o novo pessoa """
+    if tipo_pessoa == 'cliente':
+        nova_pessoa['nome'] = nome
+        nova_pessoa['cpf'] = doc
+    else:
+        nova_pessoa['razao_social'] = nome
+        nova_pessoa['cnpj'] = doc
+
+    """ Adiciona a nova pessoa ao dicionário"""
+    pessoas[pessoa_id_str] = nova_pessoa
+
     dados['pessoas'] = pessoas
     salvar_dados('pessoas.json', dados)
-    print(f'<<<--- Pessoa com ID {pessoa_id} cadastrada com sucesso! --->>>')
+    print(f'\n <<<--- {tipo_pessoa.capitalize()} cadastrado com sucesso! ID atribuído: {pessoa_id_str} --->>>')
 
 def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=None):
     """Registra as entradas e/ou saídas de um produto."""

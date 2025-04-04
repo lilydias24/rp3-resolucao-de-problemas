@@ -14,15 +14,6 @@
                 }
             ]
         },
-        "4": {
-            "nome": "5",
-            "descricao": "5",
-            "valor": 5.0,
-            "quant_estoque": 5,
-            "nivel_min": 5,
-            "entradas": [],
-            "saidas": []
-        },
         "7": {
             "nome": "tetse",
             "descricao": "testando",
@@ -44,24 +35,6 @@
                     "data": "2025-04-04 00:43:05"
                 }
             ],
-            "saidas": []
-        },
-        "6": {
-            "nome": "aboobraa",
-            "descricao": "doadmks",
-            "valor": 2.0,
-            "quant_estoque": 50,
-            "nivel_min": 20,
-            "entradas": [],
-            "saidas": []
-        },
-        "8": {
-            "nome": "macarrao",
-            "descricao": "massa",
-            "valor": 10.0,
-            "quant_estoque": 50,
-            "nivel_min": 10,
-            "entradas": [],
             "saidas": []
         },
         "9": {

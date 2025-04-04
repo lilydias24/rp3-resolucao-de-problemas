@@ -108,7 +108,7 @@ def main():
         elif opcao == '5':
             gerar_relatorio()
         elif opcao == '6':
-            print('Retornando...')
+            print('Sair...')
             break
         else:
             print('Opção inválida, tente novamente.')

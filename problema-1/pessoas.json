@@ -2,11 +2,19 @@
     "pessoas": {
         "1": {
             "tipo_pessoa": "cliente",
-            "nome": "baita ",
+            "status": "ativo",
+            "cep": 99999999,
+            "contato": 559999999999,
+            "nome": "Ramones",
+            "cpf": 1221012010
+        },
+        "2": {
+            "tipo_pessoa": "fornecedor",
             "status": "inativo",
-            "doc": 0,
-            "cep": 1102020,
-            "contato": 2304040
+            "cep": 409500,
+            "contato": 55093909999,
+            "razao_social": "TchÊ guris",
+            "cnpj": 120103931
         }
     }
 }
