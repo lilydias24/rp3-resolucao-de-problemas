@@ -107,7 +107,7 @@ def create_pessoa(tipo_pessoa, nome, status, doc, cep, contato):
     pessoa_id_str = str(novo_id)
 
     if pessoa_id_str in pessoas:  
-        print(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id}! --->>>')
+        print(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id_str}! --->>>')
         return
     
     nova_pessoa = {
