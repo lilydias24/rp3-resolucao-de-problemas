@@ -1,235 +1,140 @@
 import estoque
 
-def listar_clientes():
+def listar_pessoas():
         dados = estoque.transportar_dados('pessoas.json')
-        clientes = dados.get('clientes', {})
+        pessoas = dados.get('pessoas', {})
         
-        if not clientes: 
-            print(f'\n <<<--- Nenhum cliente cadastrado no sistema. --->>>')
+        if not pessoas: 
+            print(f'\n <<<--- Nenhuma pessoa cadastrada no sistema. --->>>')
             return
         
-        print("\n <<<--- Clientes cadastrados no sistema : --->>> \n")
+        print("\n <<<--- Pessoas cadastradas no sistema : --->>> \n")
         
-        for cliente_id, cliente in clientes.items():
+        for pessoa_id, pessoa in pessoas.items():
             print('-' * 30)
-            print(f'ID: {cliente_id}')
-            print(f'Nome: {cliente['nome']}')
-            print(f'Status: {cliente['status']}')
-            print(f'CPF: {cliente['cpf']}')
-            print(f'CEP: {cliente['cep']}')
-            print(f'Contato: {cliente['contato']}')
+            print(f'ID: {pessoa_id}')
+            print(f'Tipo de Pessoa: {pessoa['tipo_pessoa']}')
+            print(f'Nome: {pessoa['nome']}')
+            print(f'Status: {pessoa['status']}')
+            print(f'Documento: {pessoa['doc']}')
+            print(f'CEP: {pessoa['cep']}')
+            print(f'Contato: {pessoa['contato']}')
             print('-' * 30)
 
-def cadastrar_cliente():
+def cadastrar_pessoa():
 
-    cliente_id = estoque.validar_dado('int', 'ID do Cliente: ')
+    pessoa_id = estoque.validar_dado('int', 'ID: ')
+
+    print('1 - Cadastrar Cliente \n2 - Cadastrar Fornecedor')
+
+    escolha = estoque.validar_dado('str', 'Informe o tipo de pessoa que deseja cadastrar: ').strip()
+    
+    if escolha == '1' :
+        tipo_pessoa = 'cliente'
+    elif escolha == '2' : 
+        tipo_pessoa = 'fornecedor'
+    else:
+        print(f'\n <<<--- Formato de dado inválido, tente novamente. --->>>')
+        return
+    
     nome = estoque.validar_dado('str', 'Nome: ')
     status = estoque.validar_dado('str', 'status: ')
-    cpf = estoque.validar_dado('int', 'CPF: ')
+    doc = estoque.validar_dado('int', 'CPF ou CNPJ: ')
     cep = estoque.validar_dado('int', 'CEP: ')
     contato = estoque.validar_dado('int', 'Contato: ')
+    
+    estoque.create_pessoa(pessoa_id, tipo_pessoa, nome, status, doc, cep, contato)
 
-    estoque.create_cliente(cliente_id, nome, status, cpf, cep, contato)
-
-def alterar_cliente():
+def alterar_pessoa():
      
     dados = estoque.transportar_dados('pessoas.json')
-    clientes = dados.get('clientes', {})
+    pessoas = dados.get('pessoas', {})
 
-    cliente_id = estoque.validar_dado('int', 'Informe o ID do cliente que deseja alterar: ')
-    cliente_id_str = str(cliente_id)  
+    pessoa_id = estoque.validar_dado('int', 'Informe o ID da pessoa que deseja alterar: ')
+    pessoa_id_str = str(pessoa_id)  
 
-    if cliente_id_str not in clientes:
-        print(f'\n <<<--- Cliente não encontrado no sistema. --->>>')
+    if pessoa_id_str not in pessoas:
+        print(f'\n <<<--- Pessoa não encontrada no sistema. --->>>')
         return
 
-    cliente = clientes[cliente_id_str] 
+    pessoa = pessoas[pessoa_id_str] 
 
     print("\n Deixe o campo vazio para manter o valor atual.")
-
-    novo_nome = input(f'Novo nome ({cliente['nome']}): ').strip()
-    novo_status = input(f'Novo status ({cliente['status']}): ').strip()
-    novo_cpf = input(f'Novo cpf ({cliente['cpf']}): ').strip()
-    novo_cep = input(f'Nova cep ({cliente['cep']}): ').strip()
-    novo_contato = input(f'Novo contato ({cliente['contato']}): ').strip()
+    
+    novo_nome = input(f'Novo Nome ({pessoa['nome']}): ').strip()
+    novo_status = input(f'Novo Status ({pessoa['status']}): ').strip()
+    novo_doc = input(f'Novo CPF ou CNPJ({pessoa['doc']}): ').strip()
+    novo_cep = input(f'Novo CEP ({pessoa['cep']}): ').strip()
+    novo_contato = input(f'Novo Contato ({pessoa['contato']}): ').strip()
 
     """ Apenas altera os valores que foram preenchidos """
     if novo_nome:
-        cliente['nome'] = novo_nome
+        pessoa['nome'] = novo_nome
     if novo_status:
-        cliente['status'] = novo_status
-    if novo_cpf.isdigit():
-        cliente['cpf'] = int(novo_cpf)
+        pessoa['status'] = novo_status
+    if novo_doc.isdigit():
+        pessoa['doc'] = int(novo_doc)
     if novo_cep.isdigit():
-        cliente['cep'] = int(novo_cep)
+        pessoa['cep'] = int(novo_cep)
     if novo_contato.isdigit():
-        cliente['contato'] = int(novo_contato)
+        pessoa['contato'] = int(novo_contato)
 
     estoque.salvar_dados('pessoas.json', dados)
-    print('\n <<<--- Registro do cliente atualizado com sucesso! --->>>')
+    print(f'\n <<<--- Registro de ({pessoa['tipo_pessoa']}) atualizado com sucesso! --->>>')
+    
 
-def excluir_cliente():
+def excluir_pessoa():
     
     dados = estoque.transportar_dados('pessoas.json')
-    clientes = dados.get('clientes', {})
+    pessoas = dados.get('pessoas', {})
 
-    cliente_id = estoque.validar_dado('int', 'Informe o ID do Cliente que deseja deletar: ')
-    cliente_id_str = str(cliente_id)  
+    pessoa_id = estoque.validar_dado('int', 'Informe o ID da pessoa que deseja deletar: ')
+    pessoa_id_str = str(pessoa_id)  
 
-    if cliente_id_str not in clientes:
-        print('\n <<<--- Cliente não encontrado no sistema. --->>>')
+    if pessoa_id_str not in pessoas:
+        print('\n <<<--- Pessoa não encontrada no sistema. --->>>')
         return
 
-    cliente = clientes.get(cliente_id_str, None)
+    pessoa = pessoas.get(pessoa_id_str, None)
     
-    if not cliente:
-        print('\n <<<--- Erro ao acessar o cliente. --->>>')
+    if not pessoa:
+        print('\n <<<--- Erro ao acessar pessoa. --->>>')
         return
 
     """ Confirmar antes de excluir """
-    confirmacao = input(f'Tem certeza que deseja excluir o cliente "{cliente.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
+    confirmacao = input(f'Tem certeza que deseja excluir a pessoa "{pessoa.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
     if confirmacao != 's':
         print('\n <<<--- Operação cancelada. --->>>')
         return
 
-    del clientes[cliente_id_str]
-    dados['clientes'] = clientes
+    del pessoas[pessoa_id_str]
+    dados['pessoas'] = pessoas
     estoque.salvar_dados('pessoas.json', dados)
 
-    print('\n <<<--- Cliente removido com sucesso! --->>>')
-
-def listar_fornecedores():
-        dados = estoque.transportar_dados('pessoas.json')
-        fornecedores = dados.get('fornecedores', {})
-        
-        if not fornecedores: 
-            print(f'\n <<<--- Nenhum fornecedor cadastrado no sistema. --->>>')
-            return
-        
-        print("\n <<<--- Fornecedores cadastrados no sistema : --->>> \n")
-        
-        for fornecedor_id, fornecedor in fornecedores.items():
-            print('-' * 30)
-            print(f'ID: {fornecedor_id}')
-            print(f'Razão Social: {fornecedor['razao_social']}')
-            print(f'Status: {fornecedor['status']}')
-            print(f'CNPJ: {fornecedor['cnpj']}')
-            print(f'CEP: {fornecedor['cep']}')
-            print(f'Contato: {fornecedor['contato']}')
-            print('-' * 30)
-
-def cadastrar_fornecedor():
-
-    fornecedor_id = estoque.validar_dado('int', 'ID do Fornecedor: ')
-    razao_social = estoque.validar_dado('str', 'Razão Social: ')
-    status = estoque.validar_dado('str', 'Status: ')
-    cnpj = estoque.validar_dado('int', 'CNPJ: ')
-    cep = estoque.validar_dado('int', 'CEP: ')
-    contato = estoque.validar_dado('int', 'Contato: ')
-
-    estoque.create_fornecedor(fornecedor_id, razao_social, status, cnpj, cep, contato)
-
-def alterar_fornecedor():
-     
-    dados = estoque.transportar_dados('pessoas.json')
-    fornecedores = dados.get('fornecedores', {})
-
-    fornecedor_id = estoque.validar_dado('int', 'Informe o ID do fornecedor que deseja alterar: ')
-    fornecedor_id_str = str(fornecedor_id)  
-
-    if fornecedor_id_str not in fornecedores:
-        print(f'\n <<<--- Fornecedor não encontrado no sistema. --->>>')
-        return
-
-    fornecedor = fornecedores[fornecedor_id_str] 
-
-    print("\n Deixe o campo vazio para manter o valor atual.")
-
-    novo_razao = input(f'Nova Razão Social ({fornecedor['razao_social']}): ').strip()
-    novo_status = input(f'Novo Status ({fornecedor['status']}): ').strip()
-    novo_cnpj = input(f'Novo CNPJ ({fornecedor['cnpj']}): ').strip()
-    novo_cep = input(f'Novo CEP ({fornecedor['cep']}): ').strip()
-    novo_contato = input(f'Novo Contato ({fornecedor['contato']}): ').strip()
-
-    """ Apenas altera os valores que foram preenchidos """
-    if novo_razao:
-        fornecedor['razao_social'] = novo_razao
-    if novo_status:
-        fornecedor['status'] = novo_status
-    if novo_cnpj.isdigit():
-        fornecedor['cnpj'] = int(novo_cnpj)
-    if novo_cep.isdigit():
-        fornecedor['cep'] = int(novo_cep)
-    if novo_contato.isdigit():
-        fornecedor['contato'] = int(novo_contato)
-
-    estoque.salvar_dados('pessoas.json', dados)
-    print('\n <<<--- Registro do fornecedor atualizado com sucesso! --->>>')
-
-def excluir_fornecedor():
-    
-    dados = estoque.transportar_dados('pessoas.json')
-    fornecedores = dados.get('fornecedores', {})
-
-    fornecedor_id = estoque.validar_dado('int', 'Informe o ID do fornecedor que deseja deletar: ')
-    fornecedor_id_str = str(fornecedor_id)  
-
-    if fornecedor_id_str not in fornecedores:
-        print('\n <<<--- Fornecedor não encontrado no sistema. --->>>')
-        return
-
-    fornecedor = fornecedores.get(fornecedor_id_str, None)
-    
-    if not fornecedor:
-        print('\n <<<--- Erro ao acessar o fornecedor. --->>>')
-        return
-
-    """ Confirmar antes de excluir """
-    confirmacao = input(f'Tem certeza que deseja excluir o fornecedor "{fornecedor.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
-    if confirmacao != 's':
-        print('\n <<<--- Operação cancelada. --->>>')
-        return
-
-    del fornecedores[fornecedor_id_str]
-    dados['fornecedores'] = fornecedores
-    estoque.salvar_dados('pessoas.json', dados)
-
-    print('\n <<<--- Fornecedor removido com sucesso! --->>>')
+    print('\n <<<--- Pessoa removida com sucesso! --->>>')
 
 """ Index de acesso as opções disponíveis para as pessoas """
 def main():
     while True: 
-        print('\n\t <<<--- Gerenciar Clientes --->>> ')
-        print('\n\t 1. Visualizar Clientes')
-        print('\t 2. Cadastrar Cliente')
-        print('\t 3. Alterar Cliente')
-        print('\t 4. Excluir Cliente')
-        
-        print('\n\t <<<--- Gerenciar Fornecedores --->>> ')
-        print('\n\t 5. Visualizar Fornecedores')
-        print('\t 6. Cadastrar Fornecedor')
-        print('\t 7. Alterar Fornecedor')
-        print('\t 8. Excluir Fornecedor')
-        print('\n\t <<< -------------------------- >>> ')
+        print('\n\t <<<--- Gerenciar Pessoas --->>> ')
+        print('\n\t 1. Visualizar Pessoas')
+        print('\t 2. Cadastrar Pessoa')
+        print('\t 3. Alterar Pessoa')
+        print('\t 4. Excluir Pessoa')
         
         opcao = input('\n > Selecione uma das opções acima : ')
 
         if opcao == '1' :
-            listar_clientes()
+            listar_pessoas()
         elif opcao == '2' :
-            cadastrar_cliente()
+            cadastrar_pessoa()
         elif opcao == '3' :
-            alterar_cliente()
+            alterar_pessoa()
         elif opcao == '4' :
-            excluir_cliente()
+            excluir_pessoa()
         elif opcao == '5' :
-            listar_fornecedores()
-        elif opcao == '6' :
-            cadastrar_fornecedor()
-        elif opcao == '7' :
-            alterar_fornecedor()
-        elif opcao == '8' :
-            excluir_fornecedor()
+            print('Sair.')
+            return 
         else : 
             print('Opção Inválida, tente novamente.')
 

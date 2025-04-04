@@ -63,6 +63,15 @@
             "nivel_min": 10,
             "entradas": [],
             "saidas": []
+        },
+        "9": {
+            "nome": "mango",
+            "descricao": "loco",
+            "valor": 5.0,
+            "quant_estoque": 200,
+            "nivel_min": 100,
+            "entradas": [],
+            "saidas": []
         }
     }
 }

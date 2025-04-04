@@ -22,7 +22,7 @@ def transportar_dados(name_json):
         elif name_json == 'movimentacoes.json':
             dados = {'movimentacoes': []}
         elif name_json == 'pessoas.json':
-            dados = {'clientes': {}, 'fornecedores': {}}
+            dados = {'pessoas': {}}
         else:
             print(f'Não foi possível realizar a conexão dos dados com o armazenamento.')
             return
@@ -64,21 +64,21 @@ def validar_dado(tipo_dado, mensagem) :
             else:
                 print(f'<<<--- Formato de dado inválido! Tente novamente. --->>>')
 
-def create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel_min):
+def create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min):
     """Cadastra um novo produto no estoque evitando duplicatas."""
     
     dados = transportar_dados('estoque.json')
     produtos = dados.get('produtos', {})
 
-    """Converte o ID para string para garantir que a busca ocorra corretamente """
-    produto_id_str = str(produto_id)
+    if produtos: 
+        max_id = max(int(m) for m in produtos.keys())
+        novo_id = str(max_id + 1)
+    else: 
+        novo_id = '1' 
 
-    if produto_id_str in produtos:  
-        print(f'<<<--- Erro: Já existe um produto cadastrado com o ID {produto_id}! --->>>')
-        return
     
     """ Adiciona o novo produto ao dicionário"""
-    produtos[produto_id_str] = {
+    produtos[novo_id] = {
         'nome': nome_prod,
         'descricao': descricao,
         'valor': valor,
@@ -91,61 +91,35 @@ def create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel
     """ Atualiza o JSON com os novos produtos """
     dados['produtos'] = produtos
     salvar_dados('estoque.json', dados)
-    print(f'<<<--- Produto com ID {produto_id} cadastrado com sucesso! --->>>')
+    print(f'<<<--- Produto cadastrado com sucesso! ID atribuído: {novo_id} --->>>')
 
-def create_cliente(cliente_id, nome, status, cpf, cep, contato):
-    """Cadastra um novo cliente no estoque evitando duplicatas."""
+def create_pessoa(pessoa_id, tipo_pessoa, nome, status, doc, cep, contato):
+    """Cadastra uma nova pessoa no estoque evitando duplicatas."""
     
     dados = transportar_dados('pessoas.json')
-    clientes = dados.get('clientes', {})
+    pessoas = dados.get('pessoas', {})
 
     """Converte o ID para string para garantir que a busca ocorra corretamente """
-    cliente_id_str = str(cliente_id)
+    pessoa_id_str = str(pessoa_id)
 
-    if cliente_id_str in clientes:  
-        print(f'<<<--- Erro: Já existe um cliente cadastrado com o ID {cliente_id}! --->>>')
+    if pessoa_id_str in pessoas:  
+        print(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id}! --->>>')
         return
     
-    """ Adiciona o novo cliente ao dicionário"""
-    clientes[cliente_id_str] = {
+    """ Adiciona a nova pessoa ao dicionário"""
+    pessoas[pessoa_id_str] = {
+        'tipo_pessoa' : tipo_pessoa,
         'nome': nome,
         'status': status,
-        'cpf': cpf,
+        'doc': doc,
         'cep': cep,
         'contato': contato
     }
 
-    """ Atualiza o JSON com o novo cliente """
-    dados['clientes'] = clientes
+    """ Atualiza o JSON com o novo pessoa """
+    dados['pessoas'] = pessoas
     salvar_dados('pessoas.json', dados)
-    print(f'<<<--- CLiente com ID {cliente_id} cadastrado com sucesso! --->>>')
-
-def create_fornecedor(fornecedor_id, razao_social, status, cnpj, cep, contato):
-    """Cadastra um novo fornecedor no estoque evitando duplicatas."""
-    
-    dados = transportar_dados('pessoas.json')
-    fornecedores = dados.get('fornecedores', {})
-
-    """Converte o ID para string para garantir que a busca ocorra corretamente """
-    fornecedor_id_str = str(fornecedor_id)
-
-    if fornecedor_id_str in fornecedores:  
-        print(f'<<<--- Erro: Já existe um fornecedor cadastrado com o ID {fornecedor_id}! --->>>')
-        return
-    
-    """ Adiciona o novo fornecedor ao dicionário"""
-    fornecedores[fornecedor_id_str] = {
-        'razao_social': razao_social,
-        'status': status,
-        'cnpj': cnpj,
-        'cep': cep,
-        'contato': contato
-    }
-
-    """ Atualiza o JSON com o novo fornecedor """
-    dados['fornecedores'] = fornecedores
-    salvar_dados('pessoas.json', dados)
-    print(f'<<<--- Fornecedor com ID {fornecedor_id} cadastrado com sucesso! --->>>')
+    print(f'<<<--- Pessoa com ID {pessoa_id} cadastrada com sucesso! --->>>')
 
 def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=None):
     """Registra as entradas e/ou saídas de um produto."""

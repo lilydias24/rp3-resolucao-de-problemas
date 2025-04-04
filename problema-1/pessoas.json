@@ -1,27 +1,12 @@
 {
-    "clientes": {
+    "pessoas": {
         "1": {
-            "nome": "Robervaldi",
-            "status": "ativo",
-            "cpf": "000.100.100.00",
-            "cep": "00.000-000",
-            "contato": "(55)00000-0000"
-        }
-    },
-    "fornecedores": {
-        "0": {
-            "razao_social": "jurandir",
+            "tipo_pessoa": "cliente",
+            "nome": "baita ",
             "status": "inativo",
-            "cnpj": "00.100.100/0001-00",
-            "cep": "00.000-000",
-            "contato": "(55)00000-0000"
-        },
-        "1": {
-            "razao_social": "amoras ong",
-            "status": "ativo",
-            "cnpj": 0,
-            "cep": 0,
-            "contato": 0
+            "doc": 0,
+            "cep": 1102020,
+            "contato": 2304040
         }
     }
 }

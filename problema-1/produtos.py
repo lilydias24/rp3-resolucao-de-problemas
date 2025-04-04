@@ -3,14 +3,13 @@ import estoque
 def cadastrar_produto():
     """Cadastra um novo produto no estoque evitando IDs duplicados."""
     
-    produto_id = estoque.validar_dado('int', 'ID do Produto: ')
     nome_prod = estoque.validar_dado('str', 'Nome: ')
     descricao = estoque.validar_dado('str', 'Descrição: ')
     valor = estoque.validar_dado('float', 'Valor: ')
     quant_estoque = estoque.validar_dado('int', 'Quantidade em Estoque: ')
     nivel_min = estoque.validar_dado('int', 'Nível Mínimo de Estoque: ')
 
-    estoque.create_produto(produto_id, nome_prod, descricao, valor, quant_estoque, nivel_min)
+    estoque.create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min)
 
 def listar_produto():
     """Lista todos os produtos cadastrados no estoque."""
