@@ -1,3 +1,3 @@
-ID Movimento|Tipo de Movimento|ID Produto|Nome do Produto|Quantidade|Data da Movimentação|ID Pessoa|Tipo de Pessoa
-4|Saida|2|4|2|09/10/2025|1|Cliente
-5|Entrada|1|1|99|31/03/2025|2|Fornecedor
+ID Movimento,Tipo de Movimento,ID Produto,Nome do Produto,Quantidade,Data da Movimentação,ID Pessoa,Tipo de Pessoa
+5,Entrada,1,1,99,31/03/2025,2,Fornecedor
+4,Saida,2,4,2,09/10/2025,1,Cliente

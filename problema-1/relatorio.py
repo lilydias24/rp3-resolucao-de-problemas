@@ -1,6 +1,7 @@
 import csv
 import os
 from estoque import transportar_dados
+from datetime import datetime
 
 def gerar_relatorio():
     """Gera um relatório das movimentações de entrada e saída no formato CSV."""
@@ -16,32 +17,45 @@ def gerar_relatorio():
     if not movimentacoes:
         print(f'\n <<<--- Nenhuma movimentação registrada no sistema. --->>>')
         return
-    
-    with open(add_csv, mode='w', newline='', encoding='utf-8') as file:
 
-        writer = csv.writer(file, delimiter='|', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        
+    # Ordenar por data (opcional)
+    movimentacoes.sort(key=lambda x: x.get('data', ''))
+
+    with open(add_csv, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        # Cabeçalhos
         writer.writerow([
-                    'ID Movimento', 'Tipo de Movimento', 'ID Produto', 'Nome do Produto', 
-                    'Quantidade', 'Data da Movimentação', 'ID Pessoa', 'Tipo de Pessoa'
-                ])
+            'ID Movimento',
+            'Tipo de Movimento',
+            'ID Produto',
+            'Nome do Produto',
+            'Quantidade',
+            'Data da Movimentação',
+            'ID Pessoa',
+            'Tipo de Pessoa'
+        ])
+
         for mov in movimentacoes:
-            id_produto = str(mov['id_produto'])
+            id_produto = str(mov.get('id_produto', ''))
             nome_produto = produtos.get(id_produto, {}).get('nome', 'Desconhecido')
+
             
-            data_formatada = mov['data'].split('-')
-            data_formatada = f"{data_formatada[2]}/{data_formatada[1]}/{data_formatada[0]}"
+            try:
+                data_mov = datetime.strptime(mov.get('data', ''), '%Y-%m-%d')
+                data_formatada = data_mov.strftime('%d/%m/%Y')
+            except:
+                data_formatada = mov.get('data', '')
 
             writer.writerow([
-                mov['id_movimento'],
-                mov['tipo_movimento'].capitalize(),
+                mov.get('id_movimento', ''),
+                mov.get('tipo_movimento', '').capitalize(),
                 id_produto,
                 nome_produto,
-                mov['quantidade'],
+                mov.get('quantidade', ''),
                 data_formatada,
                 mov.get('id_pessoa', ''),
                 mov.get('tipo_pessoa', '').capitalize()
             ])
 
-    print(f' <<<--- Relatório gerado com sucesso = relatorio_movimentacoes.csv --->>>')
-
+    print(f'\n <<<--- Relatório gerado com sucesso = relatorio_movimentacoes.csv --->>>')
