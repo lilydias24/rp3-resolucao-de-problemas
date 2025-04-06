@@ -92,7 +92,7 @@ def main():
         print('\t 3. Deletar Movimentação')
         print('\t 4. Visualizar Estoque Atual')
         print('\t 5. Gerar Relatório de Movimentações')
-        print('\t 6. Sair')
+        print('\t 6. Voltar ao Início')
         print('\n\t <<< ------------------------ >>> ')
 
         opcao = input('\n > Selecione uma opção: ')
@@ -108,7 +108,7 @@ def main():
         elif opcao == '5':
             gerar_relatorio()
         elif opcao == '6':
-            print('Sair...')
+            print('.' * 20)
             break
         else:
             print('Opção inválida, tente novamente.')

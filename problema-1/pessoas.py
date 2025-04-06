@@ -139,6 +139,8 @@ def main():
         print('\t 2. Cadastrar Pessoa')
         print('\t 3. Alterar Pessoa')
         print('\t 4. Excluir Pessoa')
+        print('\t 5. Voltar ao Início')
+        print('\n\t <<< ------------------------ >>> ')
         
         opcao = input('\n > Selecione uma das opções acima : ')
 
@@ -151,7 +153,7 @@ def main():
         elif opcao == '4' :
             excluir_pessoa()
         elif opcao == '5' :
-            print('Sair...')
+            print('.'*20)
             return 
         else : 
             print('Opção Inválida, tente novamente.')

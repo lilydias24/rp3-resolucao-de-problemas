@@ -1,4 +1,3 @@
-import json
 from estoque import transportar_dados
 
 def listar_produtos():
@@ -11,7 +10,7 @@ def listar_produtos():
         print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
         return
 
-    print('\n\t <<<--- Produtos Cadastrados no Estoque : --->>>\n')
+    print('\n\t <<<--- Produtos em  Estoque : --->>>\n')
     
     for produto_id, produto in produtos.items():
         print(f'ID: {produto_id}')
@@ -28,4 +27,5 @@ def listar_produtos():
         print('-' * 30)
 
 # rodando a função para listar os produtos e alertar sobre estoques baixos
-listar_produtos()
+if __name__ == '__main__':
+    listar_produtos()

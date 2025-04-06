@@ -109,8 +109,9 @@ def main():
         print('\t 2. Visualizar Produtos')
         print('\t 3. Atualizar Produto')
         print('\t 4. Deletar Produto')
-        print('\t 5. Sair')
+        print('\t 5. Voltar ao Início')
         print('\n\t <<< ------------------------ >>> ')
+
         opcao = input('\n > Selecione uma das opções acima : ')
 
         if opcao == '1' :
@@ -122,7 +123,7 @@ def main():
         elif opcao == '4' :
             deletar_produto()
         elif opcao == '5' :
-            print('Retornando...')
+            print('.' * 20)
             break
         else : 
             print('Opção Inválida, tente novamente.')
