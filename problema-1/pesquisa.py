@@ -1,22 +1,19 @@
 from estoque import transportar_dados
 
-
 estoque = transportar_dados("estoque.json")
 movimentacoes = transportar_dados("movimentacoes.json")
-
+pessoas_data = transportar_dados("pessoas.json")
 
 produtos = estoque.get("produtos", {})
 movimentos = movimentacoes.get("movimentacoes", [])
-
+pessoas = pessoas_data.get("pessoas", {})
 
 produtos_com_movimentos = {mov["id_produto"] for mov in movimentos}
 
-
 for produto_id in produtos_com_movimentos:
     produto = produtos.get(produto_id)
-    
     if not produto:
-        continue  
+        continue
 
     nome = produto.get("nome", "N/A")
     descricao = produto.get("descricao", "N/A")
@@ -28,11 +25,25 @@ for produto_id in produtos_com_movimentos:
     print(f"Descrição: {descricao}")
     print(f"Valor: {valor}")
     print(f"Quantidade em Estoque: {quant_estoque}")
-
-
     print("\nMovimentações Relacionadas:")
+
     for movimento in movimentos:
         if movimento["id_produto"] == produto_id:
+            id_pessoa = str(movimento.get("id_pessoa"))
+            pessoa = pessoas.get(id_pessoa)
+
+            if not pessoa:
+                continue
+
+            tipo_pessoa = pessoa.get("tipo_pessoa", "N/A")
+
+            if tipo_pessoa == "cliente":
+                nome_ou_razao = pessoa.get("nome", "N/A")
+            elif tipo_pessoa == "fornecedor":
+                nome_ou_razao = pessoa.get("razao_social", "N/A")
+            else:
+                nome_ou_razao = "N/A"
+
             id_movimento = movimento.get("id_movimento", "N/A")
             tipo_movimento = movimento.get("tipo_movimento", "N/A")
             quantidade = movimento.get("quantidade", "N/A")
@@ -42,5 +53,7 @@ for produto_id in produtos_com_movimentos:
             print(f"    Tipo: {tipo_movimento}")
             print(f"    Quantidade: {quantidade}")
             print(f"    Data: {data}")
+            print(f"    Tipo de Pessoa: {tipo_pessoa}")
+            print(f"    Nome/Razão Social: {nome_ou_razao}")
 
     print("-" * 40)
