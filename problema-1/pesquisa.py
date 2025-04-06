@@ -1,59 +1,68 @@
 from estoque import transportar_dados
 
-estoque = transportar_dados("estoque.json")
-movimentacoes = transportar_dados("movimentacoes.json")
-pessoas_data = transportar_dados("pessoas.json")
+def pesquisar_movimentacoes():
 
-produtos = estoque.get("produtos", {})
-movimentos = movimentacoes.get("movimentacoes", [])
-pessoas = pessoas_data.get("pessoas", {})
+    estoque = transportar_dados("estoque.json")
+    movimentacoes = transportar_dados("movimentacoes.json")
+    pessoas_data = transportar_dados("pessoas.json")
 
-produtos_com_movimentos = {mov["id_produto"] for mov in movimentos}
+    produtos = estoque.get("produtos", {})
+    movimentos = movimentacoes.get("movimentacoes", [])
+    pessoas = pessoas_data.get("pessoas", {})
 
-for produto_id in produtos_com_movimentos:
-    produto = produtos.get(produto_id)
-    if not produto:
-        continue
+    produtos_com_movimentos = {mov["id_produto"] for mov in movimentos}
 
-    nome = produto.get("nome", "N/A")
-    descricao = produto.get("descricao", "N/A")
-    valor = produto.get("valor", "N/A")
-    quant_estoque = produto.get("quant_estoque", "N/A")
+    for produto_id in produtos_com_movimentos:
+        produto = produtos.get(produto_id)
+        if not produto:
+            continue
 
-    print(f"ID Produto: {produto_id}")
-    print(f"Nome: {nome}")
-    print(f"Descrição: {descricao}")
-    print(f"Valor: {valor}")
-    print(f"Quantidade em Estoque: {quant_estoque}")
-    print("\nMovimentações Relacionadas:")
+        nome = produto.get("nome", "N/A")
+        descricao = produto.get("descricao", "N/A")
+        valor = produto.get("valor", "N/A")
+        quant_estoque = produto.get("quant_estoque", "N/A")
 
-    for movimento in movimentos:
-        if movimento["id_produto"] == produto_id:
-            id_pessoa = str(movimento.get("id_pessoa"))
-            pessoa = pessoas.get(id_pessoa)
+        print(f"ID Produto: {produto_id}")
+        print(f"Nome: {nome}")
+        print(f"Descrição: {descricao}")
+        print(f"Valor: {valor}")
+        print(f"Quantidade em Estoque: {quant_estoque}")
+        print("\nMovimentações Relacionadas:")
 
-            if not pessoa:
-                continue
+        for movimento in movimentos:
+            if movimento["id_produto"] == produto_id:
+                id_pessoa = str(movimento.get("id_pessoa"))
+                pessoa = pessoas.get(id_pessoa)
 
-            tipo_pessoa = pessoa.get("tipo_pessoa", "N/A")
+                if not pessoa:
+                    continue
 
-            if tipo_pessoa == "cliente":
-                nome_ou_razao = pessoa.get("nome", "N/A")
-            elif tipo_pessoa == "fornecedor":
-                nome_ou_razao = pessoa.get("razao_social", "N/A")
-            else:
-                nome_ou_razao = "N/A"
+                tipo_pessoa = pessoa.get("tipo_pessoa", "N/A")
 
-            id_movimento = movimento.get("id_movimento", "N/A")
-            tipo_movimento = movimento.get("tipo_movimento", "N/A")
-            quantidade = movimento.get("quantidade", "N/A")
-            data = movimento.get("data", "N/A")
+                if tipo_pessoa == "cliente":
+                    nome_ou_razao = pessoa.get("nome", "N/A")
+                elif tipo_pessoa == "fornecedor":
+                    nome_ou_razao = pessoa.get("razao_social", "N/A")
+                else:
+                    nome_ou_razao = "N/A"
 
-            print(f"  - ID Movimento: {id_movimento}")
-            print(f"    Tipo: {tipo_movimento}")
-            print(f"    Quantidade: {quantidade}")
-            print(f"    Data: {data}")
-            print(f"    Tipo de Pessoa: {tipo_pessoa}")
-            print(f"    Nome/Razão Social: {nome_ou_razao}")
+                id_movimento = movimento.get("id_movimento", "N/A")
+                tipo_movimento = movimento.get("tipo_movimento", "N/A")
+                quantidade = movimento.get("quantidade", "N/A")
+                data = movimento.get("data", "N/A")
 
-    print("-" * 40)
+                print(f"  - ID Movimento: {id_movimento}")
+                print(f"    Tipo: {tipo_movimento}")
+                print(f"    Quantidade: {quantidade}")
+                print(f"    Data: {data}")
+                print(f"    Tipo de Pessoa: {tipo_pessoa}")
+                print(f"    Nome/Razão Social: {nome_ou_razao}")
+
+        print("-" * 40)
+
+def main():
+    print("\n\t<<<--- Pesquisa de Produtos com Movimentações --->>>")
+    pesquisar_movimentacoes()
+
+if __name__ == '__main__':
+    main()

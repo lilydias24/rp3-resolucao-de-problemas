@@ -1,6 +1,8 @@
 from relatorio import gerar_relatorio
 from entrada import registrar_entrada
 from saida import registrar_saida
+from pesquisa import pesquisar_movimentacoes
+from nivelEstoque import listar_niveis
 from datetime import datetime
 import estoque
 
@@ -87,26 +89,26 @@ def deletar_movimentacao():
 def main():
     while True:
         print('\n\t <<<--- Gerenciar Movimentações --->>> ')
-        print('\n\t 1. Cadastrar Movimentação')
-        print('\t 2. Listar Movimentações')
-        print('\t 3. Deletar Movimentação')
-        print('\t 4. Visualizar Estoque Atual')
-        print('\t 5. Gerar Relatório de Movimentações')
+        print('\n\t 1. Verificar Níveis do Estoque Atual')
+        print('\t 2. Cadastrar Movimentação')
+        print('\t 3. Listar Movimentações')
+        print('\t 4. Deletar Movimentação')
+        print('\t 5. Buscar Registros de Movimentações.')
         print('\t 6. Voltar ao Início')
         print('\n\t <<< ------------------------ >>> ')
 
         opcao = input('\n > Selecione uma opção: ')
 
         if opcao == '1':
-            registrar_movimentacao()
+            listar_niveis()
         elif opcao == '2':
-            listar_movimentacoes()
+            registrar_movimentacao()
         elif opcao == '3':
-            deletar_movimentacao()
+            listar_movimentacoes()
         elif opcao == '4':
-            estoque.listar_estoque()
+            deletar_movimentacao()
         elif opcao == '5':
-            gerar_relatorio()
+            pesquisar_movimentacoes()
         elif opcao == '6':
             print('.' * 20)
             break

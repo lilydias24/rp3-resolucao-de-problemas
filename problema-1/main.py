@@ -1,7 +1,8 @@
 import pessoas
 import produtos
 import movimentacoes
-import nivelEstoque
+import estoque
+import relatorio
 
 def main():
     while True:
@@ -9,8 +10,9 @@ def main():
         print('\n\t 1. Gerenciar Pessoas')
         print('\t 2. Gerenciar Produtos')
         print('\t 3. Gerenciar Movimentações')
-        print('\t 4. Verificar Níveis de Estoque')
-        print('\t 5. Sair')
+        print('\t 4. Verificar o Estoque Atual')
+        print('\t 5. Gerar Relatório de Movimentações')
+        print('\t 6. Sair')
         print('\n\t <<<-------------------------------------->>>')
 
         opcao = input('\n > Selecione uma das opções acima: ')
@@ -22,8 +24,10 @@ def main():
         elif opcao == '3':
             movimentacoes.main()
         elif opcao == '4':
-            nivelEstoque.listar_produtos()
+            estoque.listar_estoque()
         elif opcao == '5':
+            relatorio.gerar_relatorio()
+        elif opcao == '6':
             print('\n <<<--- Encerrando o sistema. Até mais! --->>>\n')
             break
         else:

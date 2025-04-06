@@ -1,6 +1,6 @@
 from estoque import transportar_dados
 
-def listar_produtos():
+def listar_niveis():
     """Lista todos os produtos cadastrados no estoque e verifica o nível mínimo."""
     
     dados = transportar_dados('estoque.json')
@@ -27,5 +27,10 @@ def listar_produtos():
         print('-' * 30)
 
 # rodando a função para listar os produtos e alertar sobre estoques baixos
+def main():
+    print("\n\t<<<--- Lista de Níveis do Estoque  --->>>")
+    listar_niveis()
+
 if __name__ == '__main__':
-    listar_produtos()
+    main()
+
