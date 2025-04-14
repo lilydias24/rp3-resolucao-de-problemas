@@ -25,4 +25,3 @@ def registrar_entrada(id_produto, quantidade):
     
     print(f"\n \t | Entrada registrada: {quantidade} unidades do produto {id_produto}. |")
     print(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} | ") 
-

@@ -1,4 +1,6 @@
+import pydoc
 from src import pessoas, produtos, movimentacoes, estoque, relatorio
+pydoc.writedoc("main")
 
 def main():
     while True:

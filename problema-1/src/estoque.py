@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime 
+from datetime import datetime
 
 dir_base = os.path.dirname(os.path.abspath(__file__))
 

@@ -1,7 +1,6 @@
 from datetime import datetime
 from .estoque import transportar_dados, salvar_dados
 
-
 def registrar_saida(id_produto, quantidade):
     """Registra a saída de um produto no estoque"""
 
