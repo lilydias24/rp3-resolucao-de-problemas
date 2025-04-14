@@ -1,10 +1,10 @@
-from relatorio import gerar_relatorio
-from entrada import registrar_entrada
-from saida import registrar_saida
-from pesquisa import pesquisar_movimentacoes
-from nivelEstoque import listar_niveis
+from .relatorio import gerar_relatorio
+from .entrada import registrar_entrada
+from .saida import registrar_saida
+from .pesquisa import pesquisar_movimentacoes
+from .nivelEstoque import listar_niveis
 from datetime import datetime
-import estoque
+from src import estoque
 
 def gerar_id(movimentacoes):
     """ Gera ID único automático, para evitar conflitos"""

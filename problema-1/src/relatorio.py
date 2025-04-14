@@ -1,13 +1,13 @@
 import csv
 import os
-from estoque import transportar_dados
+from .estoque import transportar_dados
 from datetime import datetime
 
 def gerar_relatorio():
     """Gera um relatório das movimentações de entrada e saída no formato CSV."""
 
     dir = os.path.dirname(os.path.abspath(__file__))  
-    add_csv = os.path.join(dir, "relatorio_movimentacoes.csv")
+    add_csv = os.path.abspath(os.path.join(dir,"..","data","relatorio_movimentacoes.csv"))
 
     dados1 = transportar_dados('estoque.json')
     produtos = dados1.get('produtos', {})

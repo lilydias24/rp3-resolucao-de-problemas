@@ -1,4 +1,4 @@
-import estoque
+from src import estoque
 
 def cadastrar_produto():
     """Cadastra um novo produto no estoque evitando IDs duplicados."""

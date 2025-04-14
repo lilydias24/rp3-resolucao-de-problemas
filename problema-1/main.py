@@ -1,8 +1,4 @@
-import pessoas
-import produtos
-import movimentacoes
-import estoque
-import relatorio
+from src import pessoas, produtos, movimentacoes, estoque, relatorio
 
 def main():
     while True:

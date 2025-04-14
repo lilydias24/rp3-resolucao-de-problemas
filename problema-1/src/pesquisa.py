@@ -1,4 +1,4 @@
-from estoque import transportar_dados
+from .estoque import transportar_dados
 
 def pesquisar_movimentacoes():
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from estoque import transportar_dados, salvar_dados
+from .estoque import transportar_dados, salvar_dados
 
 def registrar_entrada(id_produto, quantidade):
     """Registrar a entrada de um produto no estoque"""

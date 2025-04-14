@@ -1,4 +1,4 @@
-import estoque
+from src import estoque
 
 def cadastrar_pessoa():
     print('\t 1 - Cadastrar Cliente')
@@ -135,8 +135,8 @@ def excluir_pessoa():
 def main():
     while True: 
         print('\n\t <<<--- Gerenciar Pessoas --->>> ')
-        print('\n\t 1. Visualizar Pessoas')
-        print('\t 2. Cadastrar Pessoa')
+        print('\n\t 1. Cadastrar Pessoa')
+        print('\t 2. Visualizar Pessoas')
         print('\t 3. Alterar Pessoa')
         print('\t 4. Excluir Pessoa')
         print('\t 5. Voltar ao Início')

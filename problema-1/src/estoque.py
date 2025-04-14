@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime 
 
-dir_base = os.path.dirname(os.path.abspath(__file__))  
+dir_base = os.path.dirname(os.path.abspath(__file__))
 
 def transportar_dados(name_json):
     """Carrega os dados do arquivo JSON necesário
@@ -10,7 +10,7 @@ def transportar_dados(name_json):
     - se não cria um dicionário adequado ao contexto.
     """
 
-    dir_json = os.path.join(dir_base, name_json)
+    dir_json = os.path.join(dir_base,"..","data", name_json)
 
     if os.path.exists(dir_json):
         with open(dir_json, 'r', encoding='utf-8') as file:
@@ -30,7 +30,7 @@ def transportar_dados(name_json):
 def salvar_dados(name_json, dados):
     """Salva os dados no arquivo JSON de acordo com o contexto"""
 
-    dir_json = os.path.join(dir_base, name_json)
+    dir_json = os.path.join(dir_base,"..","data", name_json)
     
     with open(dir_json, 'w', encoding='utf-8') as file:
         json.dump(dados, file, indent=4, ensure_ascii=False)
@@ -173,3 +173,4 @@ def listar_estoque():
     print('\n')
     for id_produto, produto in produtos.items():
         print(f'\t ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}')
+
