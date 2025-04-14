@@ -1,4 +1,5 @@
 from .estoque import transportar_dados
+from estilo import print_terminal
 
 def pesquisar_movimentacoes():
 
@@ -22,12 +23,12 @@ def pesquisar_movimentacoes():
         valor = produto.get("valor", "N/A")
         quant_estoque = produto.get("quant_estoque", "N/A")
 
-        print(f"ID Produto: {produto_id}")
-        print(f"Nome: {nome}")
-        print(f"Descrição: {descricao}")
-        print(f"Valor: {valor}")
-        print(f"Quantidade em Estoque: {quant_estoque}")
-        print("\nMovimentações Relacionadas:")
+        print_terminal(f"ID Produto: {produto_id}", cor='branco', estilo='negrito')
+        print_terminal(f"Nome: {nome}", cor='branco', estilo='negrito')
+        print_terminal(f"Descrição: {descricao}", cor='branco', estilo='negrito')
+        print_terminal(f"Valor: {valor}", cor='branco', estilo='negrito')
+        print_terminal(f"Quantidade em Estoque: {quant_estoque}", cor='branco', estilo='negrito')
+        print_terminal("\nMovimentações Relacionadas:", cor='branco', estilo='negrito')
 
         for movimento in movimentos:
             if movimento["id_produto"] == produto_id:
@@ -51,17 +52,17 @@ def pesquisar_movimentacoes():
                 quantidade = movimento.get("quantidade", "N/A")
                 data = movimento.get("data", "N/A")
 
-                print(f"  - ID Movimento: {id_movimento}")
-                print(f"    Tipo: {tipo_movimento}")
-                print(f"    Quantidade: {quantidade}")
-                print(f"    Data: {data}")
-                print(f"    Tipo de Pessoa: {tipo_pessoa}")
-                print(f"    Nome/Razão Social: {nome_ou_razao}")
+                print_terminal(f"  - ID Movimento: {id_movimento}", cor='branco', estilo='negrito')
+                print_terminal(f"    Tipo: {tipo_movimento}", cor='branco', estilo='negrito')
+                print_terminal(f"    Quantidade: {quantidade}", cor='branco', estilo='negrito')
+                print_terminal(f"    Data: {data}", cor='branco', estilo='negrito')
+                print_terminal(f"    Tipo de Pessoa: {tipo_pessoa}", cor='branco', estilo='negrito')
+                print_terminal(f"    Nome/Razão Social: {nome_ou_razao}", cor='branco', estilo='negrito')
 
-        print("-" * 40)
+        print_terminal("-" * 40, cor='branco', estilo='negrito')
 
 def main():
-    print("\n\t<<<--- Pesquisa de Produtos com Movimentações --->>>")
+    print_terminal("\n\t<<<--- Pesquisa de Produtos com Movimentações --->>>", cor='ciano', estilo='negrito')
     pesquisar_movimentacoes()
 
 if __name__ == '__main__':

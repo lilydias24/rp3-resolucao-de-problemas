@@ -1,4 +1,5 @@
 from src import estoque
+from estilo import print_terminal
 
 def cadastrar_produto():
     """Cadastra um novo produto no estoque evitando IDs duplicados."""
@@ -18,19 +19,19 @@ def listar_produto():
     produtos = dados.get('produtos', {})
 
     if not produtos:
-        print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
+        print_terminal('\n <<<--- Nenhum produto cadastrado no sistema. --->>>', cor='vermelho', estilo='normal')
         return
 
-    print('\n\t <<<--- Produtos Cadastrados no Estoque : --->>>\n')
+    print_terminal('\n\t <<<--- Produtos Cadastrados no Estoque : --->>>\n', cor='ciano', estilo='negrito')
     
     for produto_id, produto in produtos.items():
-        print(f'ID: {produto_id}')
-        print(f'Nome: {produto['nome']}')
-        print(f'Descrição: {produto['descricao']}')
-        print(f'Valor: R$ {produto['valor']:.2f}')
-        print(f'Quantidade em Estoque: {produto['quant_estoque']}')
-        print(f'Nível Mínimo: {produto['nivel_min']}')
-        print('-' * 30)
+        print_terminal(f'ID: {produto_id}', cor='branco', estilo='negrito')
+        print_terminal(f'Nome: {produto['nome']}', cor='branco', estilo='negrito')
+        print_terminal(f'Descrição: {produto['descricao']}', cor='branco', estilo='negrito')
+        print_terminal(f'Valor: R$ {produto['valor']:.2f}', cor='branco', estilo='negrito')
+        print_terminal(f'Quantidade em Estoque: {produto['quant_estoque']}', cor='branco', estilo='negrito')
+        print_terminal(f'Nível Mínimo: {produto['nivel_min']}', cor='branco', estilo='negrito')
+        print_terminal('-' * 30, cor='branco', estilo='negrito')
 
 def atualizar_produto():
     """Atualiza os dados de um produto existente no estoque."""
@@ -42,12 +43,12 @@ def atualizar_produto():
     produto_id_str = str(produto_id)  
 
     if produto_id_str not in produtos:
-        print(f'\n <<<--- Produto não encontrado no sistema. --->>>')
+        print_terminal(f'\n <<<--- Produto não encontrado no sistema. --->>>', cor='vermelho', estilo='normal')
         return
 
     produto = produtos[produto_id_str] 
 
-    print("\n Deixe o campo vazio para manter o valor atual.")
+    print_terminal("\n Deixe o campo vazio para manter o valor atual.", cor='amarelo', estilo='negrito')
 
     novo_nome = input(f'Novo nome ({produto['nome']}): ').strip()
     novo_descricao = input(f'Nova descrição ({produto['descricao']}): ').strip()
@@ -68,7 +69,7 @@ def atualizar_produto():
         produto['nivel_min'] = int(novo_nivel_min)
 
     estoque.salvar_dados('estoque.json', dados)
-    print('\n <<<--- Registro do produto atualizado com sucesso! --->>>')
+    print_terminal('\n <<<--- Registro do produto atualizado com sucesso! --->>>', cor='verde', estilo='negrito')
 
 def deletar_produto():
     """Remove um produto do estoque pelo ID."""
@@ -80,39 +81,43 @@ def deletar_produto():
     produto_id_str = str(produto_id)  
 
     if produto_id_str not in produtos:
-        print('\n <<<--- Produto não encontrado no sistema. --->>>')
+        print_terminal('\n <<<--- Produto não encontrado no sistema. --->>>', cor='vermelho', estilo='normal')
         return
 
     produto = produtos.get(produto_id_str, None)
     
     if not produto:
-        print('\n <<<--- Erro ao acessar o produto. --->>>')
+        print_terminal('\n <<<--- Erro ao acessar o produto. --->>>', cor='vermelho', estilo='negrito')
         return
 
     """ Confirmar antes de excluir """
     confirmacao = input(f'Tem certeza que deseja excluir o produto "{produto.get('nome', 'Desconhecido')}"? (s/n): ').strip().lower()
     if confirmacao != 's':
-        print('\n <<<--- Operação cancelada. --->>>')
+        print_terminal('\n <<<--- Operação cancelada. --->>>', cor='amarelo', estilo='negrito')
         return
 
     del produtos[produto_id_str]
     dados['produtos'] = produtos
     estoque.salvar_dados('estoque.json', dados)
 
-    print('\n <<<--- Produto removido com sucesso! --->>>')
+    print_terminal('\n <<<--- Produto removido com sucesso! --->>>', cor='verde', estilo='negrito')
 
 """ Index de acesso as opções disponíveis para os produtos """
 def main():
     while True: 
-        print('\n\t <<<--- Gerenciar Produtos --->>> ')
-        print('\n\t 1. Cadastrar Produto')
-        print('\t 2. Visualizar Produtos')
-        print('\t 3. Atualizar Produto')
-        print('\t 4. Deletar Produto')
-        print('\t 5. Voltar ao Início')
-        print('\n\t <<< ------------------------ >>> ')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
+        print_terminal('\n | \t\t<<<--- Gerenciar Produtos --->>> \t\t |\n', cor='ciano', estilo='negrito')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
+        
+        print_terminal('\n\n\t\t 1. Cadastrar Produto', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 2. Visualizar Produtos', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 3. Atualizar Produto', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 4. Deletar Produto', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 5. Voltar ao Início \n', cor='roxo', estilo='negrito')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
 
-        opcao = input('\n > Selecione uma das opções acima : ')
+        opcao = input('\n\t\033[1;32m >>> Selecione uma das opções acima: \033[0m').strip()
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
 
         if opcao == '1' :
             cadastrar_produto()
@@ -123,10 +128,10 @@ def main():
         elif opcao == '4' :
             deletar_produto()
         elif opcao == '5' :
-            print('.' * 20)
             break
         else : 
-            print('Opção Inválida, tente novamente.')
+            print_terminal('Opção inválida, tente novamente.', cor='vermelho', estilo='normal')
+            continue
 
 if __name__ == '__main__' :
     main()

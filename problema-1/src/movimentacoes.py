@@ -5,14 +5,15 @@ from .pesquisa import pesquisar_movimentacoes
 from .nivelEstoque import listar_niveis
 from datetime import datetime
 from src import estoque
+from estilo import print_terminal
 
 def gerar_id(movimentacoes):
     """ Gera ID único automático, para evitar conflitos"""
     
     if not movimentacoes:
-        return 1  # Retorna 1 se a lista estiver vazia
+        return 1  
     maior_id = max(movimento['id_movimento'] for movimento in movimentacoes)
-    return maior_id + 1  # Retorna o próximo ID disponível
+    return maior_id + 1  
 
 def registrar_movimentacao():
     """ Registro de movimentações no JSON """
@@ -24,7 +25,7 @@ def registrar_movimentacao():
 
     id_produto = str(estoque.validar_dado('int', 'ID do Produto: '))
     if id_produto not in produtos:
-        print('\n <<<--- Produto não encontrado no sistema! --->>>')
+        print_terminal('\n <<<--- Produto não encontrado no sistema! --->>>', cor='vermelho', estilo='normal')
         return
 
     id_pessoa = estoque.validar_dado('int', 'ID da Pessoa (Cliente ou Fornecedor): ')
@@ -49,13 +50,13 @@ def registrar_movimentacao():
     elif tipo_movimento in ['saida']:
         registrar_saida(id_produto, quantidade)
     else:
-        print(f'\n <<<--- Tipo de movimento inválido! --->>>') 
+        print_terminal(f'\n <<<--- Tipo de movimento inválido! --->>>', cor='vermelho', estilo='normal') 
         return
 
     movimentacoes.append(nova_movimentacao)
     dados2['movimentacoes'] = movimentacoes
     estoque.salvar_dados('movimentacoes.json', dados2)
-    print('\n <<<--- Movimentação cadastrada com sucesso! --->>>')
+    print_terminal('\n <<<--- Movimentação cadastrada com sucesso! --->>>', cor='verde', estilo='normal')
 
 def listar_movimentacoes():
     """ Listagem das movimentações previamente registradas """
@@ -66,7 +67,7 @@ def listar_movimentacoes():
         for movimentacao in movimentacoes:
             print(movimentacao)
     else:
-        print('\n <<<--- Nenhuma movimentação registrada no sistema. --->>>')
+        print_terminal('\n <<<--- Nenhuma movimentação registrada no sistema. --->>>', cor='amarelo', estilo='normal')
 
 def deletar_movimentacao():
     """ Deleção de movimentações existentes """
@@ -78,26 +79,29 @@ def deletar_movimentacao():
     nova_mov = [mov for mov in movimentacoes if mov['id_movimento'] != movimentacao_id]
     
     if len(nova_mov) == len(movimentacoes):
-        print(f'\n <<<--- ID da movimentação não encontrado. Nenhuma alteração foi feita. --->>> ')
+        print_terminal(f'\n <<<--- ID da movimentação não encontrado. Nenhuma alteração foi feita. --->>> ', cor='amarelo', estilo='normal')
         return
     
     dados['movimentacoes'] = nova_mov
     estoque.salvar_dados('movimentacoes.json', dados)
-    print('\n <<<--- Movimentação deletada com sucesso! --->>>')
-    # consultar grupo sobre ação de deletar por modificação de status em ativo > inativo
+    print_terminal('\n <<<--- Movimentação deletada com sucesso! --->>>', cor='verde', estilo='normal')
 
 def main():
     while True:
-        print('\n\t <<<--- Gerenciar Movimentações --->>> ')
-        print('\n\t 1. Verificar Níveis do Estoque Atual')
-        print('\t 2. Cadastrar Movimentação')
-        print('\t 3. Listar Movimentações')
-        print('\t 4. Deletar Movimentação')
-        print('\t 5. Buscar Registros de Movimentações.')
-        print('\t 6. Voltar ao Início')
-        print('\n\t <<< ------------------------ >>> ')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
+        print_terminal('\n | \t\t<<<--- Gerenciar Movimentações --->>> \t\t |\n', cor='ciano', estilo='negrito')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
+        
+        print_terminal('\n\n\t\t 1. Verificar Níveis do Estoque Atual', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 2. Cadastrar Movimentação', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 3. Listar Movimentações', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 4. Deletar Movimentação', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 5. Buscar Registros de Movimentações.', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 6. Voltar ao Início', cor='roxo', estilo='negrito')
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
 
-        opcao = input('\n > Selecione uma opção: ')
+        opcao = input('\n\t\033[1;32m >>> Selecione uma das opções acima: \033[0m').strip()
+        print_terminal('.-.' * 25, cor='ciano', estilo='negrito')
 
         if opcao == '1':
             listar_niveis()
@@ -110,10 +114,10 @@ def main():
         elif opcao == '5':
             pesquisar_movimentacoes()
         elif opcao == '6':
-            print('.' * 20)
             break
         else:
-            print('Opção inválida, tente novamente.')
+            print_terminal('Opção inválida, tente novamente.', cor='vermelho', estilo='normal')
+            continue
 
 if __name__ == '__main__':
     main()

@@ -1,17 +1,22 @@
 from src import pessoas, produtos, movimentacoes, estoque, relatorio
+from estilo import print_terminal
 
 def main():
     while True:
-        print('\n\t <<<--- Sistema de Controle de Estoque --->>>')
-        print('\n\t 1. Gerenciar Pessoas')
-        print('\t 2. Gerenciar Produtos')
-        print('\t 3. Gerenciar Movimentações')
-        print('\t 4. Verificar o Estoque Atual')
-        print('\t 5. Gerar Relatório de Movimentações')
-        print('\t 6. Sair')
-        print('\n\t <<<-------------------------------------->>>')
+        print_terminal('_._' * 25, cor='ciano', estilo='negrito')
+        print_terminal('\n | \t\t<<<--- Sistema de Controle de Estoque --->>> \t\t |', cor='ciano', estilo='negrito')
+        print_terminal('_._' * 25, cor='ciano', estilo='negrito')
+        
+        print_terminal('\n\n\t\t 1. 🧑  Gerenciar Pessoas', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 2. 📦  Gerenciar Produtos', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 3. 🔄  Gerenciar Movimentações', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 4. 📊  Verificar o Estoque Atual', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 5. 🧾  Gerar Relatório de Movimentações', cor='roxo', estilo='negrito')
+        print_terminal('\n\t\t 6. ⚙️   Sair \n', cor='roxo', estilo='negrito')
+        print_terminal('_._' * 25, cor='ciano', estilo='negrito')
 
-        opcao = input('\n > Selecione uma das opções acima: ')
+        opcao = input('\n\t\033[1;32m >>> Selecione uma das opções acima: \033[0m').strip()
+        print_terminal('_._' * 25, cor='ciano', estilo='negrito')
 
         if opcao == '1':
             pessoas.main()
@@ -24,10 +29,11 @@ def main():
         elif opcao == '5':
             relatorio.gerar_relatorio()
         elif opcao == '6':
-            print('\n <<<--- Encerrando o sistema. Até mais! --->>>\n')
-            break
+            print_terminal('\n\t <<<--- Encerrando o sistema. Até mais! --->>>\n', cor='amarelo', estilo='sublinhado')
+            return
         else:
-            print('\n <<<--- Opção inválida. Tente novamente. --->>>\n')
-
+           print_terminal('\n\t <<<--- Opção inválida! --->>>\n', cor='vermelho', estilo='normal')
+           break
+    
 if __name__ == '__main__':
     main()

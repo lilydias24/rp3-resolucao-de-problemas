@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime 
-
+from estilo import print_terminal
 dir_base = os.path.dirname(os.path.abspath(__file__))
 
 def transportar_dados(name_json):
@@ -23,7 +23,7 @@ def transportar_dados(name_json):
         elif name_json == 'pessoas.json':
             dados = {'pessoas': {}}
         else:
-            print(f'Não foi possível realizar a conexão dos dados com o armazenamento.')
+            print_terminal(f'Não foi possível realizar a conexão dos dados com o armazenamento.', cor='vermelho', estilo='normal')
             return
     return dados
 
@@ -35,8 +35,6 @@ def salvar_dados(name_json, dados):
     with open(dir_json, 'w', encoding='utf-8') as file:
         json.dump(dados, file, indent=4, ensure_ascii=False)
 
-# Funções auxiliares para manipulação do estoque
-
 def validar_dado(tipo_dado, mensagem) : 
     """ Verifica o tipo de dado inserido pelo usuário."""
     
@@ -46,22 +44,22 @@ def validar_dado(tipo_dado, mensagem) :
             if entrada.isdigit():
                 return int(entrada)
             else: 
-                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>')
+                print_terminal(f'<<<--- Formato de dado inválido! Tente novamente com um valor inteiro --->>>', cor='amarelo', estilo='normal')
         elif tipo_dado == 'float':
             try:
                 return float(entrada)
             except ValueError:
-                print(f'<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>')
+                print_terminal(f'<<<--- Formato de dado inválido! Tente novamente com um valor decimal --->>>', cor='amarelo', estilo='normal')
         elif tipo_dado == 'date':
             try:
                 return datetime.strptime(entrada, '%Y-%m-%d').strftime('%Y-%m-%d')
             except ValueError:
-                print('<<<--- Formato de data inválido! Use o formato AAAA-MM-DD. --->>>')
+                print_terminal('<<<--- Formato de data inválido! Use o formato AAAA-MM-DD. --->>>', cor='amarelo', estilo='normal')
         else: 
             if entrada.strip():
                 return entrada
             else:
-                print(f'<<<--- Formato de dado inválido! Tente novamente. --->>>')
+                print_terminal(f'<<<--- Formato de dado inválido! Tente novamente. --->>>', cor='amarelo', estilo='normal')
 
 def create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min):
     """Cadastra um novo produto no estoque evitando duplicatas."""
@@ -89,7 +87,7 @@ def create_produto(nome_prod, descricao, valor, quant_estoque, nivel_min):
     """ Atualiza o JSON com os novos produtos """
     dados['produtos'] = produtos
     salvar_dados('estoque.json', dados)
-    print(f'<<<--- Produto cadastrado com sucesso! ID atribuído: {novo_id} --->>>')
+    print_terminal(f'<<<--- Produto cadastrado com sucesso! ID atribuído: {novo_id} --->>>', cor='verde', estilo='normal')
 
 def create_pessoa(tipo_pessoa, nome, status, doc, cep, contato):
     """Cadastra uma nova pessoa no estoque evitando duplicatas."""
@@ -107,7 +105,7 @@ def create_pessoa(tipo_pessoa, nome, status, doc, cep, contato):
     pessoa_id_str = str(novo_id)
 
     if pessoa_id_str in pessoas:  
-        print(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id_str}! --->>>')
+        print_terminal(f'<<<--- Erro: Já existe uma pessoa cadastrada com o ID {pessoa_id_str}! --->>>', cor='vermelho', estilo='normal')
         return
     
     nova_pessoa = {
@@ -129,7 +127,7 @@ def create_pessoa(tipo_pessoa, nome, status, doc, cep, contato):
 
     dados['pessoas'] = pessoas
     salvar_dados('pessoas.json', dados)
-    print(f'\n <<<--- {tipo_pessoa.capitalize()} cadastrado com sucesso! ID atribuído: {pessoa_id_str} --->>>')
+    print_terminal(f'\n <<<--- {tipo_pessoa.capitalize()} cadastrado com sucesso! ID atribuído: {pessoa_id_str} --->>>', cor='verde', estilo='normal')
 
 def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=None):
     """Registra as entradas e/ou saídas de um produto."""
@@ -143,7 +141,7 @@ def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=No
         from saida import registrar_saida
         registrar_saida(codigo, quantidade)
     else: 
-        print(f'<<<--- Tipo de movimentação inválida! Use "entrada" ou saida". --->>>')
+        print_terminal(f'<<<--- Tipo de movimentação inválida! Use "entrada" ou saida". --->>>', cor='amarelo', estilo='normal')
         return
 
     movimentacao = {
@@ -157,7 +155,7 @@ def registrar_movimentacao(tipo, codigo, quantidade, fornecedor=None, cliente=No
     dados['movimentacoes'].append(movimentacao)
     salvar_dados('movimentacoes.json', dados)
 
-    print(f'<<<--- Movimentação registrada: {tipo} de {quantidade} unidades do produto {codigo}. --->>>')
+    print_terminal(f'<<<--- Movimentação registrada: {tipo} de {quantidade} unidades do produto {codigo}. --->>>', cor='verde', estilo='normal')
 
 def listar_estoque():
     """Lista todos os produtos e suas quantidades disponíveis em estoque"""
@@ -166,11 +164,13 @@ def listar_estoque():
     produtos = dados.get('produtos', {})
 
     if not produtos:
-        print('\n <<<--- Nenhum produto cadastrado no sistema. --->>>')
+        print_terminal('\n <<<--- Nenhum produto cadastrado no sistema. --->>>', cor='amarelo', estilo='negrito')
         return
 
-    print('\n\t <<<--- Produtos em Estoque --->>>')
-    print('\n')
+    print_terminal('-' * 30, cor='ciano', estilo='negrito')
+    print_terminal('\n\t <<<--- Produtos em Estoque --->>>', cor='ciano', estilo='negrito')
+    print_terminal('-' * 30, cor='ciano', estilo='negrito')
+    
     for id_produto, produto in produtos.items():
-        print(f'\t ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}')
+        print_terminal(f'\t ID: {id_produto} | Nome: {produto['nome']} | Estoque Atual: {produto['quant_estoque']}', cor='verde', estilo='normal')
 

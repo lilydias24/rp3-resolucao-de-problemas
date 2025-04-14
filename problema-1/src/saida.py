@@ -1,5 +1,6 @@
 from datetime import datetime
 from .estoque import transportar_dados, salvar_dados
+from estilo import print_terminal
 
 
 def registrar_saida(id_produto, quantidade):
@@ -9,18 +10,18 @@ def registrar_saida(id_produto, quantidade):
     produtos = dados.get('produtos', {})
 
     if id_produto not in produtos:
-        print(f"produto com ID {id_produto} não encontrado no estoque.")
+        print_terminal(f"produto com ID {id_produto} não encontrado no estoque.", cor='vermelho', estilo='normal')
         return
     
     produto = produtos[id_produto]
     total_em_estoque = produto['quant_estoque']
     
     if quantidade <= 0:
-        print("Quantidade inválida. Insira um valor positivo.")
+        print_terminal("Quantidade inválida. Insira um valor positivo.", cor='amarelo', estilo='normal')
         return
     
     if total_em_estoque < quantidade:
-        print(f'Estoque do produto insuficiente para remover {quantidade} unidades.')
+        print_terminal(f'Estoque do produto insuficiente para remover {quantidade} unidades.', cor='vermelho', estilo='normal')
         return
 
     saida = {
@@ -32,6 +33,6 @@ def registrar_saida(id_produto, quantidade):
     produto['quant_estoque'] -= quantidade 
     salvar_dados('estoque.json', dados)
     
-    print(f"\n \t | Saída registrada em {saida['data']}: {quantidade} unidades do produto {id_produto}. |")
-    print(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} |")
+    print_terminal(f"\n \t | Saída registrada em {saida['data']}: {quantidade} unidades do produto {id_produto}. |", cor='verde', estilo='normal')
+    print_terminal(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} |", cor='verde', estilo='normal')
 
