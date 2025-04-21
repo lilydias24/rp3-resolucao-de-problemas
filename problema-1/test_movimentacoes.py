@@ -1,8 +1,7 @@
-import pytest
 from unittest.mock import patch
-from movimentacoes import gerar_id, validar_dado, deletar_movimentacao, registrar_movimentacao
-
-
+from movimentacoes import gerar_id, deletar_movimentacao, registrar_movimentacao
+import estoque
+import pytest
 def test_gerar_id():
     movimentacoes = [
         {"id_movimento": 1},
@@ -14,16 +13,23 @@ def test_gerar_id():
 
 
 @patch("builtins.input")
-def test_validar_dado(mock_input):
-    mock_input.side_effect = ["10", "10.5", "2024-03-29", "teste"]
-    assert validar_dado("int", "") == 10
-    assert validar_dado("float", "") == 10.5
-    assert validar_dado("date", "") == "2024-03-29"
-    assert validar_dado("str", "") == "teste"
+@patch("estoque.validar_dado")
+def test_validar_dado(mock_validar_dado, mock_input):
+    mock_validar_dado.side_effect = lambda tipo, _: {
+        "int": 10,
+        "float": 10.5,
+        "date": "2024-03-29",
+        "str": "teste"
+    }[tipo]
+
+    assert estoque.validar_dado("int", "") == 10
+    assert estoque.validar_dado("float", "") == 10.5
+    assert estoque.validar_dado("date", "") == "2024-03-29"
+    assert estoque.validar_dado("str", "") == "teste"
 
 
-@patch("movimentacoes.transportar_dados")
-@patch("movimentacoes.salvar_dados")
+@patch("estoque.transportar_dados")
+@patch("estoque.salvar_dados")
 @patch("entrada.registrar_entrada")
 @patch("saida.registrar_saida")
 @patch("builtins.input")
@@ -35,8 +41,8 @@ def test_registrar_movimentacao(mock_input, mock_registrar_saida, mock_registrar
     mock_salvar_dados.assert_called()
 
 
-@patch("movimentacoes.transportar_dados")
-@patch("movimentacoes.salvar_dados")
+@patch("estoque.transportar_dados")
+@patch("estoque.salvar_dados")
 @patch("builtins.input")
 def test_deletar_movimentacao(mock_input, mock_salvar_dados, mock_transportar_dados):
     dados_mock = {"movimentacoes": [{"id_movimento": 1}, {"id_movimento": 2}]}

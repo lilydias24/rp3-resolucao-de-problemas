@@ -1,5 +1,19 @@
 {
     "produtos": {
+        "2": {
+            "nome": "4",
+            "descricao": "5",
+            "valor": 5.0,
+            "quant_estoque": 4,
+            "nivel_min": 6,
+            "entradas": [],
+            "saidas": [
+                {
+                    "quantidade": 2,
+                    "data": "2025-04-04 00:39:27"
+                }
+            ]
+        },
         "7": {
             "nome": "tetse",
             "descricao": "testando",
@@ -9,113 +23,50 @@
             "entradas": [],
             "saidas": []
         },
-        "6": {
-            "nome": "aboobraa",
-            "descricao": "doadmks",
-            "valor": 2.0,
-            "quant_estoque": 50,
-            "nivel_min": 20,
-            "entradas": [],
-            "saidas": []
-        },
         "1": {
-            "nome": "notebook",
-            "descricao": "pc",
-            "valor": 3000.0,
-            "quant_estoque": 20,
+            "nome": "1",
+            "descricao": "1",
+            "valor": 1.0,
+            "quant_estoque": 85,
             "nivel_min": 1,
             "entradas": [
                 {
-                    "quantidade": 5,
-                    "data": "2025-03-31 15:36:52"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-03-31 15:46:01"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-03-31 15:48:58"
+                    "quantidade": 99,
+                    "data": "2025-04-04 00:43:05"
                 }
             ],
             "saidas": [
                 {
                     "quantidade": 5,
-                    "data": "2025-03-31 15:57:39"
+                    "data": "2025-04-07 21:47:03"
                 },
                 {
                     "quantidade": 5,
-                    "data": "2025-03-31 19:20:11"
+                    "data": "2025-04-07 21:48:48"
                 },
                 {
                     "quantidade": 5,
-                    "data": "2025-03-31 19:20:46"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-03-31 19:21:39"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-03-31 20:35:45"
+                    "data": "2025-04-07 21:50:55"
                 }
             ]
         },
-        "2": {
-            "nome": "produto",
-            "descricao": "teste",
-            "valor": 200.0,
-            "quant_estoque": 20,
-            "nivel_min": 2,
+        "9": {
+            "nome": "mango",
+            "descricao": "loco",
+            "valor": 5.0,
+            "quant_estoque": 200,
+            "nivel_min": 100,
+            "entradas": [],
+            "saidas": []
+        },
+        "10": {
+            "nome": "Produto Alterado",
+            "descricao": "Descrição Teste",
+            "valor": 29.9,
+            "quant_estoque": 10,
+            "nivel_min": 5,
             "entradas": [],
             "saidas": []
         }
-    },
-    "movimentacoes": [
-        {
-            "id_movimento": 3,
-            "id_produto": "1",
-            "id_pessoa": 1,
-            "tipo_pessoa": "fornecedor",
-            "tipo_movimento": "entrada",
-            "quantidade": 20,
-            "data": "2025-03-27"
-        },
-        {
-            "id_movimento": 4,
-            "id_produto": "2",
-            "id_pessoa": 1,
-            "tipo_pessoa": "fornecedor",
-            "tipo_movimento": "entrada",
-            "quantidade": 2,
-            "data": "2025-03-03"
-        },
-        {
-            "id_movimento": 5,
-            "id_produto": "2",
-            "id_pessoa": 1,
-            "tipo_pessoa": "cliente",
-            "tipo_movimento": "saida",
-            "quantidade": 4,
-            "data": "2025-03-06"
-        },
-        {
-            "id_movimento": 6,
-            "id_produto": "1",
-            "id_pessoa": 1,
-            "tipo_pessoa": "cliente",
-            "tipo_movimento": "saida",
-            "quantidade": 5,
-            "data": "2025-06-24"
-        },
-        {
-            "id_movimento": 7,
-            "id_produto": "1",
-            "id_pessoa": 1,
-            "tipo_pessoa": "cliente",
-            "tipo_movimento": "saida",
-            "quantidade": 10,
-            "data": "2025-03-31"
-        }
-    ]
+    }
 }
