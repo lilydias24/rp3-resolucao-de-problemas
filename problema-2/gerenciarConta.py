@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 # Tipos
 Conta = Dict[str, str]
 
+# ---------- Funções puras ----------
 
 def hash_senha(senha: str) -> str:
     return hashlib.sha256(senha.encode()).hexdigest()
@@ -39,6 +40,30 @@ def conta_para_linha_csv(conta: Conta) -> List[str]:
 
 def linha_csv_para_conta(linha: Dict[str, str]) -> Conta:
     return {chave: linha[chave] for chave in ["id", "nome", "email", "senha_hash"]}
+
+def editar_conta_lista(
+    contas: List[Conta],
+    id_alvo: str,
+    novo_nome: Optional[str],
+    novo_email: Optional[str],
+    nova_senha: Optional[str]
+) -> List[Conta]:
+    return list(
+        map(
+            lambda conta:
+                {
+                    **conta,
+                    "nome": novo_nome or conta["nome"],
+                    "email": normalizar_email(novo_email) if novo_email else conta["email"],
+                    "senha_hash": hash_senha(nova_senha) if nova_senha else conta["senha_hash"]
+                } if conta["id"] == id_alvo else conta,
+            contas
+        )
+    )
+
+def excluir_conta_lista(contas: List[Conta], id_alvo: str) -> List[Conta]:
+    return list(filter(lambda conta: conta["id"] != id_alvo, contas))
+
 
 # ---------- Entrada/Saída isolada ----------
 
@@ -76,4 +101,24 @@ def _salvar_e_retorna_sucesso(contas: List[Conta], caminho: str, nome: str, emai
 
 def buscar_conta_por_id(caminho: str, id_: str) -> Optional[Conta]:
     return next(filter(lambda c: c["id"] == id_, carregar_contas(caminho)), None)
+
+def editar_conta(caminho: str, id_alvo: str, novo_nome: Optional[str], novo_email: Optional[str], nova_senha: Optional[str]) -> Tuple[bool, str]:
+    contas = carregar_contas(caminho)
+
+    if not any(conta["id"] == id_alvo for conta in contas):
+        return (False, "Conta não encontrada")
+
+    contas_atualizadas = editar_conta_lista(contas, id_alvo, novo_nome, novo_email, nova_senha)
+    salvar_contas(caminho, contas_atualizadas)
+    return (True, "Conta atualizada com sucesso")
+
+def excluir_conta(caminho: str, id_alvo: str) -> Tuple[bool, str]:
+    contas = carregar_contas(caminho)
+
+    if not any(conta["id"] == id_alvo for conta in contas):
+        return (False, "Conta não encontrada")
+
+    contas_atualizadas = excluir_conta_lista(contas, id_alvo)
+    salvar_contas(caminho, contas_atualizadas)
+    return (True, "Conta excluída com sucesso")
 
