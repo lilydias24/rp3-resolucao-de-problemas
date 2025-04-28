@@ -4,7 +4,7 @@ from typing import List, Dict
 CAMINHO_CSV = "contas.csv"
 
 def ambiente_usuario(nome: str):
-    """Ambiente do usuário logado."""
+    """ambiente do usuário logado."""
     while True:
         print(f"\n=== Bem-vindo(a), {nome}! ===")
         print("1. Logout")
@@ -17,7 +17,7 @@ def ambiente_usuario(nome: str):
             print("Opção inválida. Tente novamente.")
 
 def exibir_menu():
-    """Exibe o menu principal."""
+    """exibe o menu principal."""
     while True:
         print("\n=== Sistema de Usuários ===")
         print("1. Criar conta")
