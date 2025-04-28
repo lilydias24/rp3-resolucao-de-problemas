@@ -60,3 +60,44 @@ def login(caminho: str, email: str, senha: str) -> Tuple[bool, str]:
     if conta_encontrada:
         return True, f"Login bem-sucedido! Bem-vindo(a), {conta_encontrada['nome']}."
     return False, "Email ou senha incorretos."
+
+def redefinir_senha(caminho: str, email: str, senha_antiga: str, nova_senha: str) -> Tuple[bool, str, List[Conta]]:
+    """Permite que o usuário redefina sua senha verificando a senha antiga."""
+    contas = carregar_contas(caminho)
+    email_normalizado = normalizar_email(email)
+
+    # ve se o email existe
+    conta_encontrada = next((conta for conta in contas if conta["email"] == email_normalizado), None)
+    if not conta_encontrada:
+        return False, "Email não encontrado.", contas
+
+    # ve se a senha antiga ta certa
+    if conta_encontrada["senha_hash"] != hash_senha(senha_antiga):
+        return False, "Senha antiga incorreta.", contas
+
+    # valida a senha nova
+    if not validar_senha(nova_senha):
+        return False, "Senha inválida. Deve ter pelo menos 8 caracteres.", contas
+
+    # atualiza ela
+    conta_encontrada["senha_hash"] = hash_senha(nova_senha)
+    return True, "Senha redefinida com sucesso!", contas
+
+
+def recuperar_senha(caminho: str, email: str, nova_senha: str) -> Tuple[bool, str, List[Conta]]:
+    """Permite que o usuário redefina sua senha apenas com a validação do email."""
+    contas = carregar_contas(caminho)
+    email_normalizado = normalizar_email(email)
+
+    # ve se o email existe
+    conta_encontrada = next((conta for conta in contas if conta["email"] == email_normalizado), None)
+    if not conta_encontrada:
+        return False, "Email não encontrado.", contas
+
+    # valida a nova senha
+    if not validar_senha(nova_senha):
+        return False, "Senha inválida. Deve ter pelo menos 8 caracteres.", contas
+
+    # atualiza a senha
+    conta_encontrada["senha_hash"] = hash_senha(nova_senha)
+    return True, "Senha redefinida com sucesso!", contas
