@@ -35,6 +35,7 @@ def menu_principal() -> None:
         ("Criar conta", "Novo usuário"),
         ("Fazer login", "Acessar sistema"),
         ("Painel administrativo", "Gerenciar contas"),
+        ("Painel profissional", "Gerenciar dados"),
         ("Sair", "Encerrar programa")
     ])
 
@@ -42,7 +43,8 @@ def menu_principal() -> None:
         menu_criar_conta() if escolha == "1" else
         menu_login() if escolha == "2" else
         menu_administrador() if escolha == "3" else
-        print_terminal("Até logo!", "verde") if escolha == "4" else
+        menu_profissional() if escolha == "4" else
+        print_terminal("Até logo!", "verde") if escolha == "5" else
         (print_terminal("Opção inválida!", "vermelho"), menu_principal())
     ))(input("\n Selecione uma das opções acima : ").strip())
 
