@@ -23,29 +23,45 @@ Desenvolvido como parte da disciplina **Resolução de Problemas III** - **Grupo
 
 Ao longo do desenvolvimento do trabalho, pretende-se adotar a seguinte organização:
 
+```bash
 problema-2/
 │
-├── README.md                     # Este arquivo
-├── main.py                       # Arquivo principal (menu e controle do sistema)
-├── contas.csv                    # Arquivo de armazenamento das contas de usuários
+├── README.md                      # Documentação do projeto
 │
-├── autenticacao/                 # Módulo de autenticação de usuários
-│   ├── __init__.py
-│   ├── autenticacao.py
-│   ├── validacoes.py
-│   ├── utilitarios.py
+├── src/                           # Código-fonte principal
+│   ├── main.py                    # Arquivo principal com o menu e controle geral
+│   │
+│   ├── autenticacao/              # Módulo de autenticação de usuários
+│   │   ├── __init__.py
+│   │   ├── autenticacao.py
+│   │   ├── validacoes.py
+│   │   ├── utilitarios.py
+│   │
+│   ├── administracao/             # Módulo de administração de contas
+│   │   ├── __init__.py
+│   │   ├── contas.py              # (gerenciarConta.py)
+│   │
+│   ├── analise/                   # Módulo de análise de dados de saúde
+│       ├── __init__.py
+│       ├── estatisticas.py        # (parte de analisar_metricas.py)
+│       ├── filtros.py             # (parte de analisar_metricas.py)
+│       ├── importacao.py          # (carregar_dados_saude_lazy.py)
 │
-├── administracao/                # Módulo de administração de contas
-│   ├── __init__.py
-│   ├── gerenciarConta.py
+├── data/                          # Dados persistidos pelo sistema
+│   ├── contas.csv                 # Contas de usuários registradas
+│   └── pacientes/                 # Dados de saúde carregados por paciente
+│       └── joao_batimentos.csv
 │
-├── analise/                      # Módulo de análise de dados de saúde
-│   ├── __init__.py
-│   ├── analisar_metricas.py
-│   ├── carregar_dados_saude_lazy.py
+├── dados/                         # Arquivos de entrada manuais para testes
+│   └── exemplo_batimentos.csv
 │
-├── dados/                        # Pasta para arquivos CSV de saúde (entrada de dados)
-│   └── exemplo_batimentos.csv     # Exemplo opcional para testes
+├── relatorios/                    # Relatórios gerados pelo sistema
+│   └── relatorio_joao.csv
+│
+├── tests/                         # Testes automatizados
+│   ├── test_autenticacao.py
+│   ├── test_estatisticas.py
+│   └── ...
 
 
 ## Como Executar o Projeto
