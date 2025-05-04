@@ -1,0 +1,2 @@
+from .analisar_metricas import calcular_media, calcular_maximo,filtrar_por_data, filtrar_por_batimentos
+from .carregar_dados_saude_lazy import carregar_dados

@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple
 from autenticacao import criar_conta as criar_conta_usuario, login
-from gerenciarConta import editar_conta, excluir_conta, buscar_conta_por_id, criar_conta as criar_conta_admin
-from analisar_metricas import pipeline_analise
+from administracao.gerenciarConta import criar_conta, editar_conta, excluir_conta, buscar_conta_por_id
+from analise.analisar_metricas import pipeline_analise
 from functools import partial
 import os
 
@@ -28,68 +28,56 @@ def mostrar_opcoes(opcoes: List[Tuple[str, str]]) -> None:
         enumerate(opcoes, 1)
     ))
 
-def menu_principal() -> None:
-    """Menu principal do sistema."""
-    cabecalho("Sistema de Dados Médicos")
-    mostrar_opcoes([
-        ("Criar conta", "Novo usuário"),
-        ("Fazer login", "Acessar sistema"),
-        ("Painel administrativo", "Gerenciar contas"),
-        ("Painel profissional", "Gerenciar dados"),
-        ("Sair", "Encerrar programa")
-    ])
+def executar_menu(opcoes: List[Tuple[Callable[[], None], str]], entrada: str, repetir: Callable = None) -> None:
+    try:
+        opcoes[int(entrada) - 1][0]()
+    except (IndexError, ValueError):
+        print_terminal("Opção inválida!", "vermelho")
+        if repetir:
+            repetir()
 
-    (lambda escolha: (
-        menu_criar_conta() if escolha == "1" else
-        menu_login() if escolha == "2" else
-        menu_administrador() if escolha == "3" else
-        menu_profissional() if escolha == "4" else
-        print_terminal("Até logo!", "verde") if escolha == "5" else
-        (print_terminal("Opção inválida!", "vermelho"), menu_principal())
-    ))(input("\n Selecione uma das opções acima : ").strip())
+def menu_principal() -> None:
+    cabecalho("Sistema de Dados Médicos")
+    opcoes = [
+        (menu_criar_conta, "Novo usuário"),
+        (menu_login, "Acessar sistema"),
+        (menu_administrador, "Gerenciar contas"),
+        (menu_profissional, "Gerenciar dados"),
+        (sair, "Encerrar programa")
+    ]
+    mostrar_opcoes(opcoes)
+    executar_menu(opcoes, input("\nSelecione uma opção: ").strip(), menu_principal)
+
+def sair() -> None:
+    print_terminal("Até logo!", "verde")
 
 def menu_criar_conta() -> None:
     """Fluxo de criação de conta para usuários."""
     cabecalho("Criar Conta")
-    obter_input = lambda msg: input(msg).strip()
-    nome, email, senha = map(obter_input, ["Nome: ", "Email: ", "Senha: "])
-
-    (lambda resultado: (
-        print_terminal("Conta criada!", "verde"),
-        menu_principal()
-    ) if resultado[0] else (
-        print_terminal(resultado[1], "vermelho"),
-        menu_criar_conta()
-    ))(criar_conta_usuario("contas.csv", nome, email, senha))
+    nome, email, senha = map(lambda m: input(m).strip(), ["Nome: ", "Email: ", "Senha: "])
+    sucesso, msg, _ = criar_conta("contas.csv", nome, email, senha)
+    print_terminal(msg, "verde" if sucesso else "vermelho")
+    menu_principal()
 
 def menu_login() -> None:
     """Fluxo de login de usuários."""
     cabecalho("Login")
-    email, senha = map(partial(input, "Email: "), ["", "Senha: "])
-
-    (lambda sucesso, msg: (
-        print_terminal(msg, "verde"),
-        menu_profissional() if "@medico.com" in email else menu_paciente()
-    ) if sucesso else (
-        print_terminal(msg, "vermelho"),
-        menu_principal()
-    ))(*login("contas.csv", email, senha))
+    email = input("Email: ").strip()
+    senha = input("Senha: ").strip()
+    sucesso, msg = login("contas.csv", email, senha)
+    print_terminal(msg, "verde" if sucesso else "vermelho")
+    (menu_profissional if "@medico.com" in email else menu_paciente)() if sucesso else menu_principal()
 
 def menu_profissional() -> None:
     """Menu para usuários médicos/profissionais."""
     cabecalho("Área Médica")
-    mostrar_opcoes([
-        ("Analisar dados", "Carregar CSV"),
-        ("Visualizar métricas", "Estatísticas"),
-        ("Voltar", "Menu Principal")
-    ])
-
-    (lambda escolha: (
-        analisar_dados() if escolha == "1" else
-        visualizar_metricas() if escolha == "2" else
-        menu_principal() if escolha == "3" else
-        (print_terminal("Opção inválida!", "vermelho"), menu_profissional())
-    ))(input("Opção: ").strip())
+    opcoes = [
+        (analisar_dados, "Carregar CSV"),
+        (visualizar_metricas, "Estatísticas"),
+        (menu_principal, "Voltar")
+    ]
+    mostrar_opcoes(opcoes)
+    executar_menu(opcoes, input("Opção: ").strip(), menu_profissional)
 
 def menu_paciente() -> None:
     """Menu para usuários pacientes."""
@@ -105,7 +93,6 @@ def analisar_dados() -> None:
     if not os.path.exists(caminho):
         print_terminal("Arquivo não encontrado!", "vermelho")
         return analisar_dados()
-
     try:
         metricas = pipeline_analise(caminho)
         for nome, valor in metricas.items():
@@ -123,28 +110,21 @@ def visualizar_metricas() -> None:
 def menu_administrador() -> None:
     """Menu para administração de contas."""
     cabecalho("Painel Administrativo")
-    mostrar_opcoes([
-        ("Criar conta manualmente", "Cadastrar novo usuário"),
-        ("Editar conta", "Alterar dados de um usuário"),
-        ("Excluir conta", "Remover usuário"),
-        ("Buscar conta por ID", "Ver dados de um usuário"),
-        ("Voltar", "Menu Principal")
-    ])
-
-    (lambda escolha: (
-        criar_conta_admin_manual() if escolha == "1" else
-        editar_conta_manual() if escolha == "2" else
-        excluir_conta_manual() if escolha == "3" else
-        buscar_conta_manual() if escolha == "4" else
-        menu_principal() if escolha == "5" else
-        (print_terminal("Opção inválida!", "vermelho"), menu_administrador())
-    ))(input("Opção: ").strip())
+    opcoes = [
+        (criar_conta_admin_manual, "Cadastrar novo usuário"),
+        (editar_conta_manual, "Alterar dados de um usuário"),
+        (excluir_conta_manual, "Remover usuário"),
+        (buscar_conta_manual, "Ver dados de um usuário"),
+        (menu_principal, "Voltar")
+    ]
+    mostrar_opcoes(opcoes)
+    executar_menu(opcoes, input("Opção: ").strip(), menu_administrador)
 
 def criar_conta_admin_manual() -> None:
     """Cria uma nova conta manualmente (admin)."""
     cabecalho("Criar Conta (Admin)")
-    nome, email, senha = map(lambda msg: input(msg).strip(), ["Nome: ", "Email: ", "Senha: "])
-    sucesso, mensagem = criar_conta_admin("contas.csv", nome, email, senha)
+    nome, email, senha = map(lambda m: input(m).strip(), ["Nome: ", "Email: ", "Senha: "])
+    sucesso, mensagem = criar_conta("contas.csv", nome, email, senha)
     print_terminal(mensagem, "verde" if sucesso else "vermelho")
     menu_administrador()
 
@@ -152,10 +132,10 @@ def editar_conta_manual() -> None:
     """Edita uma conta existente."""
     cabecalho("Editar Conta")
     id_alvo = input("ID da conta: ").strip()
-    novo_nome = input("Novo nome (deixe vazio para manter): ").strip()
-    novo_email = input("Novo email (deixe vazio para manter): ").strip()
-    nova_senha = input("Nova senha (deixe vazio para manter): ").strip()
-    sucesso, mensagem = editar_conta("contas.csv", id_alvo, novo_nome or None, novo_email or None, nova_senha or None)
+    novo_nome = input("Novo nome (deixe vazio): ").strip() or None
+    novo_email = input("Novo email (deixe vazio): ").strip() or None
+    nova_senha = input("Nova senha (deixe vazio): ").strip() or None
+    sucesso, mensagem = editar_conta("contas.csv", id_alvo, novo_nome, novo_email, nova_senha)
     print_terminal(mensagem, "verde" if sucesso else "vermelho")
     menu_administrador()
 
