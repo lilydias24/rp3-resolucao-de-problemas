@@ -1,128 +1,168 @@
+# README Atualizado para o Sistema de Dados Médicos
+
+```markdown
 # Sistema de Dados Médicos - Problema II (2025/1)
 
-Este projeto implementa um sistema voltado para a prática de **resolução de problemas utilizando programação funcional** em Python.  
-O sistema permite o gerenciamento de contas de usuários e a análise de dados médicos de forma simples e intuitiva.
-
-Desenvolvido como parte da disciplina **Resolução de Problemas III** - **Grupo 05**.
+Este projeto implementa um sistema completo para gerenciamento e análise de dados médicos utilizando **programação funcional** em Python. Desenvolvido como parte da disciplina **Resolução de Problemas III** pelo **Grupo 05**.
 
 ## Funcionalidades Principais
 
-- **Cadastro de Usuários**: Criação de novas contas de usuários.
-- **Login de Usuários**: Acesso ao sistema com diferenciação entre paciente e profissional de saúde.
-- **Análise de Dados Médicos**:
-  - Carregamento de arquivos CSV com registros de saúde.
-  - Cálculo de métricas estatísticas: média, mediana, moda, desvio padrão e variância.
-- **Painel Administrativo**:
-  - Criar contas manualmente.
-  - Editar dados de usuários.
-  - Excluir contas.
-  - Buscar contas por ID.
+### Autenticação
+- ✅ Cadastro seguro de usuários (pacientes e profissionais)
+- ✅ Login com diferenciação automática por tipo de usuário
+- ✅ Armazenamento seguro de senhas (hash SHA-256)
 
+### Área do Paciente
+- ➕ Adicionar novos exames médicos
+- 📤 Carregar dados de saúde via arquivos CSV
+- 👀 Visualizar dados pessoais de saúde
+- 📊 Acompanhar métricas pessoais
 
-## Estrutura do Projeto
+### Área Profissional (@medico.com)
+- 📂 Carregar dados de pacientes
+- 🔍 Analisar métricas estatísticas (média, mediana, moda)
+- 📈 Visualizar dados completos
+- 🚨 Filtrar dados anormais/excepcionais
+- 🧪 Gerar datasets sintéticos para testes
 
-Ao longo do desenvolvimento do trabalho, pretende-se adotar a seguinte organização:
+### Administração
+- 👨‍💼 Gerenciamento completo de contas (CRUD)
+- 🔎 Busca detalhada por ID de usuário
+
+## Fluxo Completo do Sistema
+
+```mermaid
+graph TD
+    A[Menu Principal] --> B[Criar Conta]
+    A --> C[Login]
+    A --> D[Painel Admin]
+    A --> E[Sair]
+    
+    B --> F[Validação] --> G[Armazenamento]
+    
+    C --> H{É profissional?}
+    H --> |Sim| I[Menu Profissional]
+    H --> |Não| J[Menu Paciente]
+    
+    I --> K[Analisar Dados]
+    I --> L[Filtrar Anormalidades]
+    I --> M[Gerar Datasets]
+    I --> N[Visualizar Dados]
+    
+    J --> O[Adicionar Exames]
+    J --> P[Carregar Dados]
+    J --> Q[Visualizar Dados]
+    
+    D --> R[Gerenciar Contas]
+    D --> S[Buscar Usuários]
+    
+    K & L & M & N & O & P & Q & R & S --> A
+```
+
+## Estrutura do Projeto Atualizada
 
 ```bash
 problema-2/
 │
-├── README.md                      # Documentação do projeto
-│
-├── src/                           # Código-fonte principal
-│   ├── main.py                    # Arquivo principal com o menu e controle geral
+├── src/
+│   ├── main.py                    # Ponto de entrada do sistema
 │   │
-│   ├── autenticacao/              # Módulo de autenticação de usuários
-│   │   ├── __init__.py
-│   │   ├── autenticacao.py
-│   │   ├── validacoes.py
-│   │   ├── utilitarios.py
+│   ├── autenticacao/              # Módulo de autenticação
+│   │   ├── autenticacao.py        # Lógica de login
+│   │   ├── validacoes.py          # Validações de dados
+│   │   └── utilitarios.py         # Funções auxiliares (hash, normalização)
 │   │
-│   ├── administracao/             # Módulo de administração de contas
-│   │   ├── __init__.py
-│   │   ├── contas.py              # (gerenciarConta.py)
+│   ├── administracao/             # Gerenciamento de contas
+│   │   └── gerenciarConta.py      # CRUD de usuários
 │   │
-│   ├── analise/                   # Módulo de análise de dados de saúde
-│       ├── __init__.py
-│       ├── estatisticas.py        # (parte de analisar_metricas.py)
-│       ├── filtros.py             # (parte de analisar_metricas.py)
-│       ├── importacao.py          # (carregar_dados_saude_lazy.py)
+│   ├── analise/                   # Análise de dados
+│   │   ├── analisar_metricas.py   # Cálculo de estatísticas
+│   │   ├── carregar_dados_saude.py # Carregamento lazy
+│   │   ├── visualizar_dados.py    # Visualização formatada
+│   │   ├── filtrar_dados.py       # Filtragem de valores anormais
+│   │   ├── adicionar_exames.py    # Adição de novos registros
+│   │   └── gerar_dataset_saude.py # Geração de dados sintéticos
+│   │
+│   └── pacientes/                 # Funcionalidades específicas
+│       └── (em desenvolvimento)
 │
-├── data/                          # Dados persistidos pelo sistema
-│   ├── contas.csv                 # Contas de usuários registradas
-│   └── pacientes/                 # Dados de saúde carregados por paciente
-│       └── joao_batimentos.csv
-│
-├── dados/                         # Arquivos de entrada manuais para testes
-│   └── exemplo_batimentos.csv
-│
-├── relatorios/                    # Relatórios gerados pelo sistema
-│   └── relatorio_joao.csv
+├── data/
+│   ├── contas.csv                 # Banco de dados de usuários
+│   ├── datasets/                  # Datasets sintéticos
+│   └── pacientes/                 # Dados reais de pacientes
 │
 ├── tests/                         # Testes automatizados
-│   ├── test_autenticacao.py
-│   ├── test_estatisticas.py
 │   └── ...
+└── README.md                      # Documentação atual
+```
 
+## Como Executar
 
-## Como Executar o Projeto
+1. **Pré-requisitos**:
+   - Python 3.10+
+   - Git (opcional)
 
-1. Instale o **Python 3.10** ou superior.
-2. Clone ou baixe este repositório no seu computador.
-3. Certifique-se de que todos os arquivos estão organizados conforme a estrutura acima.
-4. No terminal, navegue até a pasta `problema-2/`:
-    ```bash
-    cd problema-2
-    ```
-5. Execute o sistema com:
-    ```bash
-    python main.py
-    ```
+2. **Instalação**:
+   ```bash
+   git clone [seu-repositorio]
+   cd problema-2
+   ```
 
+3. **Execução**:
+   ```bash
+   python -m src.main
+   ```
 
-## Tecnologias e Conceitos Aplicados
+4. **Dados de Teste**:
+   - Use `exemplo_batimentos.csv` na pasta `data/` para testes iniciais
+   - Profissionais podem gerar datasets sintéticos pelo menu
 
-- **Python 3.10**
-- **Programação funcional**:
-  - Uso de funções puras.
-  - Uso de `lambda`, `map`, `reduce` e iteradores (`Iterator`).
-- **Modularização**:
-  - Separação de responsabilidade por pastas e arquivos.
-- **Tipagem** com o módulo `typing`.
-- **Leitura e escrita de arquivos CSV**.
-- **Tratamento de erros** e **validação de dados**.
-- **Estilização do terminal** para melhor experiência de usuário.
+## Tecnologias e Paradigmas
 
-##  Área do Paciente
+| Categoria          | Tecnologias/Conceitos                          |
+|--------------------|-----------------------------------------------|
+| Linguagem          | Python 3.10+                                  |
+| Paradigma          | Programação Funcional Pura                    |
+| Técnicas           | Map/Reduce/Filter, Lazy Evaluation           |
+| Segurança          | Hashing SHA-256, Validação Rigorosa          |
+| Persistência       | Arquivos CSV                                 |
+| UI                 | Terminal Colorido                            |
 
-O sistema permite que pacientes criem suas contas de forma independente, utilizando qualquer endereço de e-mail válido.  
-Após realizar login, o paciente é direcionado à "Área do Paciente", onde atualmente é exibida uma mensagem de boas-vindas.
+## Exemplos de Uso
 
-O sistema é arquitetado para permitir funcionalidades como:
-- Gerenciamento de sua conta
-- Consulta e inserção de seus próprios registros médicos.
-- Acompanhamento de métricas de saúde.
-- Visualização de relatórios personalizados de evolução.
+1. **Como paciente**:
+   ```bash
+   > python -m src.main
+   [1] Criar nova conta
+   [2] Login
+   > 1
+   Nome: João Silva
+   Email: joao@gmail.com
+   Senha: ********
+   ```
 
+2. **Como profissional**:
+   ```bash
+   Analisar métricas para batimentos.csv:
+   Média: 72.5
+   Mediana: 71.0
+   Desvio Padrão: 4.2
+   3 registros fora da faixa normal
+   ```
 
-## Exemplos de Funcionalidades
+3. **Como admin**:
+   ```bash
+   [Painel Admin] Buscar conta ID: 5
+   Nome: Dra. Ana
+   Email: ana@medico.com
+   Tipo: Profissional
+   ```
 
-- Login com email de médico (`@medico.com`) leva ao **menu profissional**.
-- Médicos podem carregar um arquivo `.csv` de registros de saúde e ver:
-  - Média dos valores.
-  - Mediana dos valores.
-  - Moda dos valores.
-  - Desvio padrão.
-  - Variância.
+## Próximos Passos
 
-
-## Observações
-
-- **Cadastro de pacientes e médicos** é diferenciado apenas pelo domínio do email (ex.: `joao@medico.com`).
-- As senhas são **armazenadas de forma segura** utilizando hashing SHA-256.
-- O arquivo `contas.csv` é atualizado automaticamente com cada ação de criação, edição ou exclusão de conta.
-
+- [ ] Relatórios personalizados por paciente
 
 ## Equipe
+**Grupo 05 - RP III - UNIPAMPA**  
+@author Emilly Dias  
 
-- Projeto desenvolvido por: **Grupo 05 - RP III - UNIPAMPA (2025/1)**
-- @author Emilly Dias
