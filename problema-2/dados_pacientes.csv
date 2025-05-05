@@ -1,0 +1,6 @@
+Data,Hora,Batimentos,Pressão Sistólica,Pressão Diastólica,Glicose,Obs
+05/05/2025,14:59:43,200,111,222,33,Batimentos: Taquicardia; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:01:24,0022,222,666,33,Batimentos: Bradicardia; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:06:13,2000,3000,4444,55,Batimentos: acima do normal; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:11:49,12255,1232,6323,22,Batimentos: acima do normal; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:20:36,111,22,33,6,Batimentos: acima do normal; Pressão: Normal; Glicose: Hipoglicemia
