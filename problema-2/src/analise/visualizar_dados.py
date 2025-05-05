@@ -1,6 +1,6 @@
 from typing import Iterator, Dict
 from itertools import islice
-from carregar_dados_saude import carregar_dados_saude
+from .carregar_dados_saude import carregar_dados_saude
 import os
 
 def transformar_linha_para_dict(cabecalho: str, linha: str) -> Dict[str, str]:

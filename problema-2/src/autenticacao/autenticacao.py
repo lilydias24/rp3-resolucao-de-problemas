@@ -1,7 +1,7 @@
 import csv
 from typing import Tuple, List, Dict, Iterable
-from utilitarios import hash_senha, normalizar_email
-from validacoes import validar_nome, validar_email, validar_senha
+from .utilitarios import hash_senha, normalizar_email
+from .validacoes import validar_email
 
 Conta = Dict[str, str]
 

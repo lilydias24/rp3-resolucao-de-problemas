@@ -1,7 +1,7 @@
 import csv
 import os
 from typing import Dict, List, Optional, Tuple
-from autenticacao.utilitarios import hash_senha, normalizar_email
+from src.autenticacao.utilitarios import hash_senha, normalizar_email
 
 Conta = Dict[str, str]
 

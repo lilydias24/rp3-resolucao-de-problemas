@@ -1,7 +1,7 @@
 from typing import Iterator, Dict, Callable
 import statistics
 from functools import reduce
-from carregar_dados_saude_lazy import carregar_dados_saude_lazy
+from .carregar_dados_saude import carregar_dados_saude
 from itertools import starmap
 
 RegistroMedico = Dict[str, str]
@@ -52,7 +52,7 @@ def calcular_metricas(valores: Iterator[float]) -> Metricas:
 
 def pipeline_analise(caminho_arquivo: str) -> Metricas:
     return aplicar_pipeline(
-        carregar_dados_saude_lazy(caminho_arquivo),
+        carregar_dados_saude(caminho_arquivo),
         converter_registros,
         extrair_valores_numericos,
         calcular_metricas

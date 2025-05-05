@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple
-from autenticacao import criar_conta as criar_conta_usuario, login
-from administracao.gerenciarConta import criar_conta, editar_conta, excluir_conta, buscar_conta_por_id
-from analise.analisar_metricas import pipeline_analise
+from src.autenticacao.autenticacao import login
+from src.administracao.gerenciarConta import criar_conta, editar_conta, excluir_conta, buscar_conta_por_id
+from src.analise.analisar_metricas import pipeline_analise
 from functools import partial
 import os
 
@@ -55,7 +55,7 @@ def menu_criar_conta() -> None:
     """Fluxo de criação de conta para usuários."""
     cabecalho("Criar Conta")
     nome, email, senha = map(lambda m: input(m).strip(), ["Nome: ", "Email: ", "Senha: "])
-    sucesso, msg, _ = criar_conta("contas.csv", nome, email, senha)
+    sucesso, msg = criar_conta("contas.csv", nome, email, senha)
     print_terminal(msg, "verde" if sucesso else "vermelho")
     menu_principal()
 
