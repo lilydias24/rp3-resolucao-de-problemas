@@ -1,2 +1,4 @@
+# Ignore Python cache files
+__pycache__/
+.pytest_cache/
 problema-2/dataset_saude.csv
-problema-2/.gitignore
