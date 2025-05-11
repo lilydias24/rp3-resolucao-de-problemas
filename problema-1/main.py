@@ -1,5 +1,10 @@
+import pydoc
 from src import pessoas, produtos, movimentacoes, estoque, relatorio
+<<<<<<< HEAD
 from estilo import print_terminal
+=======
+pydoc.writedoc("main")
+>>>>>>> bb34a614cd59ada5f53f0daf9f1fd5973152f4ff
 
 def main():
     while True:

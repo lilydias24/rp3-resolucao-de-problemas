@@ -24,6 +24,11 @@ def registrar_entrada(id_produto, quantidade):
     
     salvar_dados('estoque.json', dados) 
     
+<<<<<<< HEAD
     print_terminal(f"\n \t | Entrada registrada: {quantidade} unidades do produto {id_produto}. |", cor='verde', estilo='normal')
     print_terminal(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} | ", cor='verde', estilo='normal') 
 
+=======
+    print(f"\n \t | Entrada registrada: {quantidade} unidades do produto {id_produto}. |")
+    print(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} | ") 
+>>>>>>> bb34a614cd59ada5f53f0daf9f1fd5973152f4ff
