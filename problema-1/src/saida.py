@@ -1,6 +1,9 @@
 from datetime import datetime
 from .estoque import transportar_dados, salvar_dados
+<<<<<<< HEAD
 from estilo import print_terminal
+=======
+>>>>>>> bb34a614cd59ada5f53f0daf9f1fd5973152f4ff
 
 def registrar_saida(id_produto, quantidade):
     """Registra a saída de um produto no estoque"""
