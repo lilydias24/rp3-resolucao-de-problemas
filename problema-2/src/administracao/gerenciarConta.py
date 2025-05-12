@@ -1,7 +1,7 @@
 import csv
 import os
 from typing import Dict, List, Optional, Tuple
-from utilitarios import hash_senha, normalizar_email
+from src.autenticacao.utilitarios import hash_senha, normalizar_email
 
 Conta = Dict[str, str]
 
@@ -175,12 +175,15 @@ def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, 
     contas = carregar_contas(caminho)
     email_normalizado = normalizar_email(email)
 
-    return (
-        validar_dados(nome, email_normalizado, senha)
-        if not validar_dados(nome, email_normalizado, senha)[0] else
-        (False, "Email já está em uso") if not email_disponivel(email_normalizado, contas) else
-        _salvar_e_retorna_sucesso(contas, caminho, nome, email_normalizado, senha)
-    )
+    valido, mensagem = validar_dados(nome, email_normalizado, senha)
+    if not valido:
+        return (False, mensagem)
+
+    if not email_disponivel(email_normalizado, contas):
+        return (False, "Email já está em uso")
+
+    return _salvar_e_retorna_sucesso(contas, caminho, nome, email_normalizado, senha)
+
 
 def _salvar_e_retorna_sucesso(contas: List[Conta], caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, str]:
     """Salva a nova conta e retorna mensagem de sucesso.
