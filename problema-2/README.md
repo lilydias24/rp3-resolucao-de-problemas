@@ -8,26 +8,26 @@ Este projeto implementa um sistema completo para gerenciamento e análise de dad
 ## Funcionalidades Principais
 
 ### Autenticação
-- ✅ Cadastro seguro de usuários (pacientes e profissionais)
-- ✅ Login com diferenciação automática por tipo de usuário
-- ✅ Armazenamento seguro de senhas (hash SHA-256)
+- Cadastro seguro de usuários (pacientes e profissionais)
+- Login com diferenciação automática por tipo de usuário
+- Armazenamento seguro de senhas (hash SHA-256)
 
 ### Área do Paciente
-- ➕ Adicionar novos exames médicos
-- 📤 Carregar dados de saúde via arquivos CSV
-- 👀 Visualizar dados pessoais de saúde
-- 📊 Acompanhar métricas pessoais
+- Adicionar novos exames médicos
+- Carregar dados de saúde via arquivos CSV
+- Visualizar dados pessoais de saúde
+- Acompanhar métricas pessoais
 
 ### Área Profissional (@medico.com)
-- 📂 Carregar dados de pacientes
-- 🔍 Analisar métricas estatísticas (média, mediana, moda)
-- 📈 Visualizar dados completos
-- 🚨 Filtrar dados anormais/excepcionais
-- 🧪 Gerar datasets sintéticos para testes
+- Carregar dados de pacientes
+- Analisar métricas estatísticas (média, mediana, moda)
+- Visualizar dados completos
+- Filtrar dados anormais/excepcionais
+- Gerar datasets sintéticos para testes
 
 ### Administração
-- 👨‍💼 Gerenciamento completo de contas (CRUD)
-- 🔎 Busca detalhada por ID de usuário
+- Gerenciamento completo de contas (CRUD)
+- Busca detalhada por ID de usuário
 
 ## Fluxo Completo do Sistema
 
@@ -82,17 +82,19 @@ problema-2/
 │   │   ├── filtrar_dados.py       # Filtragem de valores anormais
 │   │   ├── adicionar_exames.py    # Adição de novos registros
 │   │   └── gerar_dataset_saude.py # Geração de dados sintéticos
-│   │
-│   └── pacientes/                 # Funcionalidades específicas
-│       └── (em desenvolvimento)
+│  
+├── relatorios/
+│   ├── __init__.py
+│   ├── relatorios.py               # Funções principais
+│   └── exemplo_relatorio.py        # Exemplos/templates
 │
-├── data/
+├── dados/
 │   ├── contas.csv                 # Banco de dados de usuários
 │   ├── datasets/                  # Datasets sintéticos
 │   └── pacientes/                 # Dados reais de pacientes
 │
-├── tests/                         # Testes automatizados
-│   └── ...
+├── testes/                         # Testes automatizados
+│   └── test_gerenciarConta.py
 └── README.md                      # Documentação atual
 ```
 
@@ -104,7 +106,7 @@ problema-2/
 
 2. **Instalação**:
    ```bash
-   git clone [seu-repositorio]
+   git clone https://gitlab.unipampa.edu.br/ales/rp-iii-2025.1/grupo-05.git
    cd problema-2
    ```
 
@@ -119,7 +121,7 @@ problema-2/
 
 ## Tecnologias e Paradigmas
 
-| Categoria          | Tecnologias/Conceitos                          |
+| Categoria          | Tecnologias/Conceitos                         |
 |--------------------|-----------------------------------------------|
 | Linguagem          | Python 3.10+                                  |
 | Paradigma          | Programação Funcional Pura                    |
@@ -157,10 +159,6 @@ problema-2/
    Email: ana@medico.com
    Tipo: Profissional
    ```
-
-## Próximos Passos
-
-- [ ] Relatórios personalizados por paciente
 
 ## Equipe
 **Grupo 05 - RP III - UNIPAMPA**  
