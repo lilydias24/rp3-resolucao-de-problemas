@@ -8,10 +8,10 @@ def processar_linhas(linhas: Iterator[str], quantidade: int) -> Iterator[str]:
 
 def transformar_linha_para_dict(cabecalho: str, linha: str) -> Dict[str, str]:
     """
-    Transforma uma linha CSV em um dicionário usando o cabeçalho.
+    Transforma uma linha CSV em um dicionário usando o cabeçalho, sem usar for.
     """
-    campos = [campo.strip() for campo in cabecalho.split(',')]  # Remove espaços extras
-    valores = [valor.strip() for valor in linha.split(',')]  # Remove espaços extras
+    campos = list(map(str.strip, cabecalho.split(',')))  # Remove espaços extras dos campos
+    valores = list(map(str.strip, linha.split(',')))  # Remove espaços extras dos valores
     
     # Garante que o número de campos e valores seja igual
     if len(campos) != len(valores):
@@ -20,33 +20,51 @@ def transformar_linha_para_dict(cabecalho: str, linha: str) -> Dict[str, str]:
     
     return dict(zip(campos, valores))
 
+def limitar_observacoes(registro: Dict[str, str]) -> Dict[str, str]:
+    """
+    Limita o campo "Observações" a 100 caracteres, se existir, usando map.
+    """
+    return dict(
+        map(
+            lambda item: (
+                item[0],
+                item[1][:100] + "..." if item[0].lower() == "observações" and len(item[1]) > 100 else item[1]
+            ),
+            registro.items()
+        )
+    )
+
+def exibir_registro(registro: Dict[str, str]) -> None:
+    """
+    Exibe um único registro formatado, usando join e map.
+    """
+    print("-" * 50)
+    print("\n".join(map(lambda item: f"{item[0]}: {item[1]}", registro.items())))
+    print("-" * 50)
+
 def visualizar_dados(dados: Iterator[str], quantidade: int) -> None:
-    
     dados = iter(dados)  # Garante que é um iterador
     try:
         cabecalho = next(dados).strip()  # Primeira linha = Nome das colunas
     except StopIteration:
         print("O arquivo está vazio.")
         return
-    
-    registros = map(lambda linha: transformar_linha_para_dict(cabecalho, linha), islice(dados, quantidade))
-    
-    for registro in registros:
-        print("-" * 50)
-        for campo, valor in registro.items():
-            if campo.lower() == "observações":  # Limita o campo "Observações" a 100 caracteres
-                valor = valor[:100] + "..." if len(valor) > 100 else valor
-            print(f"{campo}: {valor}")
-        print("-" * 50)
+
+    registros = map(
+        lambda linha: limitar_observacoes(transformar_linha_para_dict(cabecalho, linha)),
+        islice(dados, quantidade)
+    )
+
+    list(map(exibir_registro, registros))  # Aplica a exibição a cada registro
 
 if __name__ == "__main__":
-    caminho_arquivo = os.path.join(os.path.dirname(__file__), 'dataset_saude.csv')
+    caminho_arquivo = os.path.join(os.path.dirname(__file__), '..', 'dados', 'dataset_saude.csv')
     
     if not os.path.exists(caminho_arquivo):
         print(f"Erro: O arquivo '{caminho_arquivo}' não foi encontrado.")
     else:
         try:
             dados = carregar_dados_saude(caminho_arquivo)
-            visualizar_dados(dados, quantidade=1)  # Exibe os registros
+            visualizar_dados(dados, quantidade=3)  # Exibe os registros
         except Exception as e:
             print(f"Ocorreu um erro ao processar os dados: {e}")

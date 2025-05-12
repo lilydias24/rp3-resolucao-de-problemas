@@ -1,4 +1,4 @@
-# Ignore Python cache files
+# Ignora arquivos e pastas desnecessários
 __pycache__/
 .pytest_cache/
-problema-2/dataset_saude.csv
+dataset_saude.csv
