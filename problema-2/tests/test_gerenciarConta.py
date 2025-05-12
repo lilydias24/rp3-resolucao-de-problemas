@@ -12,7 +12,7 @@ from src.administracao.gerenciarConta import (
 )
 
 # Caminho para o arquivo contas.csv
-CAMINHO_CONTAS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'contas.csv'))
+CAMINHO_CONTAS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dados', 'contas.csv'))
 
 def test_criar_conta():
     # Teste de criação de conta válida
