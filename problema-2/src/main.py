@@ -16,6 +16,7 @@ import sys
 
 # Importações relativas
 from src.autenticacao.autenticacao import login, criar_conta
+from src.administracao.gerenciarConta import buscar_conta_por_id, editar_conta, excluir_conta
 from src.analise.carregar_dados_saude import carregar_dados_saude
 from src.analise.analisar_metricas import pipeline_analise
 from src.analise.visualizar_dados import visualizar_dados
