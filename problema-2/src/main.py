@@ -1,3 +1,4 @@
+import csv
 from typing import Callable, List, Tuple, Dict
 from src.autenticacao.autenticacao import login
 from src.administracao.gerenciarConta import criar_conta, editar_conta, excluir_conta, buscar_conta_por_id
