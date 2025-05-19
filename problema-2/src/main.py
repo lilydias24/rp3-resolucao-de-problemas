@@ -3,11 +3,10 @@ Sistema de Gerenciamento de Dados Médicos
 
 Interface principal que integra todos os módulos do sistema:
 - Autenticação de usuários (pacientes e profissionais)
-- Gerenciamento de contas
+- Gerenciamento de contas de pacientes
 - Análise de dados médicos
 - Visualização e filtragem de registros
 - Geração de relatórios e datasets sintéticos
-- Operações administrativas
 
 Este módulo implementa a interface principal do sistema, seguindo princípios de
 programação funcional e garantindo a integração de todos os componentes.
@@ -37,20 +36,20 @@ def compose(*functions):
     return reduce(lambda f, g: lambda x: f(g(x)), functions)
 
 # Importações relativas
-from src.autenticacao.autenticacao import login, criar_conta
-from src.administracao.gerenciarConta import buscar_conta_por_id, editar_conta, excluir_conta
-from src.analise.carregar_dados_saude import carregar_dados_saude
-from src.analise.analisar_metricas import pipeline_analise
-from src.analise.visualizar_dados import visualizar_dados
-from src.analise.filtrar_dados import filtrar_registros, obter_criterios_padrao
-from src.analise.adicionar_exames import adicionar_exames
-from src.analise.gerador_dataset_saude import gerar_dataset_csv
+from .autenticacao.autenticacao import login, criar_conta
+from .administracao.gerenciarConta import buscar_conta_por_id, editar_conta, excluir_conta
+from .analise.carregar_dados_saude import carregar_dados_saude
+from .analise.analisar_metricas import pipeline_analise
+from .analise.visualizar_dados import visualizar_dados
+from .analise.filtrar_dados import filtrar_registros, obter_criterios_padrao
+from .analise.adicionar_exames import adicionar_exames
+from .analise.gerador_dataset_saude import gerar_dataset_csv
 from relatorios.relatorios import gerar_relatorio
 
 # Configurações de caminhos
-CAMINHO_BASE = Path(__file__).parent
-CAMINHO_CONTAS = CAMINHO_BASE / "data/contas.csv"
-CAMINHO_DADOS = CAMINHO_BASE / "data/pacientes"
+CAMINHO_BASE = Path(__file__).parent.parent
+CAMINHO_CONTAS = CAMINHO_BASE / "dados/contas.csv"
+CAMINHO_DADOS = CAMINHO_BASE / "dados/pacientes"
 
 # Tipos
 OpcaoMenu = Tuple[Callable[[], None], str]
@@ -179,7 +178,6 @@ def menu_principal() -> None:
     Este é o ponto de entrada principal do sistema, oferecendo opções para:
     - Criar uma nova conta
     - Realizar login
-    - Acessar o painel administrativo
     - Sair do sistema
     
     Returns:
@@ -189,7 +187,6 @@ def menu_principal() -> None:
     opcoes = [
         (menu_criar_conta, "Criar conta"),
         (menu_login, "Login"),
-        (menu_administrador, "Acesso Administrativo"),
         (sair, "Sair")
     ]
     mostrar_menu(opcoes)
@@ -202,6 +199,7 @@ def menu_paciente() -> None:
     - Adicionar novos exames
     - Visualizar dados pessoais
     - Carregar dados de saúde
+    - Gerenciar conta
     
     Returns:
         None: A função gerencia a navegação entre as opções do paciente.
@@ -211,6 +209,7 @@ def menu_paciente() -> None:
         (partial(adicionar_exames), "Adicionar exames"),
         (partial(visualizar_dados_paciente), "Visualizar meus dados"),
         (partial(carregar_dados_paciente), "Carregar dados de saúde"),
+        (partial(menu_gerenciar_conta), "Gerenciar minha conta"),
         (menu_principal, "Voltar")
     ]
     mostrar_menu(opcoes)
@@ -240,29 +239,6 @@ def menu_profissional() -> None:
     ]
     mostrar_menu(opcoes)
     processar_escolha(opcoes, menu_profissional)
-
-def menu_administrador() -> None:
-    """Menu de administração do sistema.
-    
-    Oferece funcionalidades de gerenciamento:
-    - Criação manual de contas
-    - Edição de contas existentes
-    - Exclusão de contas
-    - Busca de contas
-    
-    Returns:
-        None: A função gerencia a navegação entre as opções administrativas.
-    """
-    criar_cabecalho("Painel Administrativo")
-    opcoes = [
-        (partial(criar_conta_admin), "Criar conta manual"),
-        (partial(editar_conta_admin), "Editar conta"),
-        (partial(excluir_conta_admin), "Excluir conta"),
-        (partial(buscar_conta_admin), "Buscar conta"),
-        (menu_principal, "Voltar")
-    ]
-    mostrar_menu(opcoes)
-    processar_escolha(opcoes, menu_administrador)
 
 def visualizar_dados_paciente() -> None:
     """Interface para visualização de dados do paciente.
@@ -419,110 +395,49 @@ def gerar_dataset_sintetico() -> None:
         imprimir_colorido("Valor inválido!", "vermelho")
         menu_profissional()
 
-def criar_conta_admin() -> None:
-    """Cria novas contas com privilégios administrativos.
-    
-    Permite ao administrador criar contas manualmente,
-    definindo todos os parâmetros necessários.
-    
-    Returns:
-        None: A função cria a conta e retorna ao menu administrativo.
-    """
-    criar_cabecalho("Criar Conta (Admin)")
-    campos = ["Nome", "Email", "Senha", "Tipo (paciente/profissional)"]
-    dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
-    email = dados[1] if dados[3] != "profissional" else f"{dados[1].split('@')[0]}@medico.com"
-    compose(
-        lambda _: menu_administrador(),
-        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
-        lambda dados: criar_conta(CAMINHO_CONTAS, dados[0], email, dados[2])
-    )(dados)
-
-def editar_conta_admin() -> None:
-    """Modifica informações de contas existentes.
-    
-    Permite ao administrador editar informações de contas
-    existentes, mantendo os dados não modificados.
-    
-    Returns:
-        None: A função edita a conta e retorna ao menu administrativo.
-    """
-    criar_cabecalho("Editar Conta")
-    id_conta = input("ID da conta: ").strip()
-    campos = ["Novo nome (ENTER para manter)", "Novo email", "Nova senha"]
-    dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
-    compose(
-        lambda _: menu_administrador(),
-        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
-        lambda dados: editar_conta(
-            CAMINHO_CONTAS,
-            id_conta,
-            dados[0] or None,
-            dados[1] or None,
-            dados[2] or None
-        )
-    )(dados)
-
-def excluir_conta_admin() -> None:
-    """Remove contas do sistema.
-    
-    Permite ao administrador excluir contas do sistema
-    de forma segura, com confirmação.
-    
-    Returns:
-        None: A função exclui a conta e retorna ao menu administrativo.
-    """
-    criar_cabecalho("Excluir Conta")
-    id_conta = input("ID da conta: ").strip()
-    compose(
-        lambda _: menu_administrador(),
-        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
-        lambda id: excluir_conta(CAMINHO_CONTAS, id)
-    )(id_conta)
-
-def buscar_conta_admin() -> None:
-    """Localiza e exibe detalhes de contas.
-    
-    Permite ao administrador buscar e visualizar detalhes
-    de contas específicas no sistema.
-    
-    Returns:
-        None: A função exibe os detalhes da conta e retorna ao menu administrativo.
-    """
-    criar_cabecalho("Buscar Conta")
-    id_conta = input("ID da conta: ").strip()
-    compose(
-        lambda _: menu_administrador(),
-        lambda conta: list(starmap(
-            lambda k, v: imprimir_colorido(f"{k}: {v}", "ciano"),
-            conta.items()
-        )) if conta else None,
-        lambda id: buscar_conta_por_id(CAMINHO_CONTAS, id)
-    )(id_conta)
-
 def menu_criar_conta() -> None:
     """Interface para criação de conta.
     
-    Permite ao usuário criar uma nova conta no sistema,
-    definindo seu tipo (paciente ou profissional).
+    Permite ao usuário criar uma nova conta no sistema.
+    O tipo de usuário é determinado pelo email:
+    - @medico.com: profissional
+    - outros: paciente
     
     Returns:
         None: A função cria a conta e retorna ao menu principal.
     """
     criar_cabecalho("Criar Conta")
-    campos = ["Nome", "Email", "Senha", "Tipo (paciente/profissional)"]
-    dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
+    
+    # Solicita nome e email
+    nome = input("Nome: ").strip()
+    email = input("Email: ").strip()
+    
+    # Mostra requisitos da senha
+    imprimir_colorido("\nRequisitos da senha:", "amarelo")
+    imprimir_colorido("- Pelo menos 8 caracteres", "amarelo")
+    imprimir_colorido("- Pelo menos uma letra maiúscula", "amarelo")
+    imprimir_colorido("- Pelo menos uma letra minúscula", "amarelo")
+    imprimir_colorido("- Pelo menos um número", "amarelo")
+    print()  # Linha em branco para separar
+    
+    # Solicita a senha
+    senha = input("Senha: ").strip()
+    
+    # Cria a conta
     compose(
         lambda _: menu_principal(),
         lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
         lambda dados: criar_conta(CAMINHO_CONTAS, dados[0], dados[1], dados[2])
-    )(dados)
+    )((nome, email, senha))
 
 def menu_login() -> None:
     """Interface para login.
     
     Permite ao usuário realizar login no sistema,
     redirecionando para o menu apropriado após autenticação.
+    O tipo de usuário é determinado pelo email:
+    - @medico.com: profissional
+    - outros: paciente
     
     Returns:
         None: A função autentica o usuário e redireciona para o menu apropriado.
@@ -531,8 +446,9 @@ def menu_login() -> None:
     email = input("Email: ").strip()
     senha = input("Senha: ").strip()
     compose(
-        lambda tipo: menu_profissional() if tipo == "profissional" else menu_paciente(),
-        lambda resultado: resultado[1] if resultado[0] else menu_principal(),
+        lambda resultado: (
+            menu_profissional() if "@medico.com" in resultado[1]["email"] else menu_paciente()
+        ) if resultado[0] else menu_principal(),
         lambda credenciais: login(CAMINHO_CONTAS, credenciais[0], credenciais[1])
     )((email, senha))
 
@@ -545,6 +461,53 @@ def sair() -> None:
         None: A função encerra o programa.
     """
     sys.exit(0)
+
+def menu_gerenciar_conta() -> None:
+    """Menu de gerenciamento de conta do paciente."""
+    criar_cabecalho("Gerenciar Minha Conta")
+    
+    def visualizar():
+        criar_cabecalho("Meus Dados Cadastrais")
+        email = input("Email: ").strip()
+        conta = buscar_conta_por_id(CAMINHO_CONTAS, email)
+        if conta:
+            list(starmap(
+                lambda k, v: imprimir_colorido(f"{k}: {v}", "ciano"),
+                conta.items()
+            ))
+        menu_gerenciar_conta()
+    
+    def editar():
+        criar_cabecalho("Editar Meus Dados")
+        email = input("Email atual: ").strip()
+        campos = ["Novo nome (ENTER para manter)", "Novo email", "Nova senha"]
+        dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
+        resultado = editar_conta(
+            CAMINHO_CONTAS,
+            email,
+            dados[0] or None,
+            dados[1] or None,
+            dados[2] or None
+        )
+        imprimir_colorido(resultado[1], "verde" if resultado[0] else "vermelho")
+        menu_gerenciar_conta()
+    
+    def excluir():
+        criar_cabecalho("Excluir Minha Conta")
+        email = input("Email: ").strip()
+        senha = input("Senha (para confirmar): ").strip()
+        resultado = excluir_conta(CAMINHO_CONTAS, email)
+        imprimir_colorido(resultado[1], "verde" if resultado[0] else "vermelho")
+        menu_principal()
+    
+    opcoes = [
+        (visualizar, "Visualizar meus dados"),
+        (editar, "Editar informações"),
+        (excluir, "Excluir minha conta"),
+        (menu_paciente, "Voltar")
+    ]
+    mostrar_menu(opcoes)
+    processar_escolha(opcoes, menu_gerenciar_conta)
 
 if __name__ == "__main__":
     menu_principal()
