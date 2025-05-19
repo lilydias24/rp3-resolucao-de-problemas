@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from gerenciarConta import (
+from src.administracao.gerenciarConta import (
     criar_conta,
     buscar_conta_por_id,
     editar_conta,
@@ -64,6 +64,7 @@ def test_excluir_conta():
     assert sucesso is True
     assert mensagem == "Conta excluída com sucesso"
 
+def test_excluir_conta_inexistente():
     # Teste de exclusão de conta inexistente
     sucesso, mensagem = excluir_conta(CAMINHO_CONTAS, "3")
     assert sucesso is False
