@@ -3,92 +3,87 @@ from pathlib import Path
 from typing import List, Dict, Callable
 
 dir_base = Path(__file__).parent
-path = dir_base.joinpath( "..", "data","dados_pacientes.csv").resolve()
+path = dir_base.joinpath("..", "data", "dados_pacientes.csv").resolve()
 
-head = ["Data", "Hora", "Batimentos", "Pressão Sistólica", "Pressão Diastólica", "Glicose", "Obs"]
+# novo header --> pressão
+head = ["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"]
 
-'''
-verifica se o csv existe no sistema
-'''
-def ler_csv(path) -> List[Dict[str, str]]:
+
+def ler_csv(path: Path) -> List[Dict[str, str]]:
+    """Lê todo o CSV (ou retorna lista vazia se não existir)."""
     try:
-        with open(path, "r", encoding="utf-8", newline="") as file:
-            return list(csv.DictReader(file))
-        
+        with open(path, "r", encoding="utf-8", newline="") as f:
+            return list(csv.DictReader(f))
     except FileNotFoundError:
         return []
 
-'''
-verifica se o valor é inteiro através do type casting
-'''
-def verifica_inteiro(valor_entrada: str):
+
+def verifica_inteiro(valor_entrada: str) -> bool:
+    """True se valor_entrada for um inteiro."""
     try:
         int(valor_entrada.strip())
         return True
     except (ValueError, AttributeError):
         return False
-    
-    
-'''
-classifica os valores de entrada
-'''
+
+
+
 valores_entrada: Dict[str, Callable[[int], bool]] = {
     "Batimentos": lambda x: 60 <= x <= 100,
-    "Pressão Sistólica": lambda x: x < 120,
-    "Pressão Diastólica": lambda x: x < 80,
-    "Glicose": lambda x: 70 <= x <= 99
+    "Pressão":    lambda x: 90 <= x <= 120,
+    "Glicose":    lambda x: 70 <= x <= 99
 }
 
-'''
-verifica se todos os dados são válidos
-'''
-def filtrar_entradas(registros) -> List[Dict[str, str]]:
-    def nao_valido(reg: Dict[str, str]):
+
+def filtrar_entradas(registros: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """
+    Retorna só os registros onde algum campo:
+    - não é inteiro, ou
+    - está fora da faixa normal.
+    """
+    def invalido(rec: Dict[str, str]) -> bool:
         return any(
-            (not verifica_inteiro(reg[field])) or
-            (not valores_entrada[field](int(reg[field].strip())))
-            for field in valores_entrada
+            (not verifica_inteiro(rec[campo])) or
+            (not valores_entrada[campo](int(rec[campo].strip())))
+            for campo in valores_entrada
         )
+    return list(filter(invalido, registros))
 
-    return list(filter(nao_valido, registros))
 
-def segmentar_categoria(dados_segmentar):
+def segmentar_categoria(dados: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
+    """
+    Agrupa, por cada campo, a lista de registros inválidos ou fora da faixa.
+    """
     return {
-        field: list(filter(
-            lambda rec, f=field: (
-                    (not verifica_inteiro(rec[f])) or
-                    (not valores_entrada[f](int(rec[f].strip())))
+        campo: list(filter(
+            lambda rec, f=campo: (
+                (not verifica_inteiro(rec[f])) or
+                (not valores_entrada[f](int(rec[f].strip())))
             ),
-            dados_segmentar
+            dados
         ))
-        for field in valores_entrada
+        for campo in valores_entrada
     }
 
 
 def main():
     if not path.exists():
-        print("CSV não encontrado. Execute primeiro o save() para criar o arquivo.")
+        print("CSV não encontrado. Rode primeiro o save() para gerar o arquivo com o novo cabeçalho.")
         return
 
     registros = ler_csv(path)
-
     fora = filtrar_entradas(registros)
-    print(f"\nTotal de registros fora da faixa normal ou inválidos: {len(fora)}\n")
+    print(f"\nTotal de registros inválidos ou fora do normal: {len(fora)}\n")
 
     segmentos = segmentar_categoria(fora)
     for campo, regs in segmentos.items():
-        print(f"{campo}: {len(regs)} registro(s) fora do normal ou inválidos\n")
+        print(f"{campo}: {len(regs)} registro(s) fora do normal\n")
 
-    '''
-    exibe todos os valores anormais por categoria
-    '''
+
     for campo, regs in segmentos.items():
-        print(f"\n– {campo} ({len(regs)} registro(s) fora do normal):")
+        print(f"\n– {campo} ({len(regs)}):")
         for rec in regs:
-            data = rec["Data"]
-            hora = rec["Hora"]
-            valor = rec[campo]
-            print(f"  {data} {hora} — {campo}: {valor}")
+            print(f"  {rec['Data']} {rec['Hora']} — {campo}: {rec[campo]}")
 
 if __name__ == "__main__":
     main()

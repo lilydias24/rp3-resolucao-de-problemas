@@ -4,81 +4,98 @@ from datetime import datetime
 from typing import List, Dict
 
 dir_base = Path(__file__).parent
-path = dir_base.joinpath( "..", "data","dados_pacientes.csv").resolve()
+path = dir_base.joinpath("..", "data", "dados_pacientes.csv").resolve()
 
 
-'''
-verifica se o arquivo existe no sistema
-'''
-def verifica_arquivo(path):
-    try:
-        with open(path, "r", newline="", encoding="utf-8") as file:
-            header = csv.reader(file)
-            return header
-            
-    except FileNotFoundError:
-        return []
+def verifica_arquivo(path: Path):
+    """Garante que o arquivo existe e tem cabeçalho."""
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # cria arquivo vazio com cabeçalho
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"])
 
 
-'''
-recece dados do usuário fornecendo hora, data e observações dinamicamente
-'''
 def recebe_dados() -> List[Dict[str, str]]:
-    hora = datetime.now()
-    base = {"Data": hora.strftime("%d/%m/%Y"), "Hora": hora.strftime("%H:%M:%S")}
-
-    dados_header = ("Batimentos", "Pressão Sistólica", "Pressão Diastólica", "Glicose")
-    entradas = {campo: input(f"Insira {campo}: ") for campo in dados_header}
+    """Lê Batimentos, Pressão e Glicose do usuário, anotando data/hora."""
+    agora = datetime.now()
+    base = {
+        "Data": agora.strftime("%d/%m/%Y"),
+        "Hora": agora.strftime("%H:%M:%S")
+    }
+    campos = ("Batimentos", "Pressão", "Glicose")
+    entradas = {campo: input(f"Insira {campo}: ") for campo in campos}
     registro = {**base, **entradas, "Obs": ""}
     return [registro]
 
 
-'''
-verifica se o numero é inteiro através do type casting
-'''
-def verifica_inteiro(input_user: str) -> bool:
+def verifica_inteiro(valor: str) -> bool:
+    """Retorna True se valor puder ser convertido para int."""
     try:
-        int(input_user)
+        int(valor)
         return True
     except ValueError:
         return False
 
-'''
-classifica os dados de batimentos, pressão sistólica/diastólica e glicose e adiciona os valores nas observações
-'''
-def classifica_entrada(valor):
-    bpm, sist, diast, glic = (
-        map(int, (valor["Batimentos"], valor["Pressão Sistólica"], valor["Pressão Diastólica"], valor["Glicose"])))
-    batimentos = "abaixo do normal" if bpm < 60 else "Normal" if bpm <= 100 else "acima do normal"
 
-    pressao = ("Normal" if sist < 120 and diast < 80 else "Elevada" if 120 <= sist < 130 and diast < 80
-                else "Hipertensão Estágio 1" if (130 <= sist < 140) or (80 <= diast < 90)
-                else "Hipertensão Estágio 2")
-
-    glicose = ("Hipoglicemia" if glic < 70 else "Normal" if glic <= 99 else "Prediabetes" if glic <= 125
-                else "Diabetes")
-
-    return "; ".join([f"Batimentos: {batimentos}", f"Pressão: {pressao}", f"Glicose: {glicose}"])
+def classifica_entrada(valor: Dict[str, str]) -> str:
+    """Classifica batimentos, pressão e glicose e monta string de observações."""
+    bpm = int(valor["Batimentos"])
+    pressao = int(valor["Pressão"])
+    glic = int(valor["Glicose"])
 
 
-'''
-salva os dados fornecidos pelo usuario no documento "dados_pacientes.csv"
-'''
+    batimentos = (
+        "Bradicardia" if bpm < 60 else
+        "Normal"   if bpm <= 100 else
+        "Taquicardia"
+    )
+
+    pressao_class = (
+        "Hipotensão"         if pressao < 90 else
+        "Normal"             if pressao <= 120 else
+        "Pré-hipertensão"    if pressao <= 139 else
+        "Hipertensão"
+    )
+
+    
+    glicose = (
+        "Hipoglicemia" if glic < 70 else
+        "Normal"       if glic <= 99 else
+        "Prediabetes"  if glic <= 125 else
+        "Diabetes"
+    )
+
+    return "; ".join([
+        f"Batimentos: {batimentos}",
+        f"Pressão: {pressao_class}",
+        f"Glicose: {glicose}"
+    ])
+
+
 def save():
     verifica_arquivo(path)
     registros = recebe_dados()
-    campos_val = ("Batimentos", "Pressão Sistólica", "Pressão Diastólica", "Glicose")
-    if not all(verifica_inteiro(valor[c]) for valor in registros for c in campos_val):
+
+    
+    campos_num = ("Batimentos", "Pressão", "Glicose")
+    if not all(verifica_inteiro(rec[c]) for rec in registros for c in campos_num):
         print("Erro: todos os valores devem ser inteiros.")
         return
 
-    registros_classificados = list(map(lambda valor: {**valor, "Obs": classifica_entrada(valor)}, registros))
 
-    with open(path,"w", newline="", encoding="utf-8") as file:
-        head = ["Data", "Hora", "Batimentos", "Pressão Sistólica", "Pressão Diastólica", "Glicose", "Obs"]
-        pen = csv.DictWriter(file, fieldnames=head)
-        pen.writeheader(head)
-        pen.writerows(registros_classificados)
+    registros_classificados = [
+        {**rec, "Obs": classifica_entrada(rec)}
+        for rec in registros
+    ]
+
+    
+    with open(path, "w", newline="", encoding="utf-8") as file:
+        head = ["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"]
+        writer = csv.DictWriter(file, fieldnames=head)
+        writer.writeheader()
+        writer.writerows(registros_classificados)
 
     print("Dados salvos com sucesso!")
 
