@@ -33,10 +33,10 @@ def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, 
     email_normalizado = normalizar_email(email)
 
     validacoes = [
-        (validar_nome(nome), "nome inválido. Deve ter pelo menos 3 caracteres."),
-        (validar_email(email), "email inválido."),
-        (validar_senha(senha), "senha inválida. Deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número."),
-        (not email_existe(contas, email_normalizado), "email já está em uso.")
+        (validar_nome(nome), "Nome Inválido. Deve ter pelo menos 3 caracteres."),
+        (validar_email(email), "Email Inválido."),
+        (validar_senha(senha), "Senha Inválida. Deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número."),
+        (not email_existe(contas, email_normalizado), "Email já está em uso.")
     ]
 
     erros = filter(lambda v: not v[0], validacoes)
@@ -48,7 +48,7 @@ def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, 
     nova_conta = criar_conta_dict(str(len(contas) + 1), nome, email, senha)
     contas_atualizadas = contas + [nova_conta]
     salvar_contas(caminho, contas_atualizadas)
-    return True, "conta criada com sucesso!", contas_atualizadas
+    return True, "Conta criada com sucesso!", contas_atualizadas
 
 def login(caminho: str, email: str, senha: str) -> Tuple[bool, str]:
     """Realiza o login verificando se email e senha batem com alguma conta."""

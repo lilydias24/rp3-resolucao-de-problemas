@@ -49,7 +49,7 @@ from relatorios.relatorios import gerar_relatorio
 # Configurações de caminhos
 CAMINHO_BASE = Path(__file__).parent.parent
 CAMINHO_CONTAS = CAMINHO_BASE / "dados/contas.csv"
-CAMINHO_DADOS = CAMINHO_BASE / "dados/pacientes"
+CAMINHO_DADOS = CAMINHO_BASE / "dados/dados_pacientes"
 
 # Tipos
 OpcaoMenu = Tuple[Callable[[], None], str]
