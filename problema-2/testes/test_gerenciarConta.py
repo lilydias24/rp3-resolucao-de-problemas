@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.administracao.gerenciarConta import (
+from gerenciarConta import (
     criar_conta,
     buscar_conta_por_id,
     editar_conta,

@@ -2,6 +2,7 @@ import csv
 from typing import Tuple, List, Dict, Iterable
 from .utilitarios import hash_senha, normalizar_email
 from .validacoes import validar_email, validar_nome, validar_senha
+from ..administracao.gerenciarConta import salvar_contas
 
 Conta = Dict[str, str]
 
@@ -12,15 +13,6 @@ def carregar_contas(caminho: str) -> List[Conta]:
             return list(csv.DictReader(arquivo))
     except FileNotFoundError:
         return []
-
-def salvar_contas(caminho: str, contas: Iterable[Conta]) -> None:
-    """Salva as contas no arquivo CSV."""
-    with open(caminho, mode="w", newline="", encoding="utf-8") as arquivo:
-        campos = ["id", "nome", "email", "senha_hash"]
-        escritor = csv.DictWriter(arquivo, fieldnames=campos)
-        escritor.writeheader()
-        escritor.writerows(contas)
-
 
 def criar_conta_dict(id_: str, nome: str, email: str, senha: str) -> Conta:
     """cria um dicionário de conta"""
@@ -43,7 +35,7 @@ def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, 
     validacoes = [
         (validar_nome(nome), "nome inválido. Deve ter pelo menos 3 caracteres."),
         (validar_email(email), "email inválido."),
-        (validar_senha(senha), "senha inválida. Deve ter pelo menos 8 caracteres."),
+        (validar_senha(senha), "senha inválida. Deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número."),
         (not email_existe(contas, email_normalizado), "email já está em uso.")
     ]
 
@@ -54,7 +46,9 @@ def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, 
         return erro
 
     nova_conta = criar_conta_dict(str(len(contas) + 1), nome, email, senha)
-    return True, "conta criada com sucesso!", contas + [nova_conta]
+    contas_atualizadas = contas + [nova_conta]
+    salvar_contas(caminho, contas_atualizadas)
+    return True, "conta criada com sucesso!", contas_atualizadas
 
 def login(caminho: str, email: str, senha: str) -> Tuple[bool, str]:
     """Realiza o login verificando se email e senha batem com alguma conta."""
