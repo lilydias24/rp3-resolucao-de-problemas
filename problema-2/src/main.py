@@ -424,7 +424,7 @@ def menu_criar_conta() -> None:
     senha = input("Senha: ").strip()
     
     # Cria a conta
-    sucesso, mensagem, _ = criar_conta(CAMINHO_CONTAS, nome, email, senha)
+    sucesso, mensagem = criar_conta(CAMINHO_CONTAS, nome, email, senha)
     imprimir_colorido(mensagem, "verde" if sucesso else "vermelho")
     menu_principal()
 
@@ -440,20 +440,27 @@ def menu_login() -> None:
     Returns:
         None: A função autentica o usuário e redireciona para o menu apropriado.
     """
-    criar_cabecalho("Login")
-    email = input("Email: ").strip()
-    senha = input("Senha: ").strip()
-    
-    sucesso, mensagem = login(CAMINHO_CONTAS, email, senha)
-    imprimir_colorido(mensagem, "verde" if sucesso else "vermelho")
-    
-    if sucesso:
-        if "@medico.com" in email:
-            menu_profissional()
+    while True:
+        criar_cabecalho("Login")
+        email = input("Email: ").strip()
+        senha = input("Senha: ").strip()
+        
+        sucesso, mensagem = login(CAMINHO_CONTAS, email, senha)
+        imprimir_colorido(mensagem, "verde" if sucesso else "vermelho")
+        
+        if sucesso:
+            if "@medico.com" in email:
+                menu_profissional()
+            else:
+                menu_paciente()
+            break
         else:
-            menu_paciente()
-    else:
-        menu_principal()
+            opcoes = [
+                (lambda: None, "Tentar novamente"),
+                (menu_principal, "Voltar ao menu principal")
+            ]
+            mostrar_menu(opcoes)
+            processar_escolha(opcoes, menu_login)
 
 def sair() -> None:
     """Encerra o programa.
@@ -472,7 +479,11 @@ def menu_gerenciar_conta() -> None:
     def visualizar():
         criar_cabecalho("Meus Dados Cadastrais")
         email = input("Email: ").strip()
-        conta = buscar_conta_por_id(CAMINHO_CONTAS, email)
+        contas = carregar_contas(CAMINHO_CONTAS)
+        conta = next(
+            filter(lambda c: c["email"] == normalizar_email(email), contas),
+            None
+        )
         if conta:
             list(starmap(
                 lambda k, v: imprimir_colorido(f"{k}: {v}", "ciano"),
@@ -483,11 +494,21 @@ def menu_gerenciar_conta() -> None:
     def editar():
         criar_cabecalho("Editar Meus Dados")
         email = input("Email atual: ").strip()
+        contas = carregar_contas(CAMINHO_CONTAS)
+        conta = next(
+            filter(lambda c: c["email"] == normalizar_email(email), contas),
+            None
+        )
+        if not conta:
+            imprimir_colorido("Conta não encontrada", "vermelho")
+            menu_gerenciar_conta()
+            return
+
         campos = ["Novo nome (ENTER para manter)", "Novo email", "Nova senha"]
         dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
         resultado = editar_conta(
             CAMINHO_CONTAS,
-            email,
+            conta["id"],
             dados[0] or None,
             dados[1] or None,
             dados[2] or None
@@ -499,7 +520,16 @@ def menu_gerenciar_conta() -> None:
         criar_cabecalho("Excluir Minha Conta")
         email = input("Email: ").strip()
         senha = input("Senha (para confirmar): ").strip()
-        resultado = excluir_conta(CAMINHO_CONTAS, email)
+        contas = carregar_contas(CAMINHO_CONTAS)
+        conta = next(
+            filter(lambda c: c["email"] == normalizar_email(email), contas),
+            None
+        )
+        if not conta:
+            imprimir_colorido("Conta não encontrada", "vermelho")
+            menu_gerenciar_conta()
+            return
+        resultado = excluir_conta(CAMINHO_CONTAS, conta["id"])
         imprimir_colorido(resultado[1], "verde" if resultado[0] else "vermelho")
         menu_principal()
     

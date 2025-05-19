@@ -2,65 +2,16 @@ import csv
 from typing import Tuple, List, Dict, Iterable
 from .utilitarios import hash_senha, normalizar_email
 from .validacoes import validar_email, validar_nome, validar_senha
-from ..administracao.gerenciarConta import salvar_contas
-
-Conta = Dict[str, str]
-
-def carregar_contas(caminho: str) -> List[Conta]:
-    """carrega as contas do arquivo csv como uma lista imutável"""
-    try:
-        with open(caminho, mode="r", encoding="utf-8") as arquivo:
-            return list(csv.DictReader(arquivo))
-    except FileNotFoundError:
-        return []
-
-def criar_conta_dict(id_: str, nome: str, email: str, senha: str) -> Conta:
-    """cria um dicionário de conta"""
-    return {
-        "id": id_,
-        "nome": nome,
-        "email": normalizar_email(email),
-        "senha_hash": hash_senha(senha),
-    }
-
-def email_existe(contas: Iterable[Conta], email_normalizado: str) -> bool:
-    """Verifica se o email já existe nas contas."""
-    return any(map(lambda conta: conta["email"] == email_normalizado, contas))
-
-def criar_conta(caminho: str, nome: str, email: str, senha: str) -> Tuple[bool, str, List[Conta]]:
-    """cria uma nova conta depois das validações e retorna a nova lista de contas"""
-    contas = carregar_contas(caminho)
-    email_normalizado = normalizar_email(email)
-
-    validacoes = [
-        (validar_nome(nome), "Nome Inválido. Deve ter pelo menos 3 caracteres."),
-        (validar_email(email), "Email Inválido."),
-        (validar_senha(senha), "Senha Inválida. Deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número."),
-        (not email_existe(contas, email_normalizado), "Email já está em uso.")
-    ]
-
-    erros = filter(lambda v: not v[0], validacoes)
-    erro = next(map(lambda v: (False, v[1], contas), erros), None)
-
-    if erro:
-        return erro
-
-    nova_conta = criar_conta_dict(str(len(contas) + 1), nome, email, senha)
-    contas_atualizadas = contas + [nova_conta]
-    salvar_contas(caminho, contas_atualizadas)
-    return True, "Conta criada com sucesso!", contas_atualizadas
+from ..administracao.gerenciarConta import (
+    salvar_contas, carregar_contas, criar_conta_dict,
+    email_disponivel, criar_conta
+)
 
 def login(caminho: str, email: str, senha: str) -> Tuple[bool, str]:
     """Realiza o login verificando se email e senha batem com alguma conta."""
     contas = carregar_contas(caminho)
     email_normalizado = normalizar_email(email)
     senha_hash = hash_senha(senha)
-
-    print(f"Email normalizado: {email_normalizado}")
-    print(f"Hash da senha: {senha_hash}")
-    print("Contas disponíveis:")
-    for conta in contas:
-        print(f"Email: {conta['email']}, Hash: {conta['senha_hash']}")
 
     conta = next(
         filter(lambda c: c["email"] == email_normalizado and c["senha_hash"] == senha_hash, contas),
