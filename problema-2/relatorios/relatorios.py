@@ -1,107 +1,64 @@
 from typing import Dict, List, Callable, Iterator, Tuple, Optional
 import csv
 from datetime import datetime, timedelta
-from functools import partial
 import os
 
 
 Registro = Dict[str, str]
 Usuario = Dict[str, str]
 
-#  func pra obter o caminho base do projeto
 def obter_caminho_base():
     """Retorna o caminho base do projeto para construir caminhos absolutos"""
-    # da o diretorio do script atual
     caminho_script = os.path.dirname(os.path.abspath(__file__))
-    return caminho_script
+    return os.path.dirname(caminho_script)
 
-# filtros puros
+# Filtros adaptados para o formato do CSV
 FILTROS_PADRAO = {
     # batimentos cardíacos
-    'batimentos_normal': lambda r: 60 <= float(r['valor']) <= 100,
-    'batimentos_alto': lambda r: float(r['valor']) > 100,
-    'batimentos_baixo': lambda r: float(r['valor']) < 60,
-    'batimentos_critico': lambda r: float(r['valor']) < 50 or float(r['valor']) > 120,
+    'batimentos_normal': lambda r: 60 <= float(r['Batimentos']) <= 100,
+    'batimentos_alto': lambda r: float(r['Batimentos']) > 100,
+    'batimentos_baixo': lambda r: float(r['Batimentos']) < 60,
     
-    # preessão arterial
-    'pressao_normal': lambda r: 90 <= float(r['valor'].split('/')[0]) <= 120 and 60 <= float(r['valor'].split('/')[1]) <= 80,
-    'pressao_alta': lambda r: float(r['valor'].split('/')[0]) > 140 or float(r['valor'].split('/')[1]) > 90,
+    # pressão arterial
+    'pressao_normal': lambda r: 90 <= float(r['Pressão Sistólica']) <= 120 and 60 <= float(r['Pressão Diastólica']) <= 80,
+    'pressao_alta': lambda r: float(r['Pressão Sistólica']) > 140 or float(r['Pressão Diastólica']) > 90,
+    'pressao_baixa': lambda r: float(r['Pressão Sistólica']) < 90 or float(r['Pressão Diastólica']) < 60,
     
     # glicose
-    'glicose_normal': lambda r: 70 <= float(r['valor']) <= 99,
-    'glicose_alta': lambda r: float(r['valor']) > 126,
-    'glicose_baixa': lambda r: float(r['valor']) < 70
+    'glicose_normal': lambda r: 70 <= float(r['Glicose']) <= 99,
+    'glicose_alta': lambda r: float(r['Glicose']) > 126,
+    'glicose_baixa': lambda r: float(r['Glicose']) < 70
 }
 
-# func de transf puras
-def classificar_registro(registro: Registro, tipo_dado: str) -> Registro:
-    """Adiciona classificação aos registros baseado no tipo de dado"""
-    valor = registro['valor']
-    
-    if tipo_dado == 'batimentos':
-        valor_float = float(valor)
-        classificacao = (
-            "critico" if valor_float < 50 or valor_float > 120 else
-            "alto" if valor_float > 100 else
-            "baixo" if valor_float < 60 else
-            "normal"
-        )
-    elif tipo_dado == 'pressao':
-        sistolica, diastolica = map(float, valor.split('/'))
-        classificacao = (
-            "alta" if sistolica > 140 or diastolica > 90 else
-            "normal" if 90 <= sistolica <= 120 and 60 <= diastolica <= 80 else
-            "baixa"
-        )
-    elif tipo_dado == 'glicose':
-        valor_float = float(valor)
-        classificacao = (
-            "alta" if valor_float > 126 else
-            "baixa" if valor_float < 70 else
-            "normal"
-        )
+def classificar_batimentos(valor: float) -> str:
+    """Classifica os batimentos cardíacos"""
+    if valor < 60:
+        return "baixo"
+    elif valor > 100:
+        return "alto"
     else:
-        classificacao = "indefinido"
-    
-    return {**registro, 'classificacao': classificacao}
+        return "normal"
 
-def converter_formato_data(data_str: str) -> str:
-    """Converte data do formato dd-mm-yyyy para yyyy-mm-dd para comparação"""
-    if '-' in data_str and len(data_str.split('-')) == 3:
-       
-        dia, mes, ano = data_str.split('-')
-        if len(dia) == 2 and len(mes) == 2 and len(ano) == 4:
-            return f"{ano}-{mes}-{dia}"
-    return data_str 
+def classificar_pressao(sistolica: float, diastolica: float) -> str:
+    """Classifica a pressão arterial"""
+    if sistolica > 140 or diastolica > 90:
+        return "alta"
+    elif sistolica < 90 or diastolica < 60:
+        return "baixa"
+    else:
+        return "normal"
 
-def converter_formato_data_para_exibicao(data_str: str) -> str:
-    """Converte data do formato yyyy-mm-dd para dd-mm-yyyy para exibição"""
-    if '-' in data_str and len(data_str.split('-')) == 3:
-        
-        ano, mes, dia = data_str.split('-')
-        if len(ano) == 4 and len(mes) == 2 and len(dia) == 2:
-            return f"{dia}-{mes}-{ano}"
-    return data_str  
+def classificar_glicose(valor: float) -> str:
+    """Classifica o nível de glicose"""
+    if valor > 126:
+        return "alta"
+    elif valor < 70:
+        return "baixa"
+    else:
+        return "normal"
 
-# func de filtro pura
-def filtrar_por_data(registros: Iterator[Registro], data_inicio: str, data_fim: str) -> Iterator[Registro]:
-    """Filtra registros por período"""
-    
-    data_inicio_iso = converter_formato_data(data_inicio)
-    data_fim_iso = converter_formato_data(data_fim)
-    
-    return filter(
-        lambda r: data_inicio_iso <= r['data'] <= data_fim_iso,
-        registros
-    )
-
-def filtrar_por_valor(registros: Iterator[Registro], filtro: Callable) -> Iterator[Registro]:
-    """Aplica um filtro de valor aos registros"""
-    return filter(filtro, registros)
-
-# func de carregamento 
-def carregar_dados_saude(caminho: str) -> List[Registro]:
-    """Carrega dados de saúde de um arquivo CSV"""
+def carregar_dados_pacientes(caminho: str) -> List[Registro]:
+    """Carrega dados do arquivo CSV de pacientes"""
     if not os.path.exists(caminho):
         print(f"Arquivo não encontrado: {caminho}")
         return []
@@ -111,71 +68,120 @@ def carregar_dados_saude(caminho: str) -> List[Registro]:
         print(f"Carregados {len(registros)} registros de {caminho}")
         return registros
 
-# func de gerar relatorio
-def gerar_relatorio_csv(usuario: Usuario, registros: List[Registro], caminho: str) -> None:
-    """Gera relatório em formato CSV"""
-    os.makedirs(os.path.dirname(caminho), exist_ok=True)
+def filtrar_por_data(registros: List[Registro], data_inicio: str, data_fim: str) -> List[Registro]:
+    """
+    Filtra registros por período de data no formato brasileiro (dd/mm/aaaa)
     
-    # Converte as datas para o formato dd-mm-yyyy antes de escrever no relatório
-    registros_formatados = []
-    for registro in registros:
-        registro_formatado = registro.copy()
-        registro_formatado['data'] = converter_formato_data_para_exibicao(registro['data'])
-        registros_formatados.append(registro_formatado)
+    Os registros no CSV já estão no formato brasileiro dd/mm/aaaa,
+    então não precisamos converter para comparar.
+    """
+    print(f"Filtrando registros entre {data_inicio} e {data_fim}")
     
-    with open(caminho, mode='w', newline='', encoding='utf-8') as arquivo:
-        escritor = csv.DictWriter(arquivo, fieldnames=['data', 'valor', 'classificacao', 'unidade'])
-        escritor.writeheader()
-        escritor.writerows(registros_formatados)
+    # Converte as datas para valores numéricos para comparação correta
+    def data_para_numero(data_str):
+        if '/' in data_str:
+            dia, mes, ano = map(int, data_str.split('/'))
+            return ano * 10000 + mes * 100 + dia
+        return 0
+    
+    data_inicio_num = data_para_numero(data_inicio)
+    data_fim_num = data_para_numero(data_fim)
+    
+    filtrados = []
+    for reg in registros:
+        data_reg_num = data_para_numero(reg['Data'])
+        if data_inicio_num <= data_reg_num <= data_fim_num:
+            filtrados.append(reg)
+    
+    return filtrados
 
-# func principal de gerar relatorio
+def formatar_data_relatorio(data_str: str) -> str:
+    """
+    Mantém a data no formato brasileiro dd/mm/aaaa
+    Os dados já estão neste formato, então apenas retornamos a data
+    """
+    return data_str
+
 def gerar_relatorio(
-    usuario: Usuario,
+    usuario: Dict[str, str],
     tipo_dado: str,
     filtros: Optional[List[Callable]] = None,
     periodo: Optional[Tuple[str, str]] = None
 ) -> str:
     """
-    Gera um relatório de saúde para o usuário em formato CSV.
+    Gera um relatório baseado no tipo de dados e filtros
     
     Args:
-        usuario: dicionario com informações do usuário
-        tipo_dado: tipo de dado a ser analisado ('batimentos', 'pressao', 'glicose')
-        filtros: lista de funções de filtro a serem aplicadas
-        periodo: tupla com data de início e fim no formato 'dd-mm-yyyy'
+        usuario: Informações do usuário
+        tipo_dado: 'batimentos', 'pressao' ou 'glicose'
+        filtros: Lista de funções de filtro
+        periodo: Tupla com (data_inicio, data_fim) no formato dd/mm/aaaa
     
     Returns:
-        Caminho do arquivo gerado
+        Caminho do arquivo de relatório gerado
     """
-    # da o caminho base do projeto
     caminho_base = obter_caminho_base()
+    caminho_dados = os.path.join(caminho_base, "data", "dados_pacientes.csv")
     
-    # carrega dados
-    caminho_dados = os.path.join(caminho_base, "dados", f"paciente_{usuario['id']}", f"{tipo_dado}.csv")
-    registros = carregar_dados_saude(caminho_dados)
+    # Carrega todos os dados
+    todos_registros = carregar_dados_pacientes(caminho_dados)
+    print(f"Registros antes dos filtros: {len(todos_registros)}")
     
-    print(f"Registros antes dos filtros: {len(registros)}")
-    
-    # aplica filtros
+    # Filtra por data se especificado
+    registros = todos_registros
     if periodo:
-        registros = list(filtrar_por_data(registros, *periodo))
+        registros = filtrar_por_data(registros, *periodo)
         print(f"Registros após filtro de data: {len(registros)}")
     
+    # Aplica filtros adicionais
     if filtros:
         for filtro in filtros:
-            registros = list(filtrar_por_valor(registros, filtro))
-            print(f"Registros após filtro de valor: {len(registros)}")
+            registros = [r for r in registros if filtro(r)]
+            print(f"Registros após filtro adicional: {len(registros)}")
     
-    # classifica registros
-    registros = [classificar_registro(r, tipo_dado) for r in registros]
+    # Prepara dados para o relatório
+    dados_relatorio = []
+    for reg in registros:
+        resultado = {
+            'Data': formatar_data_relatorio(reg['Data']),
+            'Hora': reg['Hora'],
+            'Obs': reg['Obs']
+        }
+        
+        if tipo_dado == 'batimentos':
+            valor = float(reg['Batimentos'])
+            resultado['Valor'] = str(valor)
+            resultado['Unidade'] = 'bpm'
+            resultado['Classificação'] = classificar_batimentos(valor)
+            
+        elif tipo_dado == 'pressao':
+            sistolica = float(reg['Pressão Sistólica'])
+            diastolica = float(reg['Pressão Diastólica'])
+            resultado['Valor'] = f"{sistolica}/{diastolica}"
+            resultado['Unidade'] = 'mmHg'
+            resultado['Classificação'] = classificar_pressao(sistolica, diastolica)
+            
+        elif tipo_dado == 'glicose':
+            valor = float(reg['Glicose'])
+            resultado['Valor'] = str(valor)
+            resultado['Unidade'] = 'mg/dL'
+            resultado['Classificação'] = classificar_glicose(valor)
+            
+        dados_relatorio.append(resultado)
     
-    # gera arquivo
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    caminho_relatorio = os.path.join(caminho_base, "relatorios", f"{usuario['id']}_{tipo_dado}_{timestamp}.csv")
+    # Gera o arquivo CSV
+    timestamp = datetime.now().strftime('%d%m%Y_%H%M%S')  # Formato brasileiro para o timestamp
+    nome_arquivo = f"{usuario['id']}_{tipo_dado}_{timestamp}.csv"
+    caminho_relatorio = os.path.join(caminho_base, "relatorios", nome_arquivo)
     
-    # garante que o diretorio relatorios existe
+    # Garante que o diretório existe
     os.makedirs(os.path.dirname(caminho_relatorio), exist_ok=True)
     
-    gerar_relatorio_csv(usuario, registros, caminho_relatorio)
+    # Escreve o relatório
+    with open(caminho_relatorio, mode='w', newline='', encoding='utf-8') as arquivo:
+        campos = ['Data', 'Hora', 'Valor', 'Classificação', 'Unidade', 'Obs']
+        escritor = csv.DictWriter(arquivo, fieldnames=campos)
+        escritor.writeheader()
+        escritor.writerows(dados_relatorio)
     
     return caminho_relatorio 

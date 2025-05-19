@@ -1,19 +1,22 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from relatorios import gerar_relatorio, FILTROS_PADRAO
+import os
 
 def exemplo_uso_relatorios():
-    # exemplo de usuario qualquer so pra fins de teste
+    # usuário de exemplo
     usuario = {
         'id': '123',
         'nome': 'João Silva'
     }
     
-    # ex 1: relatorio simples dos ultimos 30 dias (ou todos os dados disponiveis)
-    # usando datas que cobrem os exemplos de dados
-    data_inicio = "01-08-2023"
-    data_fim = "10-08-2023"
+    # usando as datas no formato brasileiro (DD/MM/AAAA)
+    # os dados do csv estão com a data 05/05/2025
+    data_inicio = "01/05/2025"
+    data_fim = "10/05/2025"
     
-    print("Gerando relatório de batimentos cardíacos...")
+    print("\n=== Relatórios dos dados de saúde (Formato brasileiro de datas) ===\n")
+    
+    print("1. Relatório completo de batimentos cardíacos:")
     caminho_relatorio = gerar_relatorio(
         usuario=usuario,
         tipo_dado='batimentos',
@@ -21,25 +24,48 @@ def exemplo_uso_relatorios():
     )
     print(f"Relatório gerado em: {caminho_relatorio}")
     
-    # ex 2: relatorio de pressao alta em csv
-    print("Gerando relatório de pressão alta...")
+    print("\n2. Relatório de batimentos cardíacos altos:")
+    caminho_relatorio = gerar_relatorio(
+        usuario=usuario,
+        tipo_dado='batimentos',
+        filtros=[FILTROS_PADRAO['batimentos_alto']],
+        periodo=(data_inicio, data_fim)
+    )
+    print(f"Relatório gerado em: {caminho_relatorio}")
+    
+    print("\n3. Relatório completo de pressão arterial:")
+    caminho_relatorio = gerar_relatorio(
+        usuario=usuario,
+        tipo_dado='pressao',
+        periodo=(data_inicio, data_fim)
+    )
+    print(f"Relatório gerado em: {caminho_relatorio}")
+    
+    print("\n4. Relatório de pressão arterial alta:")
     caminho_relatorio = gerar_relatorio(
         usuario=usuario,
         tipo_dado='pressao',
         filtros=[FILTROS_PADRAO['pressao_alta']],
         periodo=(data_inicio, data_fim)
     )
-    print(f"Relatório de pressão alta gerado em: {caminho_relatorio}")
+    print(f"Relatório gerado em: {caminho_relatorio}")
     
-    # ex 3: relatorio de glicose com valor elevado
-    print("Gerando relatório de glicose alta...")
+    print("\n5. Relatório completo de glicose:")
     caminho_relatorio = gerar_relatorio(
         usuario=usuario,
         tipo_dado='glicose',
-        filtros=[FILTROS_PADRAO['glicose_alta']],  
         periodo=(data_inicio, data_fim)
     )
-    print(f"Relatório de glicose gerado em: {caminho_relatorio}")
+    print(f"Relatório gerado em: {caminho_relatorio}")
+    
+    print("\n6. Relatório de glicose baixa:")
+    caminho_relatorio = gerar_relatorio(
+        usuario=usuario,
+        tipo_dado='glicose',
+        filtros=[FILTROS_PADRAO['glicose_baixa']],
+        periodo=(data_inicio, data_fim)
+    )
+    print(f"Relatório gerado em: {caminho_relatorio}")
 
 if __name__ == '__main__':
     exemplo_uso_relatorios() 
