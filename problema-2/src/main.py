@@ -8,11 +8,33 @@ Interface principal que integra todos os módulos do sistema:
 - Visualização e filtragem de registros
 - Geração de relatórios e datasets sintéticos
 - Operações administrativas
+
+Este módulo implementa a interface principal do sistema, seguindo princípios de
+programação funcional e garantindo a integração de todos os componentes.
 """
 from functools import partial, reduce
 from pathlib import Path
-from typing import Callable, List, Tuple, Dict, Optional
+from typing import Callable, List, Tuple, Dict, Optional, Any
 import sys
+from itertools import starmap
+
+def compose(*functions):
+    """Compose multiple functions into a single function.
+    
+    Args:
+        *functions: Functions to compose, in order of application
+        
+    Returns:
+        Callable: A function that applies all functions in sequence
+        
+    Example:
+        >>> def add_one(x): return x + 1
+        >>> def double(x): return x * 2
+        >>> f = compose(add_one, double)
+        >>> f(3)  # (3 + 1) * 2 = 8
+        8
+    """
+    return reduce(lambda f, g: lambda x: f(g(x)), functions)
 
 # Importações relativas
 from src.autenticacao.autenticacao import login, criar_conta
@@ -30,15 +52,30 @@ CAMINHO_BASE = Path(__file__).parent
 CAMINHO_CONTAS = CAMINHO_BASE / "data/contas.csv"
 CAMINHO_DADOS = CAMINHO_BASE / "data/pacientes"
 
+# Tipos
 OpcaoMenu = Tuple[Callable[[], None], str]
 Usuario = Dict[str, str]
+Resultado = Tuple[bool, str]
 
 def imprimir_colorido(texto: str, cor: str = "branco") -> None:
     """Imprime texto formatado com cores ANSI no terminal.
     
+    Esta função utiliza códigos ANSI para colorir o texto no terminal,
+    melhorando a experiência visual do usuário.
+    
     Args:
-        texto: String a ser impressa
-        cor: Cor desejada (vermelho, verde, amarelo, azul, roxo, ciano)
+        texto (str): O texto a ser impresso no terminal.
+        cor (str, optional): A cor desejada para o texto. Opções disponíveis:
+            - "vermelho"
+            - "verde"
+            - "amarelo"
+            - "azul"
+            - "roxo"
+            - "ciano"
+            - "branco" (padrão)
+    
+    Returns:
+        None: A função apenas imprime o texto colorido.
     """
     cores = {"vermelho": 31, "verde": 32, "amarelo": 33, "azul": 34, "roxo": 35, "ciano": 36}
     print(f"\033[{cores.get(cor, 37)}m{texto}\033[0m")
@@ -46,8 +83,20 @@ def imprimir_colorido(texto: str, cor: str = "branco") -> None:
 def criar_cabecalho(titulo: str) -> None:
     """Cria um cabeçalho visualmente destacado para menus.
     
+    Esta função cria um cabeçalho formatado com bordas e cores para
+    melhorar a organização visual dos menus do sistema.
+    
     Args:
-        titulo: Texto a ser exibido no cabeçalho
+        titulo (str): O texto a ser exibido no cabeçalho.
+    
+    Returns:
+        None: A função apenas imprime o cabeçalho formatado.
+    
+    Example:
+        >>> criar_cabecalho("Menu Principal")
+        ═══════════════
+         Menu Principal 
+        ═══════════════
     """
     borda = "═" * (len(titulo) + 2)
     list(map(
@@ -58,8 +107,21 @@ def criar_cabecalho(titulo: str) -> None:
 def mostrar_menu(opcoes: List[OpcaoMenu]) -> None:
     """Exibe um menu numerado com as opções disponíveis.
     
+    Esta função formata e exibe as opções do menu de forma numerada,
+    utilizando cores para melhorar a legibilidade.
+    
     Args:
-        opcoes: Lista de tuplas contendo (função, descrição) para cada opção
+        opcoes (List[OpcaoMenu]): Lista de tuplas contendo (função, descrição)
+            para cada opção do menu.
+    
+    Returns:
+        None: A função apenas exibe o menu formatado.
+    
+    Example:
+        >>> opcoes = [(funcao1, "Opção 1"), (funcao2, "Opção 2")]
+        >>> mostrar_menu(opcoes)
+        1. Opção 1
+        2. Opção 2
     """
     list(map(
         lambda i_op: imprimir_colorido(f"{i_op[0]}. {i_op[1][1]}", "ciano"),
@@ -69,9 +131,19 @@ def mostrar_menu(opcoes: List[OpcaoMenu]) -> None:
 def processar_escolha(opcoes: List[OpcaoMenu], retorno: Callable) -> None:
     """Processa a seleção do usuário e executa a função correspondente.
     
+    Esta função lida com a entrada do usuário, valida a escolha e
+    executa a função correspondente à opção selecionada.
+    
     Args:
-        opcoes: Lista de opções disponíveis
-        retorno: Função para retornar em caso de erro
+        opcoes (List[OpcaoMenu]): Lista de opções disponíveis no menu.
+        retorno (Callable): Função a ser chamada em caso de erro na seleção.
+    
+    Returns:
+        None: A função executa a opção selecionada ou retorna ao menu anterior.
+    
+    Raises:
+        ValueError: Se a entrada não for um número válido.
+        IndexError: Se o número selecionado estiver fora do intervalo válido.
     """
     try:
         escolha = int(input("\n➤ Selecione: ")) - 1
@@ -80,8 +152,39 @@ def processar_escolha(opcoes: List[OpcaoMenu], retorno: Callable) -> None:
         imprimir_colorido("Opção inválida!", "vermelho")
         retorno()
 
+def buscar_arquivo(mensagem: str) -> Optional[Path]:
+    """Busca um arquivo de forma segura.
+    
+    Esta função solicita ao usuário o caminho de um arquivo e verifica
+    se ele existe antes de retorná-lo.
+    
+    Args:
+        mensagem (str): A mensagem a ser exibida ao solicitar o caminho do arquivo.
+    
+    Returns:
+        Optional[Path]: O caminho do arquivo se ele existir, None caso contrário.
+    
+    Example:
+        >>> caminho = buscar_arquivo("Digite o caminho do arquivo: ")
+        Digite o caminho do arquivo: dados.csv
+        >>> print(caminho)
+        PosixPath('dados.csv')
+    """
+    caminho = input(mensagem).strip()
+    return Path(caminho) if caminho and Path(caminho).exists() else None
+
 def menu_principal() -> None:
-    """Exibe o menu inicial do sistema com opções básicas."""
+    """Exibe o menu inicial do sistema.
+    
+    Este é o ponto de entrada principal do sistema, oferecendo opções para:
+    - Criar uma nova conta
+    - Realizar login
+    - Acessar o painel administrativo
+    - Sair do sistema
+    
+    Returns:
+        None: A função gerencia a navegação entre os diferentes menus.
+    """
     criar_cabecalho("Sistema de Dados Médicos")
     opcoes = [
         (menu_criar_conta, "Criar conta"),
@@ -93,7 +196,16 @@ def menu_principal() -> None:
     processar_escolha(opcoes, menu_principal)
 
 def menu_paciente() -> None:
-    """Menu principal para pacientes com operações específicas."""
+    """Menu principal para pacientes.
+    
+    Oferece funcionalidades específicas para pacientes:
+    - Adicionar novos exames
+    - Visualizar dados pessoais
+    - Carregar dados de saúde
+    
+    Returns:
+        None: A função gerencia a navegação entre as opções do paciente.
+    """
     criar_cabecalho("Área do Paciente")
     opcoes = [
         (partial(adicionar_exames), "Adicionar exames"),
@@ -105,7 +217,18 @@ def menu_paciente() -> None:
     processar_escolha(opcoes, menu_paciente)
 
 def menu_profissional() -> None:
-    """Menu completo para profissionais de saúde com ferramentas avançadas."""
+    """Menu para profissionais de saúde.
+    
+    Oferece funcionalidades avançadas para profissionais:
+    - Análise de métricas
+    - Visualização detalhada de dados
+    - Filtragem de dados anormais
+    - Geração de relatórios
+    - Criação de datasets sintéticos
+    
+    Returns:
+        None: A função gerencia a navegação entre as opções do profissional.
+    """
     criar_cabecalho("Área Médica")
     opcoes = [
         (partial(analisar_dados), "Analisar métricas"),
@@ -119,7 +242,17 @@ def menu_profissional() -> None:
     processar_escolha(opcoes, menu_profissional)
 
 def menu_administrador() -> None:
-    """Menu de administração com ferramentas de gerenciamento de contas."""
+    """Menu de administração do sistema.
+    
+    Oferece funcionalidades de gerenciamento:
+    - Criação manual de contas
+    - Edição de contas existentes
+    - Exclusão de contas
+    - Busca de contas
+    
+    Returns:
+        None: A função gerencia a navegação entre as opções administrativas.
+    """
     criar_cabecalho("Painel Administrativo")
     opcoes = [
         (partial(criar_conta_admin), "Criar conta manual"),
@@ -132,169 +265,286 @@ def menu_administrador() -> None:
     processar_escolha(opcoes, menu_administrador)
 
 def visualizar_dados_paciente() -> None:
-    """Interface para visualização limitada de dados do paciente."""
+    """Interface para visualização de dados do paciente.
+    
+    Permite ao paciente visualizar seus próprios dados de saúde,
+    com uma visualização limitada a 10 registros por vez.
+    
+    Returns:
+        None: A função exibe os dados e retorna ao menu do paciente.
+    """
     criar_cabecalho("Meus Dados de Saúde")
     caminho = buscar_arquivo("Caminho do seu arquivo CSV: ")
-    visualizar_dados(caminho, 10) if caminho else menu_paciente()
+    if caminho:
+        compose(
+            lambda _: menu_paciente(),
+            lambda dados: visualizar_dados(dados, 10),
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_paciente()
 
 def carregar_dados_paciente() -> None:
-    """Carrega arquivos de dados médicos do paciente."""
+    """Carrega arquivos de dados médicos do paciente.
+    
+    Permite ao paciente carregar seus dados de saúde a partir
+    de um arquivo CSV.
+    
+    Returns:
+        None: A função carrega os dados e retorna ao menu do paciente.
+    """
     criar_cabecalho("Carregar Meus Dados")
     caminho = buscar_arquivo("Caminho do arquivo CSV: ")
-    imprimir_colorido("Dados carregados com sucesso!", "verde") if caminho else None
-    menu_paciente()
+    if caminho:
+        compose(
+            lambda _: imprimir_colorido("Dados carregados com sucesso!", "verde"),
+            lambda _: menu_paciente(),
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_paciente()
 
 def analisar_dados() -> None:
-    """Executa análise estatística sobre os dados médicos."""
+    """Executa análise estatística sobre os dados médicos.
+    
+    Calcula métricas estatísticas como média, mediana, moda,
+    desvio padrão e variância sobre os dados do paciente.
+    
+    Returns:
+        None: A função exibe as métricas calculadas e retorna ao menu do profissional.
+    """
     criar_cabecalho("Análise de Métricas")
     caminho = buscar_arquivo("Caminho do arquivo do paciente: ")
     if caminho:
-        metricas = pipeline_analise(list(carregar_dados_saude(caminho)))
-        list(map(
-            lambda m: imprimir_colorido(f"{m[0]}: {m[1]:.2f}", "verde"),
-            metricas.items()
-        ))
-    menu_profissional()
+        compose(
+            lambda _: menu_profissional(),
+            lambda metricas: list(starmap(
+                lambda k, v: imprimir_colorido(f"{k}: {v:.2f}", "verde"),
+                metricas.items()
+            )),
+            pipeline_analise,
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_profissional()
 
 def visualizar_dados_profissional() -> None:
-    """Visualização avançada para profissionais com controle de quantidade."""
+    """Visualização avançada para profissionais.
+    
+    Permite ao profissional visualizar dados dos pacientes com
+    controle sobre a quantidade de registros exibidos.
+    
+    Returns:
+        None: A função exibe os dados e retorna ao menu do profissional.
+    """
     criar_cabecalho("Visualização Médica")
     caminho = buscar_arquivo("Caminho do arquivo CSV: ")
     qtd = input("Quantidade de registros: ").strip()
     if caminho:
-        visualizar_dados(caminho, int(qtd) if qtd.isdigit() else 10)
-    menu_profissional()
+        compose(
+            lambda _: menu_profissional(),
+            lambda dados: visualizar_dados(dados, int(qtd) if qtd.isdigit() else 10),
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_profissional()
 
 def filtrar_dados_anormais() -> None:
-    """Identifica e exibe registros com valores fora dos parâmetros normais."""
+    """Identifica registros com valores fora dos parâmetros normais.
+    
+    Analisa os dados do paciente e identifica registros que
+    apresentam valores fora dos parâmetros considerados normais.
+    
+    Returns:
+        None: A função exibe os registros anormais e retorna ao menu do profissional.
+    """
     criar_cabecalho("Filtrar Dados Anormais")
     caminho = buscar_arquivo("Caminho do arquivo CSV: ")
     if caminho:
-        resultados = filtrar_registros(
-            list(carregar_dados_saude(caminho)),
-            obter_criterios_padrao()
-        )
-        list(map(
-            lambda r: imprimir_colorido(f"{r[0]}: {len(r[1])} registros", "amarelo"),
-            resultados.items()
-        ))
-    menu_profissional()
+        compose(
+            lambda _: menu_profissional(),
+            lambda resultados: list(starmap(
+                lambda k, v: imprimir_colorido(f"{k}: {len(v)} registros", "amarelo"),
+                resultados.items()
+            )),
+            lambda dados: filtrar_registros(dados, obter_criterios_padrao()),
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_profissional()
 
 def gerar_relatorio_completo() -> None:
-    """Gera relatórios detalhados em formatos CSV ou JSON."""
+    """Gera relatórios detalhados.
+    
+    Cria relatórios detalhados dos dados do paciente em formatos
+    CSV ou JSON, incluindo análises e métricas.
+    
+    Returns:
+        None: A função gera o relatório e retorna ao menu do profissional.
+    """
     criar_cabecalho("Gerar Relatório")
     caminho = buscar_arquivo("Caminho do arquivo CSV: ")
     formato = input("Formato (csv/json): ").lower().strip()
     if caminho and formato in ['csv', 'json']:
-        relatorio = gerar_relatorio(
-            dados=list(carregar_dados_saude(caminho)),
-            formato=formato
-        )
-        imprimir_colorido(f"Relatório gerado: {relatorio}", "verde")
-    menu_profissional()
+        compose(
+            lambda _: menu_profissional(),
+            lambda relatorio: imprimir_colorido(f"Relatório gerado: {relatorio}", "verde"),
+            lambda dados: gerar_relatorio(dados, formato),
+            carregar_dados_saude
+        )(caminho)
+    else:
+        menu_profissional()
 
 def gerar_dataset_sintetico() -> None:
-    """Cria conjuntos de dados sintéticos para testes."""
+    """Cria conjuntos de dados sintéticos.
+    
+    Gera datasets sintéticos para testes e desenvolvimento,
+    com dados que simulam registros médicos reais.
+    
+    Returns:
+        None: A função gera o dataset e retorna ao menu do profissional.
+    
+    Raises:
+        ValueError: Se o número de registros não for um valor válido.
+    """
     criar_cabecalho("Gerar Dataset Sintético")
     try:
         linhas = int(input("Número de registros: ").strip())
-        caminho = gerar_dataset_csv(numero_linhas=linhas)
-        imprimir_colorido(f"Dataset gerado em: {caminho}", "verde")
+        compose(
+            lambda _: menu_profissional(),
+            lambda caminho: imprimir_colorido(f"Dataset gerado em: {caminho}", "verde"),
+            gerar_dataset_csv
+        )(linhas)
     except ValueError:
         imprimir_colorido("Valor inválido!", "vermelho")
-    menu_profissional()
+        menu_profissional()
 
 def criar_conta_admin() -> None:
-    """Cria novas contas com privilégios administrativos."""
+    """Cria novas contas com privilégios administrativos.
+    
+    Permite ao administrador criar contas manualmente,
+    definindo todos os parâmetros necessários.
+    
+    Returns:
+        None: A função cria a conta e retorna ao menu administrativo.
+    """
     criar_cabecalho("Criar Conta (Admin)")
     campos = ["Nome", "Email", "Senha", "Tipo (paciente/profissional)"]
     dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
     email = dados[1] if dados[3] != "profissional" else f"{dados[1].split('@')[0]}@medico.com"
-    sucesso, msg = criar_conta(CAMINHO_CONTAS, dados[0], email, dados[2])
-    imprimir_colorido(msg, "verde" if sucesso else "vermelho")
-    menu_administrador()
+    compose(
+        lambda _: menu_administrador(),
+        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
+        lambda dados: criar_conta(CAMINHO_CONTAS, dados[0], email, dados[2])
+    )(dados)
 
 def editar_conta_admin() -> None:
-    """Modifica informações de contas existentes."""
+    """Modifica informações de contas existentes.
+    
+    Permite ao administrador editar informações de contas
+    existentes, mantendo os dados não modificados.
+    
+    Returns:
+        None: A função edita a conta e retorna ao menu administrativo.
+    """
     criar_cabecalho("Editar Conta")
     id_conta = input("ID da conta: ").strip()
     campos = ["Novo nome (ENTER para manter)", "Novo email", "Nova senha"]
     dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
-    sucesso, msg = editar_conta(
-        CAMINHO_CONTAS,
-        id_conta,
-        dados[0] or None,
-        dados[1] or None,
-        dados[2] or None
-    )
-    imprimir_colorido(msg, "verde" if sucesso else "vermelho")
-    menu_administrador()
+    compose(
+        lambda _: menu_administrador(),
+        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
+        lambda dados: editar_conta(
+            CAMINHO_CONTAS,
+            id_conta,
+            dados[0] or None,
+            dados[1] or None,
+            dados[2] or None
+        )
+    )(dados)
 
 def excluir_conta_admin() -> None:
-    """Remove contas do sistema de forma segura."""
-    criar_cabecalho("Excluir Conta")
-    id_conta = input("ID da conta: ").strip()
-    sucesso, msg = excluir_conta(CAMINHO_CONTAS, id_conta)
-    imprimir_colorido(msg, "verde" if sucesso else "vermelho")
-    menu_administrador()
-
-def buscar_conta_admin() -> None:
-    """Localiza e exibe detalhes de contas específicas."""
-    criar_cabecalho("Buscar Conta")
-    id_conta = input("ID da conta: ").strip()
-    conta = buscar_conta_por_id(CAMINHO_CONTAS, id_conta)
-    if conta:
-        list(map(
-            lambda c: imprimir_colorido(f"{c[0]}: {c[1]}", "ciano"),
-            conta.items()
-        ))
-    else:
-        imprimir_colorido("Conta não encontrada!", "vermelho")
-    menu_administrador()
-
-def buscar_arquivo(mensagem: str) -> Optional[Path]:
-    """Localiza arquivos no sistema de forma segura.
+    """Remove contas do sistema.
     
-    Args:
-        mensagem: Prompt a ser exibido para o usuário
+    Permite ao administrador excluir contas do sistema
+    de forma segura, com confirmação.
     
     Returns:
-        Path: Objeto Path do arquivo encontrado ou None
+        None: A função exclui a conta e retorna ao menu administrativo.
     """
-    caminho = CAMINHO_DADOS / input(mensagem).strip()
-    return caminho if caminho.exists() else (
-        imprimir_colorido("Arquivo não encontrado!", "vermelho"),
-        None
-    )[1]
+    criar_cabecalho("Excluir Conta")
+    id_conta = input("ID da conta: ").strip()
+    compose(
+        lambda _: menu_administrador(),
+        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
+        lambda id: excluir_conta(CAMINHO_CONTAS, id)
+    )(id_conta)
+
+def buscar_conta_admin() -> None:
+    """Localiza e exibe detalhes de contas.
+    
+    Permite ao administrador buscar e visualizar detalhes
+    de contas específicas no sistema.
+    
+    Returns:
+        None: A função exibe os detalhes da conta e retorna ao menu administrativo.
+    """
+    criar_cabecalho("Buscar Conta")
+    id_conta = input("ID da conta: ").strip()
+    compose(
+        lambda _: menu_administrador(),
+        lambda conta: list(starmap(
+            lambda k, v: imprimir_colorido(f"{k}: {v}", "ciano"),
+            conta.items()
+        )) if conta else None,
+        lambda id: buscar_conta_por_id(CAMINHO_CONTAS, id)
+    )(id_conta)
 
 def menu_criar_conta() -> None:
-    """Gerencia o fluxo de criação de novas contas de usuário."""
+    """Interface para criação de conta.
+    
+    Permite ao usuário criar uma nova conta no sistema,
+    definindo seu tipo (paciente ou profissional).
+    
+    Returns:
+        None: A função cria a conta e retorna ao menu principal.
+    """
     criar_cabecalho("Criar Conta")
-    campos = ["Nome", "Email", "Senha (mínimo 8 caracteres)"]
+    campos = ["Nome", "Email", "Senha", "Tipo (paciente/profissional)"]
     dados = list(map(lambda c: input(f"{c}: ").strip(), campos))
-    sucesso, msg = criar_conta(CAMINHO_CONTAS, *dados)
-    imprimir_colorido(msg, "verde" if sucesso else "vermelho")
-    menu_principal()
+    compose(
+        lambda _: menu_principal(),
+        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
+        lambda dados: criar_conta(CAMINHO_CONTAS, dados[0], dados[1], dados[2])
+    )(dados)
 
 def menu_login() -> None:
-    """Controla o processo de autenticação no sistema."""
+    """Interface para login.
+    
+    Permite ao usuário realizar login no sistema,
+    redirecionando para o menu apropriado após autenticação.
+    
+    Returns:
+        None: A função autentica o usuário e redireciona para o menu apropriado.
+    """
     criar_cabecalho("Login")
-    credenciais = list(map(
-        lambda p: input(f"{p}: ").strip(),
-        ["Email", "Senha"]
-    ))
-    sucesso, msg = login(CAMINHO_CONTAS, *credenciais)
-    imprimir_colorido(msg, "verde" if sucesso else "vermelho")
-    (menu_profissional if "@medico.com" in credenciais[0] else menu_paciente)() if sucesso else menu_principal()
+    email = input("Email: ").strip()
+    senha = input("Senha: ").strip()
+    compose(
+        lambda tipo: menu_profissional() if tipo == "profissional" else menu_paciente(),
+        lambda resultado: resultado[1] if resultado[0] else menu_principal(),
+        lambda credenciais: login(CAMINHO_CONTAS, credenciais[0], credenciais[1])
+    )((email, senha))
 
 def sair() -> None:
-    """Encerra a aplicação de forma controlada."""
-    imprimir_colorido("Sistema encerrado com sucesso!", "verde")
+    """Encerra o programa.
+    
+    Finaliza a execução do sistema de forma segura.
+    
+    Returns:
+        None: A função encerra o programa.
+    """
     sys.exit(0)
 
 if __name__ == "__main__":
-    CAMINHO_DADOS.mkdir(parents=True, exist_ok=True)
-    if not CAMINHO_CONTAS.exists():
-        CAMINHO_CONTAS.parent.mkdir(parents=True, exist_ok=True)
-        CAMINHO_CONTAS.touch()
     menu_principal()
