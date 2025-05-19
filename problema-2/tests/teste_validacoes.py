@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Teste das funções de validação implementadas no módulo validacoes.py
 Este script executa testes simples para verificar o comportamento das funções.
 """
 
-from validacoes import (
+from src.autenticacao.validacoes import (
     validar_nome, validar_email, validar_senha, validar_cpf,
     validar_telefone, validar_data_nascimento, formatar_cpf, formatar_telefone
 )
