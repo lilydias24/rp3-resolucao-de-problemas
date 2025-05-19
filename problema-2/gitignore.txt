@@ -1,7 +1,0 @@
-# Ignora arquivos e pastas desnecessários
-**/__pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
-.pytest_cache/
-dataset_saude.csv

@@ -1,1 +1,8 @@
 __pycache__
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+dataset_saude.csv
+# Ignora arquivos e pastas desnecessários
