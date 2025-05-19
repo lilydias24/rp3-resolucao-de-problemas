@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Dict
 
 dir_base = Path(__file__).parent
-path = dir_base.joinpath("..", "data", "dados_pacientes.csv").resolve()
+path = dir_base.joinpath("..", "dados", "dados_pacientes.csv").resolve()
 
 
 def verifica_arquivo(path: Path):

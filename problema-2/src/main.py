@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import Callable, List, Tuple, Dict, Optional, Any
 import sys
 from itertools import starmap
+import os
+import csv
 
 def compose(*functions):
     """Compose multiple functions into a single function.
@@ -37,11 +39,12 @@ def compose(*functions):
 
 # Importações relativas
 from .autenticacao.autenticacao import login, criar_conta
-from .administracao.gerenciarConta import buscar_conta_por_id, editar_conta, excluir_conta
+from .autenticacao.utilitarios import normalizar_email
+from .administracao.gerenciarConta import buscar_conta_por_id, editar_conta, excluir_conta, carregar_contas
 from .analise.carregar_dados_saude import carregar_dados_saude
 from .analise.analisar_metricas import pipeline_analise
 from .analise.visualizar_dados import visualizar_dados
-from .analise.filtrar_dados import filtrar_entradas, segmentar_categoria
+from .analise.filtrar_dados import segmentar_categoria
 from .analise.adicionar_exames import save
 from .analise.gerador_dataset_saude import gerar_dataset_csv
 from relatorios.relatorios import gerar_relatorio
@@ -128,27 +131,22 @@ def mostrar_menu(opcoes: List[OpcaoMenu]) -> None:
     ))
 
 def processar_escolha(opcoes: List[OpcaoMenu], retorno: Callable) -> None:
-    """Processa a seleção do usuário e executa a função correspondente.
-    
-    Esta função lida com a entrada do usuário, valida a escolha e
-    executa a função correspondente à opção selecionada.
-    
-    Args:
-        opcoes (List[OpcaoMenu]): Lista de opções disponíveis no menu.
-        retorno (Callable): Função a ser chamada em caso de erro na seleção.
-    
-    Returns:
-        None: A função executa a opção selecionada ou retorna ao menu anterior.
-    
-    Raises:
-        ValueError: Se a entrada não for um número válido.
-        IndexError: Se o número selecionado estiver fora do intervalo válido.
-    """
+    """Processa a escolha do usuário no menu."""
     try:
-        escolha = int(input("\n➤ Selecione: ")) - 1
-        opcoes[escolha][0]()
-    except (ValueError, IndexError):
-        imprimir_colorido("Opção inválida!", "vermelho")
+        escolha = input("\n➤ Selecione: ").strip()
+        if not escolha:
+            print("Por favor, digite uma opção válida.")
+            retorno()
+            return
+            
+        escolha = int(escolha) - 1
+        if 0 <= escolha < len(opcoes):
+            opcoes[escolha][0]()
+        else:
+            print("Opção inválida!")
+            retorno()
+    except ValueError:
+        print("Por favor, digite um número válido.")
         retorno()
 
 def buscar_arquivo(mensagem: str) -> Optional[Path]:
@@ -250,7 +248,12 @@ def visualizar_dados_paciente() -> None:
         None: A função exibe os dados e retorna ao menu do paciente.
     """
     criar_cabecalho("Meus Dados de Saúde")
-    caminho = buscar_arquivo("Caminho do seu arquivo CSV: ")
+    caminho =CAMINHO_ARQUIVO = os.path.abspath(os.path.join(
+    os.path.dirname(__file__),
+    '..',
+    'dados',
+    'dados_pacientes.csv'
+))
     if caminho:
         compose(
             lambda _: menu_paciente(),
@@ -290,19 +293,32 @@ def analisar_dados() -> None:
         None: A função exibe as métricas calculadas e retorna ao menu do profissional.
     """
     criar_cabecalho("Análise de Métricas")
-    caminho = buscar_arquivo("Caminho do arquivo do paciente: ")
-    if caminho:
-        compose(
-            lambda _: menu_profissional(),
-            lambda metricas: list(starmap(
-                lambda k, v: imprimir_colorido(f"{k}: {v:.2f}", "verde"),
-                metricas.items()
-            )),
-            pipeline_analise,
-            carregar_dados_saude
-        )(caminho)
+    caminho = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'dados',
+        'dataset_saude.csv'
+    ))
+    
+    if os.path.exists(caminho):
+        try:
+            metricas = pipeline_analise(caminho)
+            if metricas:
+                for tipo, valores in metricas.items():
+                    if valores:  # Verifica se há métricas para este tipo
+                        imprimir_colorido(f"\n{tipo.upper()}:", "verde")
+                        for nome, valor in valores.items():
+                            imprimir_colorido(f"  {nome.capitalize()}: {valor:.2f}", "ciano")
+                    else:
+                        imprimir_colorido(f"\n{tipo.upper()}: Sem dados suficientes", "amarelo")
+            else:
+                imprimir_colorido("Nenhum dado válido encontrado no arquivo.", "amarelo")
+        except Exception as e:
+            imprimir_colorido(f"Erro durante a análise: {str(e)}", "vermelho")
     else:
-        menu_profissional()
+        imprimir_colorido("Arquivo de dados não encontrado!", "vermelho")
+    
+    menu_profissional()
 
 def visualizar_dados_profissional() -> None:
     """Visualização avançada para profissionais.
@@ -314,86 +330,123 @@ def visualizar_dados_profissional() -> None:
         None: A função exibe os dados e retorna ao menu do profissional.
     """
     criar_cabecalho("Visualização Médica")
-    caminho = buscar_arquivo("Caminho do arquivo CSV: ")
-    qtd = input("Quantidade de registros: ").strip()
-    if caminho:
+    caminho = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'dados',
+        'dataset_saude.csv'
+    ))
+    
+    if os.path.exists(caminho):
+        qtd = input("Quantidade de registros (ENTER para padrão 10): ").strip()
+        qtd = int(qtd) if qtd.isdigit() else 10
+        
         compose(
             lambda _: menu_profissional(),
-            lambda dados: visualizar_dados(dados, int(qtd) if qtd.isdigit() else 10),
+            lambda dados: visualizar_dados(dados, qtd),
             carregar_dados_saude
         )(caminho)
     else:
+        imprimir_colorido("Arquivo de dados não encontrado!", "vermelho")
         menu_profissional()
 
 def filtrar_dados_anormais() -> None:
-    """Identifica registros com valores fora dos parâmetros normais.
-    
-    Analisa os dados do paciente e identifica registros que
-    apresentam valores fora dos parâmetros considerados normais.
-    
-    Returns:
-        None: A função exibe os registros anormais e retorna ao menu do profissional.
-    """
+    """Identifica registros com valores fora dos parâmetros normais."""
     criar_cabecalho("Filtrar Dados Anormais")
-    caminho = buscar_arquivo("Caminho do arquivo CSV: ")
-    if caminho:
-        compose(
-            lambda _: menu_profissional(),
-            lambda resultados: list(starmap(
-                lambda k, v: imprimir_colorido(f"{k}: {len(v)} registros", "amarelo"),
-                resultados.items()
-            )),
-            lambda dados: segmentar_categoria(filtrar_entradas(dados)),
-            carregar_dados_saude
-        )(caminho)
+    caminho = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'dados',
+        'dataset_saude.csv'
+    ))
+    
+    if os.path.exists(caminho):
+        try:
+            # Aumenta o limite de campo do CSV
+            maxInt = sys.maxsize
+            while True:
+                try:
+                    csv.field_size_limit(maxInt)
+                    break
+                except OverflowError:
+                    maxInt = int(maxInt/10)
+            
+            with open(caminho, 'r', encoding='utf-8') as f:
+                registros = list(csv.DictReader(f))
+                segmentos = segmentar_categoria(registros)
+                
+                print("\nRegistros com valores anormais:")
+                for campo, regs in segmentos.items():
+                    print(f"\n{campo.upper()}: {len(regs)} registro(s)")
+                    if regs:
+                        for rec in regs[:3]:  # Mostra até 3 exemplos
+                            if campo == 'batimentos':
+                                print(f"  Batimentos: {rec.get('Batimentos', 'N/A')}")
+                            elif campo == 'pressao':
+                                print(f"  Pressão: {rec.get('Pressão', 'N/A')}")
+                            elif campo == 'glicose':
+                                print(f"  Glicose: {rec.get('Glicose', 'N/A')}")
+        except Exception as e:
+            imprimir_colorido(f"Erro ao processar arquivo: {str(e)}", "vermelho")
     else:
-        menu_profissional()
+        imprimir_colorido("Arquivo de dados não encontrado!", "vermelho")
+    
+    menu_profissional()
 
 def gerar_relatorio_completo() -> None:
-    """Gera relatórios detalhados.
-    
-    Cria relatórios detalhados dos dados do paciente em formatos
-    CSV ou JSON, incluindo análises e métricas.
-    
-    Returns:
-        None: A função gera o relatório e retorna ao menu do profissional.
-    """
+    """Gera relatórios detalhados."""
     criar_cabecalho("Gerar Relatório")
-    caminho = buscar_arquivo("Caminho do arquivo CSV: ")
-    formato = input("Formato (csv/json): ").lower().strip()
-    if caminho and formato in ['csv', 'json']:
-        compose(
-            lambda _: menu_profissional(),
-            lambda relatorio: imprimir_colorido(f"Relatório gerado: {relatorio}", "verde"),
-            lambda dados: gerar_relatorio(dados, formato),
-            carregar_dados_saude
-        )(caminho)
+    caminho = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'dados',
+        'dados_pacientes.csv'
+    ))
+    
+    if os.path.exists(caminho):
+        formato = input("Formato do relatório (csv/json): ").lower().strip()
+        if formato in ['csv', 'json']:
+            try:
+                # Carrega os dados diretamente do CSV
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    dados = list(csv.DictReader(f))
+                
+                if not dados:
+                    imprimir_colorido("Nenhum dado encontrado para gerar relatório.", "amarelo")
+                    menu_profissional()
+                    return
+                
+                # Gera o relatório
+                relatorio = gerar_relatorio(dados, formato)
+                imprimir_colorido(f"Relatório gerado: {relatorio}", "verde")
+            except Exception as e:
+                imprimir_colorido(f"Erro ao gerar relatório: {str(e)}", "vermelho")
+        else:
+            imprimir_colorido("Formato inválido! Use 'csv' ou 'json'.", "vermelho")
     else:
-        menu_profissional()
+        imprimir_colorido(f"Arquivo não encontrado em: {caminho}", "vermelho")
+    
+    menu_profissional()
 
 def gerar_dataset_sintetico() -> None:
-    """Cria conjuntos de dados sintéticos.
-    
-    Gera datasets sintéticos para testes e desenvolvimento,
-    com dados que simulam registros médicos reais.
-    
-    Returns:
-        None: A função gera o dataset e retorna ao menu do profissional.
-    
-    Raises:
-        ValueError: Se o número de registros não for um valor válido.
-    """
+    """Cria conjuntos de dados sintéticos."""
     criar_cabecalho("Gerar Dataset Sintético")
     try:
         linhas = int(input("Número de registros: ").strip())
-        compose(
-            lambda _: menu_profissional(),
-            lambda caminho: imprimir_colorido(f"Dataset gerado em: {caminho}", "verde"),
-            gerar_dataset_csv
-        )(linhas)
+        if linhas <= 0:
+            imprimir_colorido("O número de registros deve ser maior que zero.", "vermelho")
+            menu_profissional()
+            return
+            
+        from .analise.gerador_dataset_saude import gerar_dataset_csv
+        caminho = gerar_dataset_csv(linhas)
+        imprimir_colorido(f"Dataset gerado com sucesso: {caminho}", "verde")
     except ValueError:
-        imprimir_colorido("Valor inválido!", "vermelho")
-        menu_profissional()
+        imprimir_colorido("Valor inválido! Digite um número inteiro positivo.", "vermelho")
+    except Exception as e:
+        imprimir_colorido(f"Erro ao gerar dataset: {str(e)}", "vermelho")
+    
+    menu_profissional()
 
 def menu_criar_conta() -> None:
     """Interface para criação de conta.

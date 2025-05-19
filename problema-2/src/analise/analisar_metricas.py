@@ -1,77 +1,110 @@
-from typing import Iterator, Dict, Callable
+from typing import Iterator, Dict, Callable, List
 import statistics
 from functools import reduce
-from .carregar_dados_saude import carregar_dados_saude
-from itertools import starmap
+import csv
+import sys
 
 RegistroMedico = Dict[str, str]
 Metricas = Dict[str, float]
 
-def linha_valida(linha: str) -> bool:
-    return linha.strip() != "" and not linha.startswith('data,') and linha.count(',') == 1
-
-def dividir_linha_em_registro(linha: str) -> RegistroMedico:
-    partes = linha.split(',')
-    return {'data': partes[0], 'valor': partes[1]}
-
-def converter_registros(registros: Iterator[str]) -> Iterator[RegistroMedico]:
-    """
-    Converte apenas as linhas válidas usando map/filter (sem `for`).
-    """
-    return map(dividir_linha_em_registro, filter(linha_valida, registros))
-
-def is_float(valor: str) -> bool:
+def ler_csv(caminho: str) -> List[Dict[str, str]]:
+    """Lê o arquivo CSV e retorna uma lista de dicionários."""
     try:
-        float(valor)
-        return True
-    except ValueError:
-        return False
+        # Aumenta o limite de campo do CSV
+        maxInt = sys.maxsize
+        while True:
+            try:
+                csv.field_size_limit(maxInt)
+                break
+            except OverflowError:
+                maxInt = int(maxInt/10)
+        
+        with open(caminho, 'r', encoding='utf-8') as arquivo:
+            # Tenta ler o arquivo com diferentes delimitadores
+            for delimiter in [',', ';', '\t']:
+                try:
+                    arquivo.seek(0)  # Volta ao início do arquivo
+                    leitor = csv.DictReader(arquivo, delimiter=delimiter)
+                    registros = list(leitor)
+                    if registros and len(registros[0]) > 1:  # Verifica se encontrou colunas válidas
+                        return registros
+                except Exception:
+                    continue
+            
+            # Se chegou aqui, nenhum delimitador funcionou
+            print("Não foi possível identificar o formato do arquivo CSV.")
+            return []
+            
+    except Exception as e:
+        print(f"Erro ao ler o arquivo: {str(e)}")
+        return []
 
-def extrair_valores_numericos(registros: Iterator[RegistroMedico]) -> Iterator[float]:
-    """
-    Extrai apenas os valores que são realmente convertíveis em float.
-    """
-    return map(lambda reg: float(reg['valor']),
-               filter(lambda reg: 'valor' in reg and is_float(reg['valor']), registros))
+def extrair_batimentos(registros: List[Dict[str, str]]) -> List[float]:
+    """Extrai os valores de batimentos dos registros."""
+    try:
+        return [float(reg['Batimentos Cardíacos']) for reg in registros if 'Batimentos Cardíacos' in reg]
+    except (ValueError, KeyError):
+        return []
 
-def calcular_metricas(valores: Iterator[float]) -> Metricas:
-    """
-    Converte o iterador em lista e aplica estatísticas puramente funcionais.
-    """
-    valores_lista = list(valores)
-    if not valores_lista:
+def extrair_pressao(registros: List[Dict[str, str]]) -> List[float]:
+    """Extrai os valores de pressão sistólica dos registros."""
+    try:
+        pressoes = []
+        for reg in registros:
+            if 'Pressão Arterial' in reg:
+                sistolica = reg['Pressão Arterial'].split('/')[0]
+                pressoes.append(float(sistolica))
+        return pressoes
+    except (ValueError, KeyError, IndexError):
+        return []
+
+def extrair_glicose(registros: List[Dict[str, str]]) -> List[float]:
+    """Extrai os valores de glicose dos registros."""
+    try:
+        return [float(reg['Glicose']) for reg in registros if 'Glicose' in reg]
+    except (ValueError, KeyError):
+        return []
+
+def calcular_metricas(valores: List[float]) -> Metricas:
+    """Calcula as métricas estatísticas."""
+    if not valores:
         return {}
     
     return {
-        'media': statistics.mean(valores_lista),
-        'mediana': statistics.median(valores_lista),
-        'moda': statistics.mode(valores_lista),
-        'desvio_padrao': statistics.stdev(valores_lista) if len(valores_lista) > 1 else 0.0,
-        'variancia': statistics.variance(valores_lista) if len(valores_lista) > 1 else 0.0
+        'media': statistics.mean(valores),
+        'mediana': statistics.median(valores),
+        'moda': statistics.mode(valores),
+        'desvio_padrao': statistics.stdev(valores) if len(valores) > 1 else 0.0,
+        'variancia': statistics.variance(valores) if len(valores) > 1 else 0.0
     }
 
-def pipeline_analise(caminho_arquivo: str) -> Metricas:
-    return aplicar_pipeline(
-        carregar_dados_saude(caminho_arquivo),
-        converter_registros,
-        extrair_valores_numericos,
-        calcular_metricas
-    )
-
-def aplicar_pipeline(data: Iterator, *funcs: Callable) -> Metricas:
-    return reduce(lambda acc, f: f(acc), funcs, data)
+def pipeline_analise(caminho: str) -> Dict[str, Metricas]:
+    """Pipeline completo de análise."""
+    registros = ler_csv(caminho)
+    if not registros:
+        return {}
+    
+    batimentos = extrair_batimentos(registros)
+    pressoes = extrair_pressao(registros)
+    glicoses = extrair_glicose(registros)
+    
+    return {
+        'batimentos': calcular_metricas(batimentos),
+        'pressao': calcular_metricas(pressoes),
+        'glicose': calcular_metricas(glicoses)
+    }
 
 if __name__ == "__main__":
-    caminho = "batimentos.csv"
+    caminho = "dataset_saude.csv"
     try:
         metricas = pipeline_analise(caminho)
         if not metricas:
             print("Nenhum dado válido encontrado no arquivo.")
         else:
             print("Resultado das Métricas Calculadas:")
-            for nome, valor in metricas.items():
-                print(f"{nome.capitalize()}: {valor:.2f}")
-    except FileNotFoundError:
-        print(f"Erro: Arquivo '{caminho}' não encontrado.")
+            for tipo, valores in metricas.items():
+                print(f"\n{tipo.upper()}:")
+                for nome, valor in valores.items():
+                    print(f"  {nome.capitalize()}: {valor:.2f}")
     except Exception as e:
         print(f"Erro inesperado na análise: {str(e)}")

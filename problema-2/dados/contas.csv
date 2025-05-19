@@ -3,3 +3,5 @@ id,nome,email,senha_hash
 2,adjslfn,ajioaso@gmail.com,5b1eb7e9323f048f910980a7a4fe50799a264a33f8da9152255b046f2d599101
 3,Eric,eric@medico.com,ebdf496f67651cddf6aaa1f0b130f1b99ce9e2e93dc2503d926edcff15aee668
 4,diretorio,diretorio@medico.com,1a715f3c7c3e4d9aaf4bf880db2987c6ce4f12340b9347123f832a68570d3113
+5,emilly,emilly@gmail.com,1f1a45aee9c005acea9825f582692577992244b6c94d61be177dd4909d1cb7cc
+6,doug,doug@medico.com,1ffcabca7b186ab84193b5b311976172e2a8ea5031b419b575d6d1576777588f
