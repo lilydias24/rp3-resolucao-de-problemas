@@ -56,6 +56,12 @@ def login(caminho: str, email: str, senha: str) -> Tuple[bool, str]:
     email_normalizado = normalizar_email(email)
     senha_hash = hash_senha(senha)
 
+    print(f"Email normalizado: {email_normalizado}")
+    print(f"Hash da senha: {senha_hash}")
+    print("Contas disponíveis:")
+    for conta in contas:
+        print(f"Email: {conta['email']}, Hash: {conta['senha_hash']}")
+
     conta = next(
         filter(lambda c: c["email"] == email_normalizado and c["senha_hash"] == senha_hash, contas),
         None

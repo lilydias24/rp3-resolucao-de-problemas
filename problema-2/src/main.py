@@ -424,11 +424,9 @@ def menu_criar_conta() -> None:
     senha = input("Senha: ").strip()
     
     # Cria a conta
-    compose(
-        lambda _: menu_principal(),
-        lambda msg: imprimir_colorido(msg[1], "verde" if msg[0] else "vermelho"),
-        lambda dados: criar_conta(CAMINHO_CONTAS, dados[0], dados[1], dados[2])
-    )((nome, email, senha))
+    sucesso, mensagem, _ = criar_conta(CAMINHO_CONTAS, nome, email, senha)
+    imprimir_colorido(mensagem, "verde" if sucesso else "vermelho")
+    menu_principal()
 
 def menu_login() -> None:
     """Interface para login.
@@ -445,12 +443,17 @@ def menu_login() -> None:
     criar_cabecalho("Login")
     email = input("Email: ").strip()
     senha = input("Senha: ").strip()
-    compose(
-        lambda resultado: (
-            menu_profissional() if "@medico.com" in resultado[1]["email"] else menu_paciente()
-        ) if resultado[0] else menu_principal(),
-        lambda credenciais: login(CAMINHO_CONTAS, credenciais[0], credenciais[1])
-    )((email, senha))
+    
+    sucesso, mensagem = login(CAMINHO_CONTAS, email, senha)
+    imprimir_colorido(mensagem, "verde" if sucesso else "vermelho")
+    
+    if sucesso:
+        if "@medico.com" in email:
+            menu_profissional()
+        else:
+            menu_paciente()
+    else:
+        menu_principal()
 
 def sair() -> None:
     """Encerra o programa.
