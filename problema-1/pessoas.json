@@ -1,0 +1,20 @@
+{
+    "pessoas": {
+        "1": {
+            "tipo_pessoa": "cliente",
+            "status": "ativo",
+            "cep": 99999999,
+            "contato": 559999999999,
+            "nome": "Ramones",
+            "cpf": 1221012010
+        },
+        "2": {
+            "tipo_pessoa": "fornecedor",
+            "status": "inativo",
+            "cep": 409500,
+            "contato": 55093909999,
+            "razao_social": "TchÊ guris",
+            "cnpj": 120103931
+        }
+    }
+}

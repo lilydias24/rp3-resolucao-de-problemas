@@ -190,7 +190,7 @@ problema-2/
    - Funções pequenas e focadas
    - Fácil combinação e reutilização
 
-4. **Lazy Evaluation**:
+4. **Lazy Loading**:
    - Carregamento preguiçoso de dados
    - Processamento sob demanda
    - Eficiente para grandes volumes de dados
@@ -198,4 +198,5 @@ problema-2/
 ## Equipe
 **Grupo 05 - RP III - UNIPAMPA**  
 @author Emilly Dias
+@author Eric Moraes
 
