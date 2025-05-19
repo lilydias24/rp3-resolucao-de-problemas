@@ -1,6 +1,8 @@
 from .estoque import transportar_dados
 from estilo import print_terminal
 
+
+
 def listar_niveis():
     """Lista todos os produtos cadastrados no estoque e verifica o nível mínimo."""
     
