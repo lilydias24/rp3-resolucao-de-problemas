@@ -54,6 +54,14 @@ CAMINHO_BASE = Path(__file__).parent.parent
 CAMINHO_CONTAS = CAMINHO_BASE / "dados/contas.csv"
 CAMINHO_DADOS = CAMINHO_BASE / "dados/pacientes"
 
+diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+
+# Sobe um nível (de src/ para meu_projeto/)
+diretorio_pai = os.path.dirname(diretorio_atual)
+
+# Junta o caminho com a pasta "dados" e o arquivo
+caminho_arquivo = os.path.join(diretorio_pai, "dados", "dados_pacientes.csv")
+
 # Tipos
 OpcaoMenu = Tuple[Callable[[], None], str]
 Usuario = Dict[str, str]
@@ -167,7 +175,7 @@ def buscar_arquivo(mensagem: str) -> Optional[Path]:
         >>> print(caminho)
         PosixPath('dados.csv')
     """
-    caminho = input(mensagem).strip()
+    caminho = caminho_arquivo
     return Path(caminho) if caminho and Path(caminho).exists() else None
 
 def menu_principal() -> None:
@@ -264,24 +272,23 @@ def visualizar_dados_paciente() -> None:
         menu_paciente()
 
 def carregar_dados_paciente() -> None:
-    """Carrega arquivos de dados médicos do paciente.
-    
-    Permite ao paciente carregar seus dados de saúde a partir
-    de um arquivo CSV.
-    
-    Returns:
-        None: A função carrega os dados e retorna ao menu do paciente.
-    """
+    """Carrega arquivos de dados médicos do paciente."""
     criar_cabecalho("Carregar Meus Dados")
     caminho = buscar_arquivo("Caminho do arquivo CSV: ")
+    print("caminho:", caminho)
+    
     if caminho:
-        compose(
-            lambda _: imprimir_colorido("Dados carregados com sucesso!", "verde"),
-            lambda _: menu_paciente(),
-            carregar_dados_saude
-        )(caminho)
-    else:
-        menu_paciente()
+        try:
+            # Carrega os dados
+            dados = carregar_dados_saude(caminho)
+            if dados:
+                imprimir_colorido("Dados carregados com sucesso!", "verde")
+            else:
+                imprimir_colorido("Nenhum dado encontrado no arquivo.", "amarelo")
+        except Exception as e:
+            imprimir_colorido(f"Erro ao carregar dados: {str(e)}", "vermelho")
+    
+    menu_paciente()
 
 def analisar_dados() -> None:
     """Executa análise estatística sobre os dados médicos.

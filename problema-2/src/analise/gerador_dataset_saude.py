@@ -10,12 +10,6 @@ import csv
 import random
 from datetime import datetime, timedelta
 import os
-import logging
-from argparse import ArgumentParser
-
-# Configuração do logger
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 def gerar_dataset_csv(num_registros: int) -> str:
     """
@@ -27,8 +21,6 @@ def gerar_dataset_csv(num_registros: int) -> str:
     Returns:
         str: Caminho do arquivo CSV gerado
     """
-    logger.info(f"Criando Cabeçalho CSV. Campos: Data, Hora, Batimentos Cardíacos, Pressão Arterial, Glicose, Observações")
-    
     # Cria diretório para datasets se não existir
     caminho_base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     dir_datasets = os.path.join(caminho_base, "dados")
@@ -86,19 +78,8 @@ def gerar_dataset_csv(num_registros: int) -> str:
                 'Obs': '; '.join(obs) if obs else ''
             })
     
-    logger.info(f"Dataset gerado com sucesso: {caminho_arquivo}")
     return caminho_arquivo
 
 if __name__ == "__main__":
-    # Definindo argumentos para o script
-    gerenciador_args = ArgumentParser()
-    gerenciador_args.add_argument("--linhas", "-l", help="Número de linhas para serem geradas no CSV", default="10000", required=False)
-    gerenciador_args.add_argument("--caracteres", "-c", help="Número de caracteres da descrição", default="900000", required=False)
-    gerenciador_args.add_argument("--nome-arquivo", "-n", help="Nome do arquivo de saída", default="dataset_saude.csv", required=False)
-    args = gerenciador_args.parse_args()
-
-    # Exibindo os argumentos recebidos
-    logger.info(f"[Argumentos Recebidos] linhas={args.linhas}. caracteres={args.caracteres}. nome_arquivo={args.nome_arquivo}")
-
-    # Chamando função principal
-    gerar_dataset_csv(int(args.linhas))
+    # Teste do módulo
+    gerar_dataset_csv(10)
