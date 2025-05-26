@@ -23,6 +23,9 @@ Usando:
 `├── data/`  
 `│   └── __init__.py`            
 `│   └── conexao.py`              # Criação e acesso ao banco  
+`│   └── regras.json`             # Arquivo externo com regras configuráveis  
+`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite
+`│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco
 `├── models/`  
 `│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
