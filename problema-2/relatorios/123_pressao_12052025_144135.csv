@@ -1,0 +1,5 @@
+Data,Hora,Valor,Classificação,Unidade,Obs
+05/05/2025,14:59:43,111.0/222.0,alta,mmHg,Batimentos: Taquicardia; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:01:24,222.0/666.0,alta,mmHg,Batimentos: Bradicardia; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:06:13,3000.0/4444.0,alta,mmHg,Batimentos: acima do normal; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
+05/05/2025,15:11:49,1232.0/6323.0,alta,mmHg,Batimentos: acima do normal; Pressão: Hipertensão Estágio 2; Glicose: Hipoglicemia
