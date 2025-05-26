@@ -1,0 +1,52 @@
+[
+  {
+    "id": "regra_exemplo_1",
+    "descricao": "Recomendar Desenvolvimento de Software para interessados em tecnologia e com habilidade em programação.",
+    "criterios": {
+      "interesses": ["tecnologia"],
+      "habilidades": ["programação"],
+      "desempenho_escolar": {
+        "matematica": 7,
+        "fisica": 7,
+        "portugues": 6
+      }
+    },
+    "recomendacao": "Desenvolvimento de Software",
+    "peso_total_regra": 10,
+    "pesos_criterios": {
+      "interesses": 0.3,
+      "habilidades": 0.4,
+      "desempenho_escolar": 0.3
+    }
+  },
+  {
+    "id": "regra_exemplo_2_humanas",
+    "descricao": "Recomendar Pesquisa em Humanas para estudantes com interesse e bom desempenho em areas humanisticas.",
+    "criterios": {
+      "interesses": ["historia", "literatura", "sociologia", "antropologia", "filosofia"],
+      "desempenho_escolar": {"historia": 8, "literatura": 8, "geografia": 7, "sociologia": 7}
+    },
+    "recomendacao": "Pesquisa em Humanas",
+    "peso_total_regra": 12,
+    "pesos_criterios": {
+      "interesses": 0.4,
+      "desempenho_escolar": 0.6
+    }
+  },
+  {
+    "id": "regra_ciencia_dados",
+    "descricao": "Recomendar Ciência de Dados para estudantes com interesse em matemática, estatística e programação.",
+    "criterios": {
+      "interesses": ["matematica", "estatistica", "tecnologia"],
+      "habilidades": ["programação", "análise"],
+      "desempenho_escolar": {"matematica": 8, "fisica": 7}
+    },
+    "recomendacao": "Ciência de Dados",
+    "peso_total_regra": 15,
+    "pesos_criterios": {
+      "interesses": 0.3,
+      "habilidades": 0.4,
+      "desempenho_escolar": 0.3
+    }
+  }
+] 
