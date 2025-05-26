@@ -22,14 +22,13 @@ Usando:
 `│   └── __init__.py`            
 `├── data/`  
 `│   └── __init__.py`            
-`│   └── logica.py`             # Definição das regras lógicas do sistema  
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `├── models/`  
 `│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
-`│   ├── __init__.py
+`│   ├── __init__.py`
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
 `│   ├── motor.py`                # Motor de inferência  
 `│   ├── regra.py`                # Representação de regra lógica
