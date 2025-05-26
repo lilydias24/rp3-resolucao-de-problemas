@@ -1,7 +1,15 @@
 import json
 import os
+<<<<<<< HEAD
+<<<<<<< HEAD
 from datetime import datetime 
 from estilo import print_terminal
+=======
+=======
+>>>>>>> bb34a614cd59ada5f53f0daf9f1fd5973152f4ff
+from datetime import datetime
+
+>>>>>>> bb34a614cd59ada5f53f0daf9f1fd5973152f4ff
 dir_base = os.path.dirname(os.path.abspath(__file__))
 
 def transportar_dados(name_json):
