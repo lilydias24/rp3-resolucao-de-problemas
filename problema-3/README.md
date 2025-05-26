@@ -19,20 +19,21 @@ Usando:
 `├── main.py`                     # Menu principal e execução 
 `├── utils/`  
 `├── data/`  
-`│   └── regras.json`             # Arquivo externo com regras configuráveis  
+`│   └── logica.py`             # Definição das regras lógicas do sistema  
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `├── models/`  
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
-`│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
-`│   ├── regra.py`                # Representação de regra lógica 
-`│   └── motor.py`                # Motor de inferência  
+`│   ├── __init__.py
+`│   ├── motor.py`                # Motor de inferência  
+`│   ├── regra.py`                # Representação de regra lógica
+`│   └── logica.py`                # Implementação das regras lógicas  
 `├── reports/`  
 `│   ├── exportador_csv.py`       # Gera CSVs  
 `│   └── graficos.py`             # Gera gráficos  
 `└── tests/`  
-`    └── test_motor.py`           # Testes de inferência  
+`    └── test_exemplo.py`           # Exemplo de uso do sistema  
 
 
 -> Uteis para o grupo : 

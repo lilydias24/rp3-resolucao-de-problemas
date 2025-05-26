@@ -1,58 +1,55 @@
+"""
+Teste do sistema de recomendação de carreiras usando paradigma lógico.
+"""
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from logic.logica import pode_seguir_carreira, carreiras_proximas, CARRERAS, regra_interesse, regra_habilidade, regra_desempenho
 from logic.motor import MotorDeInferencia
-from models.estudante import Estudante
 
 def test_estudante_multiplas_carreiras():
-    """
-    Testa o processamento de um estudante que atende aos critérios de múltiplas carreiras.
-    """
-    # estudante pra teste
-    estudante_exemplo = Estudante(
-        interesses=["tecnologia", "matematica", "estatistica", "ciencia", "antropologia"],
-        habilidades=["programação", "análise", "resolução de problemas", "historia", "literatura"],
-        desempenho_escolar={
-            "matematica": 9,
-            "fisica": 8,
-            "portugues": 7,
-            "estatistica": 9,
-            "geografia": 8,
-            "sociologia": 10,
-            "literatura": 10,
-            "espanhol": 6,
-            "programacao": 10,
-            "historia": 10
+    """Testa um estudante que tem perfil para múltiplas carreiras."""
+    estudante = {
+        'interesses': ['tecnologia', 'matematica', 'estatistica', 'sociologia', 'historia', 'literatura'],
+        'habilidades': ['programacao', 'resolucao_problemas', 'analise_dados', 'analise', 'pesquisa', 'escrita', 'trabalho_equipe'],
+        'desempenho_escolar': {
+            'matematica': 10,
+            'fisica': 10,
+            'programacao': 5,
+            'estatistica': 7,
+            'historia': 10,
+            'literatura': 10,
+            'geografia': 10,
+            'sociologia': 10
         }
-    )
-
-    print(f"\nTestando estudante: {estudante_exemplo}")
-
-    motor = MotorDeInferencia()
-    resultado = motor.processa_estudante(estudante_exemplo)
-
-    print("\nResultado da Análise:")
+    }
     
-    if resultado["nenhuma_recomendacao"]:
-        print("\nNenhuma carreira atende completamente aos seus critérios atuais.")
-        
-        if resultado["carreiras_proximas"]:
-            print("\nCarreiras com potencial baseado em suas habilidades e desempenho:")
-            for carreira in resultado["carreiras_proximas"]:
-                print(f"\n- {carreira['carreira']}")
-                print(f"  Proximidade: {carreira['proximidade']*100:.1f}%")
-                if carreira['proximidade'] > 0.5:
-                    print("  Você tem as habilidades necessárias, mas precisa desenvolver interesse na área.")
-                else:
-                    print("  Você precisaria desenvolver mais habilidades e interesse na área.")
-        else:
-            print("\nNão encontramos carreiras próximas dos seus critérios atuais.")
-    else:
-        print("\nCarreiras recomendadas:")
-        recomendacoes_ordenadas = sorted(resultado["recomendacoes"].items(), key=lambda item: item[1], reverse=True)
-        for recomendacao, pontuacao in recomendacoes_ordenadas:
-            print(f"- {recomendacao}: Pontuação {pontuacao:.2f}")
+    motor = MotorDeInferencia()
+    analise = motor.processa_estudante(estudante)
+    
+    print("\nTestando estudante com perfil:")
+    print(f"Interesses: {estudante['interesses']}")
+    print(f"Habilidades: {estudante['habilidades']}")
+    print(f"Desempenho: {estudante['desempenho_escolar']}\n")
+    
+    print("Carreiras recomendadas (atende aos requisitos mínimos):")
+    for carreira, score, explicacao in analise['carreiras_recomendadas']:
+        print(f"\n- {carreira} (score: {score:.2f})")
+        print(f"  {explicacao['interesse']}")
+        print(f"  {explicacao['habilidade']}")
+        print(f"  {explicacao['desempenho']}")
+        print(f"  ✓ Atende aos requisitos mínimos: pontuação total >= 0.8 e pelo menos 2 critérios com pontuação >= 0.7")
+    
+    print("\nCarreiras com potencial (não atende aos requisitos mínimos):")
+    for carreira in analise['carreiras_proximas']:
+        print(f"\n- {carreira['carreira']} (proximidade: {carreira['proximidade']:.2f})")
+        print(f"  {carreira['explicacao']['interesse']}")
+        print(f"  {carreira['explicacao']['habilidade']}")
+        print(f"  {carreira['explicacao']['desempenho']}")
+        if carreira.get('faltam_interesses'):
+            print(f"  Recomendação: Desenvolva interesse em: {', '.join(carreira['interesses_faltantes'])}")
+        print(f"  ✗ Não atende aos requisitos mínimos: pontuação total < 0.8 ou menos de 2 critérios com pontuação >= 0.7")
 
 if __name__ == "__main__":
     test_estudante_multiplas_carreiras() 
