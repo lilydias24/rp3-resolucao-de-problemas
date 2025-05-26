@@ -9,20 +9,39 @@ from data.conexao import conectar
 def criar_tabela_estudantes():
     """
     Cria a tabela 'estudantes' no banco de dados, se ainda não existir.
+    Se a tabela já existir, adiciona as novas colunas necessárias.
 
     A tabela contém:
-    - id (int): identificador único do estudante.
-    - interesses (text): interesses em formato JSON.
+    - id (int): identificador único do estudante
+    - nome (text): nome do estudante
+    - interesses (text): interesses em formato JSON
+    - habilidades (text): habilidades em formato JSON
+    - desempenho_escolar (text): desempenho acadêmico em formato JSON
     """
     con = conectar()
     cur = con.cursor()
+    
+    # Cria a tabela se não existir
     cur.execute("""
         CREATE TABLE IF NOT EXISTS estudantes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
-            interesses TEXT
+            interesses TEXT,
+            habilidades TEXT,
+            desempenho_escolar TEXT
         )
     """)
+    
+    # Verifica se as novas colunas existem e as adiciona se necessário
+    cur.execute("PRAGMA table_info(estudantes)")
+    colunas_existentes = [coluna[1] for coluna in cur.fetchall()]
+    
+    if 'habilidades' not in colunas_existentes:
+        cur.execute("ALTER TABLE estudantes ADD COLUMN habilidades TEXT")
+    
+    if 'desempenho_escolar' not in colunas_existentes:
+        cur.execute("ALTER TABLE estudantes ADD COLUMN desempenho_escolar TEXT")
+    
     con.commit()
     con.close()
 
@@ -36,8 +55,17 @@ def salvar_estudante(estudante):
     """
     con = conectar()
     cur = con.cursor()
+    
+    # Converte os dados para JSON
     interesses_json = json.dumps(estudante.interesses)
-    cur.execute("INSERT INTO estudantes (nome, interesses) VALUES (?, ?)", (estudante.nome, interesses_json))
+    habilidades_json = json.dumps(estudante.habilidades)
+    desempenho_json = json.dumps(estudante.desempenho_escolar)
+    
+    cur.execute("""
+        INSERT INTO estudantes (nome, interesses, habilidades, desempenho_escolar)
+        VALUES (?, ?, ?, ?)
+    """, (estudante.nome, interesses_json, habilidades_json, desempenho_json))
+    
     con.commit()
     con.close()
 
@@ -47,12 +75,28 @@ def listar_estudantes():
     Retorna todos os estudantes cadastrados no banco de dados.
 
     Returns:
-        list[tuple]: Lista de tuplas (id, nome, interesses_json).
+        list[tuple]: Lista de tuplas contendo (id, nome, interesses, habilidades, desempenho_escolar).
     """
     con = conectar()
     cur = con.cursor()
-    cur.execute("SELECT id, nome, interesses FROM estudantes")
+    cur.execute("""
+        SELECT id, nome, interesses, habilidades, desempenho_escolar 
+        FROM estudantes
+    """)
     rows = cur.fetchall()
     con.close()
-    return rows
+    
+    # Converte os dados JSON de volta para objetos Python
+    estudantes = []
+    for row in rows:
+        id_, nome, interesses_json, habilidades_json, desempenho_json = row
+        estudantes.append((
+            id_,
+            nome,
+            json.loads(interesses_json) if interesses_json else [],
+            json.loads(habilidades_json) if habilidades_json else [],
+            json.loads(desempenho_json) if desempenho_json else {}
+        ))
+    
+    return estudantes
 
