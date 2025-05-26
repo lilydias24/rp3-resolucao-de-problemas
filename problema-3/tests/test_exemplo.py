@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from logic.logica import pode_seguir_carreira, carreiras_proximas, CARRERAS, regra_interesse, regra_habilidade, regra_desempenho
+from logic.logica import pode_seguir_carreira, carreiras_proximas, CARREIRAS, regra_interesse, regra_habilidade, regra_desempenho
 from logic.motor import MotorDeInferencia
 
 def test_estudante_multiplas_carreiras():
