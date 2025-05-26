@@ -3,92 +3,96 @@ from pathlib import Path
 from typing import List, Dict, Callable
 
 dir_base = Path(__file__).parent
-path = dir_base.joinpath("..", "data", "dados_pacientes.csv").resolve()
-
-# novo header --> pressão
-head = ["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"]
-
+path = dir_base.joinpath("..", "dados", "dataset_saude.csv").resolve()
 
 def ler_csv(path: Path) -> List[Dict[str, str]]:
     """Lê todo o CSV (ou retorna lista vazia se não existir)."""
     try:
         with open(path, "r", encoding="utf-8", newline="") as f:
             return list(csv.DictReader(f))
-    except FileNotFoundError:
+    except Exception:
         return []
 
-
-def verifica_inteiro(valor_entrada: str) -> bool:
-    """True se valor_entrada for um inteiro."""
+def verifica_float(valor: str) -> bool:
+    """Verifica se um valor pode ser convertido para float."""
     try:
-        int(valor_entrada.strip())
+        float(valor)
         return True
-    except (ValueError, AttributeError):
+    except (ValueError, TypeError):
         return False
 
+def verifica_pressao(valor: str) -> bool:
+    """Verifica se o valor da pressão arterial está no formato correto (sistólica/diastólica)."""
+    try:
+        if '/' not in valor:
+            return False
+        sistolica, diastolica = valor.split('/')
+        return verifica_float(sistolica) and verifica_float(diastolica)
+    except (ValueError, TypeError):
+        return False
 
-valores_entrada: Dict[str, Callable[[int], bool]] = {
-    "Batimentos": lambda x: 60 <= x <= 100,
-    "Pressão": lambda x: 90 <= x <= 120,
-    "Glicose": lambda x: 70 <= x <= 99,
-}
-
-
-def filtrar_entradas(registros: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    """
-    Retorna só os registros onde algum campo:
-    - não é inteiro, ou
-    - está fora da faixa normal.
-    """
-
-    def invalido(rec: Dict[str, str]) -> bool:
-        return any(
-            (not verifica_inteiro(rec[campo]))
-            or (not valores_entrada[campo](int(rec[campo].strip())))
-            for campo in valores_entrada
-        )
-
-    return list(filter(invalido, registros))
-
-
-def segmentar_categoria(dados: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
-    """
-    Agrupa, por cada campo, a lista de registros inválidos ou fora da faixa.
-    """
-    return {
-        campo: list(
-            filter(
-                lambda rec, f=campo: (
-                    (not verifica_inteiro(rec[f]))
-                    or (not valores_entrada[f](int(rec[f].strip())))
-                ),
-                dados,
-            )
-        )
-        for campo in valores_entrada
+def segmentar_categoria(registros: List[Dict[str, str]]) -> Dict[str, List[Dict[str, str]]]:
+    """Segmenta os registros por categoria de anormalidade."""
+    categorias = {
+        'batimentos': [],
+        'pressao': [],
+        'glicose': []
     }
+    
+    for registro in registros:
+        try:
+            # Verifica batimentos
+            if 'Batimentos' in registro:
+                valor = registro['Batimentos'].strip()
+                if valor and verifica_float(valor):
+                    batimentos = float(valor)
+                    if batimentos < 40 or batimentos > 200:
+                        categorias['batimentos'].append(registro)
 
+            # Verifica pressão
+            if 'Pressão' in registro:
+                valor = registro['Pressão'].strip()
+                if valor and verifica_pressao(valor):
+                    sistolica, diastolica = map(float, valor.split('/'))
+                    if sistolica < 60 or sistolica > 200 or diastolica < 40 or diastolica > 120:
+                        categorias['pressao'].append(registro)
+
+            # Verifica glicose
+            if 'Glicose' in registro:
+                valor = registro['Glicose'].strip()
+                if valor and verifica_float(valor):
+                    glicose = float(valor)
+                    if glicose < 40 or glicose > 400:
+                        categorias['glicose'].append(registro)
+
+        except Exception:
+            continue
+    
+    return categorias
 
 def main():
     if not path.exists():
-        print(
-            "CSV não encontrado. Rode primeiro o save() para gerar o arquivo com o novo cabeçalho."
-        )
+        print("Arquivo dataset_saude.csv não encontrado.")
         return
 
     registros = ler_csv(path)
-    fora = filtrar_entradas(registros)
-    print(f"\nTotal de registros inválidos ou fora do normal: {len(fora)}\n")
+    if not registros:
+        print("Nenhum registro encontrado no arquivo.")
+        return
 
-    segmentos = segmentar_categoria(fora)
+    segmentos = segmentar_categoria(registros)
+    
+    print("\nRegistros com valores anormais:")
     for campo, regs in segmentos.items():
-        print(f"{campo}: {len(regs)} registro(s) fora do normal\n")
-
-    for campo, regs in segmentos.items():
-        print(f"\n– {campo} ({len(regs)}):")
-        for rec in regs:
-            print(f"  {rec['Data']} {rec['Hora']} — {campo}: {rec[campo]}")
-
+        print(f"\n{campo.upper()}: {len(regs)} registro(s)")
+        if regs:
+            for rec in regs[:3]:  # Mostra até 3 exemplos
+                if campo == 'batimentos':
+                    print(f"  Data: {rec.get('Data', 'N/A')} - Batimentos: {rec.get('Batimentos', 'N/A')}")
+                elif campo == 'pressao':
+                    print(f"  Data: {rec.get('Data', 'N/A')} - Pressão: {rec.get('Pressão', 'N/A')}")
+                elif campo == 'glicose':
+                    print(f"  Data: {rec.get('Data', 'N/A')} - Glicose: {rec.get('Glicose', 'N/A')}")
 
 if __name__ == "__main__":
     main()

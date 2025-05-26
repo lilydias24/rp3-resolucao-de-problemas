@@ -22,24 +22,25 @@ Usando:
 `│   └── __init__.py`            
 `├── data/`  
 `│   └── __init__.py`            
-`│   └── regras.json`             # Arquivo externo com regras configuráveis  
+`│   └── logica.py`             # Definição das regras lógicas do sistema  
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `├── models/`  
 `│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
-`│   └── __init__.py`            
+`│   ├── __init__.py
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
-`│   ├── regra.py`                # Representação de regra lógica 
-`│   └── motor.py`                # Motor de inferência  
+`│   ├── motor.py`                # Motor de inferência  
+`│   ├── regra.py`                # Representação de regra lógica
+`│   └── logica.py`                # Implementação das regras lógicas  
 `├── reports/`  
 `│   └── __init__.py`            
 `│   ├── exportador_csv.py`       # Gera CSVs  
 `│   └── graficos.py`             # Gera gráficos  
 `└── tests/`  
 `    └── __init__.py`            
-`    └── test_motor.py`           # Testes de inferência  
+`    └── test_exemplo.py`           # Testes de inferência  
 
 
 -> Uteis para o grupo : 
