@@ -27,11 +27,10 @@ def verifica_inteiro(valor_entrada: str) -> bool:
         return False
 
 
-
 valores_entrada: Dict[str, Callable[[int], bool]] = {
     "Batimentos": lambda x: 60 <= x <= 100,
-    "Pressão":    lambda x: 90 <= x <= 120,
-    "Glicose":    lambda x: 70 <= x <= 99
+    "Pressão": lambda x: 90 <= x <= 120,
+    "Glicose": lambda x: 70 <= x <= 99,
 }
 
 
@@ -41,12 +40,14 @@ def filtrar_entradas(registros: List[Dict[str, str]]) -> List[Dict[str, str]]:
     - não é inteiro, ou
     - está fora da faixa normal.
     """
+
     def invalido(rec: Dict[str, str]) -> bool:
         return any(
-            (not verifica_inteiro(rec[campo])) or
-            (not valores_entrada[campo](int(rec[campo].strip())))
+            (not verifica_inteiro(rec[campo]))
+            or (not valores_entrada[campo](int(rec[campo].strip())))
             for campo in valores_entrada
         )
+
     return list(filter(invalido, registros))
 
 
@@ -55,20 +56,24 @@ def segmentar_categoria(dados: List[Dict[str, str]]) -> Dict[str, List[Dict[str,
     Agrupa, por cada campo, a lista de registros inválidos ou fora da faixa.
     """
     return {
-        campo: list(filter(
-            lambda rec, f=campo: (
-                (not verifica_inteiro(rec[f])) or
-                (not valores_entrada[f](int(rec[f].strip())))
-            ),
-            dados
-        ))
+        campo: list(
+            filter(
+                lambda rec, f=campo: (
+                    (not verifica_inteiro(rec[f]))
+                    or (not valores_entrada[f](int(rec[f].strip())))
+                ),
+                dados,
+            )
+        )
         for campo in valores_entrada
     }
 
 
 def main():
     if not path.exists():
-        print("CSV não encontrado. Rode primeiro o save() para gerar o arquivo com o novo cabeçalho.")
+        print(
+            "CSV não encontrado. Rode primeiro o save() para gerar o arquivo com o novo cabeçalho."
+        )
         return
 
     registros = ler_csv(path)
@@ -79,11 +84,11 @@ def main():
     for campo, regs in segmentos.items():
         print(f"{campo}: {len(regs)} registro(s) fora do normal\n")
 
-
     for campo, regs in segmentos.items():
         print(f"\n– {campo} ({len(regs)}):")
         for rec in regs:
             print(f"  {rec['Data']} {rec['Hora']} — {campo}: {rec[campo]}")
+
 
 if __name__ == "__main__":
     main()

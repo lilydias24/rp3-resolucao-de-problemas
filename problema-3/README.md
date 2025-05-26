@@ -17,21 +17,28 @@ Usando:
 
 `/sistema_carreiras/`  
 `├── main.py`                     # Menu principal e execução 
+`├── __init__.py`                             
 `├── utils/`  
+`│   └── __init__.py`            
 `├── data/`  
+`│   └── __init__.py`            
 `│   └── regras.json`             # Arquivo externo com regras configuráveis  
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `├── models/`  
+`│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
+`│   └── __init__.py`            
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
 `│   ├── regra.py`                # Representação de regra lógica 
 `│   └── motor.py`                # Motor de inferência  
 `├── reports/`  
+`│   └── __init__.py`            
 `│   ├── exportador_csv.py`       # Gera CSVs  
 `│   └── graficos.py`             # Gera gráficos  
 `└── tests/`  
+`    └── __init__.py`            
 `    └── test_motor.py`           # Testes de inferência  
 
 
