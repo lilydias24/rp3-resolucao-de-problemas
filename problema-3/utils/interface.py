@@ -3,6 +3,7 @@ Módulo de interface com o usuário.
 
 Contém funções para interação com o usuário via terminal.
 """
+import json
 from models.estudante import Estudante
 
 def coletar_interesses():
@@ -17,6 +18,35 @@ def coletar_interesses():
     entrada = input("> Digite seus interesses, separados por vírgula (ex: artes, ciência, tecnologia):\n>> ")
     interesses = [i.strip().lower() for i in entrada.split(",") if i.strip()]
     estudante = Estudante(nome=nome, interesses=interesses)
+    return estudante
+
+
+def coletar_habilidades(estudante):
+    """
+    Solicita ao usuário que informe suas habilidades.
+
+    Args:
+        estudante (Estudante): Instância do estudante que terá suas habilidades atualizadas.
+
+    Returns:
+        Estudante: Instância atualizada com as habilidades.
+    """
+    print("\n\t Cadastro de Habilidades : \n")
+    print("Digite suas habilidades, separadas por vírgula.")
+    print("Exemplos: programação, resolução de problemas, trabalho em equipe, análise de dados")
+    entrada = input(">> ").strip()
+    
+    habilidades = [h.strip().lower() for h in entrada.split(",") if h.strip()]
+    for habilidade in habilidades:
+        try:
+            estudante.adicionar_habilidade(habilidade)
+        except (TypeError, ValueError) as e:
+            print(f"Erro ao adicionar habilidade '{habilidade}': {str(e)}")
+    
+    print("\n\t Habilidades registradas : \n")
+    for habilidade in estudante.habilidades:
+        print(f"-> {habilidade}")
+    
     return estudante
 
 
@@ -39,7 +69,6 @@ def coletar_desempenho_academico(estudante):
         "historia", "geografia", "ingles", "programacao", "artes"
     ]
     
-    print("\n\t Desempenho acadêmico: \n")
     desempenho = {}
     
     for disciplina in disciplinas:
@@ -88,6 +117,36 @@ def exibir_estudantes(estudantes):
     Args:
         estudantes (list[tuple]): Lista de tuplas com dados dos estudantes.
     """
-    print("\n\t Estudantes salvos: \n")
+    if not estudantes:
+        print("\nNenhum estudante cadastrado no sistema.")
+        return
+
+    print("\n=== Estudantes Cadastrados ===")
     for est in estudantes:
-        print(f"ID: {est[0]} | Nome: {est[1]} | Interesses: {est[2]}") 
+        print(f"\nID: {est[0]}")
+        print(f"Nome: {est[1]}")
+        
+        # Interesses
+        interesses = est[2] if est[2] else []
+        print(f"Interesses: {interesses}")
+        
+        # Habilidades
+        habilidades = est[3] if est[3] else []
+        if habilidades:
+            print(f"Habilidades: {habilidades}")
+        
+        # Desempenho Escolar
+        desempenho = est[4] if est[4] else {}
+        if desempenho:
+            print("Desempenho Acadêmico:")
+            for disciplina, nota in desempenho.items():
+                print(f"  - {disciplina}: {nota}")
+        
+        print("-" * 40)
+
+        dados_estudante = {
+            'nome': est[1],
+            'interesses': json.dumps(interesses),
+            'habilidades': json.dumps(habilidades) if len(est) > 3 and est[3] else [],
+            'desempenho_escolar': json.dumps(desempenho) if len(est) > 4 and est[4] else {}
+        } 

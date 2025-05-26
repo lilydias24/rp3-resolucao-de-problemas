@@ -61,6 +61,13 @@ def salvar_estudante(estudante):
     habilidades_json = json.dumps(estudante.habilidades)
     desempenho_json = json.dumps(estudante.desempenho_escolar)
     
+    # Debug: Imprime os dados antes de salvar
+    print("\nDados a serem salvos:")
+    print(f"Nome: {estudante.nome}")
+    print(f"Interesses: {interesses_json}")
+    print(f"Habilidades: {habilidades_json}")
+    print(f"Desempenho: {desempenho_json}")
+    
     cur.execute("""
         INSERT INTO estudantes (nome, interesses, habilidades, desempenho_escolar)
         VALUES (?, ?, ?, ?)
@@ -79,24 +86,61 @@ def listar_estudantes():
     """
     con = conectar()
     cur = con.cursor()
+    
+    # Debug: Verifica a estrutura da tabela
+    cur.execute("PRAGMA table_info(estudantes)")
+    colunas = cur.fetchall()
+    print("\nEstrutura da tabela:")
+    for coluna in colunas:
+        print(f"Coluna: {coluna[1]}, Tipo: {coluna[2]}")
+    
+    # Busca os dados
     cur.execute("""
         SELECT id, nome, interesses, habilidades, desempenho_escolar 
         FROM estudantes
     """)
     rows = cur.fetchall()
-    con.close()
+    
+    # Debug: Imprime os dados brutos
+    print("\nDados brutos do banco:")
+    for row in rows:
+        print(f"\nID: {row[0]}")
+        print(f"Nome: {row[1]}")
+        print(f"Interesses (raw): {row[2]}")
+        print(f"Habilidades (raw): {row[3]}")
+        print(f"Desempenho (raw): {row[4]}")
     
     # Converte os dados JSON de volta para objetos Python
     estudantes = []
     for row in rows:
         id_, nome, interesses_json, habilidades_json, desempenho_json = row
-        estudantes.append((
-            id_,
-            nome,
-            json.loads(interesses_json) if interesses_json else [],
-            json.loads(habilidades_json) if habilidades_json else [],
-            json.loads(desempenho_json) if desempenho_json else {}
-        ))
+        
+        # Debug: Imprime os dados após conversão
+        print(f"\nProcessando estudante {nome}:")
+        
+        try:
+            interesses = json.loads(interesses_json) if interesses_json else []
+            print(f"Interesses convertidos: {interesses}")
+        except Exception as e:
+            print(f"Erro ao converter interesses: {str(e)}")
+            interesses = []
+        
+        try:
+            habilidades = json.loads(habilidades_json) if habilidades_json else []
+            print(f"Habilidades convertidas: {habilidades}")
+        except Exception as e:
+            print(f"Erro ao converter habilidades: {str(e)}")
+            habilidades = []
+        
+        try:
+            desempenho = json.loads(desempenho_json) if desempenho_json else {}
+            print(f"Desempenho convertido: {desempenho}")
+        except Exception as e:
+            print(f"Erro ao converter desempenho: {str(e)}")
+            desempenho = {}
+        
+        estudantes.append((id_, nome, interesses, habilidades, desempenho))
     
+    con.close()
     return estudantes
 
