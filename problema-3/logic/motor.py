@@ -49,41 +49,60 @@ class MotorDeInferencia:
     
     def processa_estudante(self, estudante):
         """
-        Processa o perfil do estudante e retorna as recomendações de carreiras.
-        Aplica as regras lógicas para inferir as carreiras mais adequadas.
-        
-        Args:
-            estudante (dict): Dicionário contendo o perfil do estudante
-                com interesses, habilidades e desempenho escolar.
-        
-        Returns:
-            dict: Dicionário contendo as carreiras recomendadas e próximas.
+        Processa o perfil do estudante e retorna as carreiras recomendadas e próximas.
         """
-        # Aplica as regras para encontrar carreiras recomendadas
         carreiras_recomendadas = []
+        lista_carreiras_proximas = []
+        
+        # 
         for carreira in CARRERAS:
-            pode_seguir, pontuacao = pode_seguir_carreira(estudante, carreira)
-            
-            # Obtém as pontuações individuais para explicação
-            _, pont_int = regra_interesse(estudante, carreira)
-            _, pont_hab = regra_habilidade(estudante, carreira)
-            _, pont_des = regra_desempenho(estudante, carreira)
+            # verif se o estudante pode seguir a carreira
+            pode_seguir, pontuacao_total = pode_seguir_carreira(estudante, carreira)
             
             if pode_seguir:
+                # da as pontuações individuais para a explicação
+                _, pont_int = regra_interesse(estudante, carreira)
+                _, pont_hab = regra_habilidade(estudante, carreira)
+                _, pont_des = regra_desempenho(estudante, carreira)
+                
+                # calcula o que o estudante tem e o que falta
+                interesses_estudante = set(estudante['interesses'])
+                interesses_carreira = set(CARRERAS[carreira]['interesses'])
+                interesses_faltantes = list(interesses_carreira - interesses_estudante)
+                interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
+                
+                habilidades_estudante = set(estudante['habilidades'])
+                habilidades_carreira = set(CARRERAS[carreira]['habilidades'])
+                habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
+                habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
+                
+                desempenho_carreira = CARRERAS[carreira]['desempenho']
+                desempenho_estudante = estudante['desempenho_escolar']
+                materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
+                materias_atendidas = len([m for m in desempenho_carreira if m in desempenho_estudante and desempenho_estudante[m] >= 7])
+                
                 explicacao = {
-                    'interesse': self._explica_regra(estudante, carreira, 'interesse', pont_int),
-                    'habilidade': self._explica_regra(estudante, carreira, 'habilidade', pont_hab),
-                    'desempenho': self._explica_regra(estudante, carreira, 'desempenho', pont_des)
+                    'interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_carreira)} interesses necessários. " + \
+                               (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
+                    'habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_carreira)} habilidades necessárias. " + \
+                                (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
+                    'desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_carreira)} notas necessárias. " + \
+                                 (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
                 }
-                carreiras_recomendadas.append((carreira, pontuacao, explicacao))
+                
+                carreiras_recomendadas.append({
+                    'carreira': carreira,
+                    'score': pontuacao_total,
+                    'explicacao': explicacao
+                })
         
-        # Ordena as carreiras recomendadas por pontuação
-        carreiras_recomendadas.sort(key=lambda x: x[1], reverse=True)
+        # ordena as carreiras recomendadas por score
+        carreiras_recomendadas.sort(key=lambda x: x['score'], reverse=True)
         
-        # Aplica as regras para encontrar carreiras próximas
-        carreiras_proximas_list = carreiras_proximas(estudante)
+        # da as carreiras próximas
+        lista_carreiras_proximas = carreiras_proximas(estudante)
         
         return {
             'carreiras_recomendadas': carreiras_recomendadas,
-            'carreiras_proximas': carreiras_proximas_list
+            'carreiras_proximas': lista_carreiras_proximas
         }
