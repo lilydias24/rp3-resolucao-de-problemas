@@ -1,0 +1,20 @@
+[
+    {
+        "carreira": "Engenharia de Software",
+        "condicoes": {
+            "interesses": ["tecnologia"],
+            "habilidades": ["programação"],
+            "desempenho": {"matemática": 7}
+        },
+        "justificativa": "Você tem interesse em tecnologia, sabe programar e tem bom desempenho em matemática."
+    },
+    {
+        "carreira": "Jornalismo Científico",
+        "condicoes": {
+            "interesses": ["ciências"],
+            "habilidades": ["redação"],
+            "desempenho": {"português": 8}
+        },
+        "justificativa": "Você tem interesse em ciências, boa escrita e vai bem em português."
+    }
+]
