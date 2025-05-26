@@ -4,7 +4,7 @@ Seguindo o paradigma lógico, definimos fatos e regras de forma declarativa.
 """
 
 # fatos sobre carreiras e seus requisitos
-CARRERAS = {
+CARREIRAS = {
     'desenvolvimento_software': {
         'interesses': {
             'tecnologia': 0.4,
@@ -63,7 +63,7 @@ def regra_interesse(estudante, carreira):
     """
     Regra: Um estudante tem interesse em uma carreira se possui os interesses necessários.
     """
-    interesses_carreira = CARRERAS[carreira]['interesses']
+    interesses_carreira = CARREIRAS[carreira]['interesses']
     interesses_estudante = set(estudante['interesses'])
     
     pontuacao = sum(
@@ -80,7 +80,7 @@ def regra_habilidade(estudante, carreira):
     """
     Regra: Um estudante tem habilidade para uma carreira se possui as habilidades necessárias.
     """
-    habilidades_carreira = CARRERAS[carreira]['habilidades']
+    habilidades_carreira = CARREIRAS[carreira]['habilidades']
     habilidades_estudante = set(estudante['habilidades'])
     
     pontuacao = sum(
@@ -97,7 +97,7 @@ def regra_desempenho(estudante, carreira):
     """
     Regra: Um estudante tem desempenho adequado para uma carreira se possui as notas necessárias.
     """
-    desempenho_carreira = CARRERAS[carreira]['desempenho']
+    desempenho_carreira = CARREIRAS[carreira]['desempenho']
     desempenho_estudante = estudante['desempenho_escolar']
     
     pontuacao = sum(
@@ -121,10 +121,10 @@ def pode_seguir_carreira(estudante, carreira):
     tem_hab, pont_hab = regra_habilidade(estudante, carreira)
     tem_des, pont_des = regra_desempenho(estudante, carreira)
     
-    # Calcula os pesos totais de cada regra
-    peso_interesse = sum(CARRERAS[carreira]['interesses'].values())
-    peso_habilidade = sum(CARRERAS[carreira]['habilidades'].values())
-    peso_desempenho = sum(CARRERAS[carreira]['desempenho'].values())
+    # calcula os pesos totais de cada regra
+    peso_interesse = sum(CARREIRAS[carreira]['interesses'].values())
+    peso_habilidade = sum(CARREIRAS[carreira]['habilidades'].values())
+    peso_desempenho = sum(CARREIRAS[carreira]['desempenho'].values())
     peso_total = peso_interesse + peso_habilidade + peso_desempenho
     
     # calcula a pontuação total ponderada
@@ -143,7 +143,7 @@ def carreiras_proximas(estudante):
     """
     resultados = []
     
-    for carreira in CARRERAS:
+    for carreira in CARREIRAS:
         # primeiro verifica se a carreira ja é recomendada
         pode_seguir, pontuacao_total = pode_seguir_carreira(estudante, carreira)
         
@@ -157,9 +157,9 @@ def carreiras_proximas(estudante):
         _, pont_des = regra_desempenho(estudante, carreira)
         
         # calcula os pesos totais de cada regra
-        peso_interesse = sum(CARRERAS[carreira]['interesses'].values())
-        peso_habilidade = sum(CARRERAS[carreira]['habilidades'].values())
-        peso_desempenho = sum(CARRERAS[carreira]['desempenho'].values())
+        peso_interesse = sum(CARREIRAS[carreira]['interesses'].values())
+        peso_habilidade = sum(CARREIRAS[carreira]['habilidades'].values())
+        peso_desempenho = sum(CARREIRAS[carreira]['desempenho'].values())
         peso_total = peso_interesse + peso_habilidade + peso_desempenho
         
         # calcula a pontuação total ponderada
@@ -168,16 +168,16 @@ def carreiras_proximas(estudante):
         
         # calcula o que o estudante tem e o que falta
         interesses_estudante = set(estudante['interesses'])
-        interesses_carreira = set(CARRERAS[carreira]['interesses'])
+        interesses_carreira = set(CARREIRAS[carreira]['interesses'])
         interesses_faltantes = list(interesses_carreira - interesses_estudante)
         interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
         
         habilidades_estudante = set(estudante['habilidades'])
-        habilidades_carreira = set(CARRERAS[carreira]['habilidades'])
+        habilidades_carreira = set(CARREIRAS[carreira]['habilidades'])
         habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
         habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
         
-        desempenho_carreira = CARRERAS[carreira]['desempenho']
+        desempenho_carreira = CARREIRAS[carreira]['desempenho']
         desempenho_estudante = estudante['desempenho_escolar']
         materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
         materias_atendidas = len([m for m in desempenho_carreira if m in desempenho_estudante and desempenho_estudante[m] >= 7])
