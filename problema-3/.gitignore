@@ -6,4 +6,5 @@ __pycache__
 .pytest_cache/
 dataset_saude.csv
 .idea/
+
 # Ignora arquivos e pastas desnecessários
