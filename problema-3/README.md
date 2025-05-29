@@ -17,22 +17,32 @@ Usando:
 
 `/sistema_carreiras/`  
 `├── main.py`                     # Menu principal e execução 
+`├── __init__.py`                             
 `├── utils/`  
+`│   └── __init__.py`            
 `├── data/`  
-`│   └── regras.json`             # Arquivo externo com regras configuráveis  
+`│   └── __init__.py`            
 `│   └── conexao.py`              # Criação e acesso ao banco  
+`│   └── regras.json`             # Arquivo externo com regras configuráveis  
+`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite
+`│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco
 `├── models/`  
+`│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
+`│   ├── __init__.py`
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
-`│   ├── regra.py`                # Representação de regra lógica 
-`│   └── motor.py`                # Motor de inferência  
+`│   ├── motor.py`                # Motor de inferência  
+`│   ├── regra.py`                # Representação de regra lógica
+`│   └── logica.py`                # Implementação das regras lógicas  
 `├── reports/`  
+`│   └── __init__.py`            
 `│   ├── exportador_csv.py`       # Gera CSVs  
 `│   └── graficos.py`             # Gera gráficos  
 `└── tests/`  
-`    └── test_motor.py`           # Testes de inferência  
+`    └── __init__.py`            
+`    └── test_exemplo.py`           # Testes de inferência  
 
 
 -> Uteis para o grupo : 
