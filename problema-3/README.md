@@ -24,7 +24,7 @@ Usando:
 `│   └── __init__.py`            
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `│   └── regras.json`             # Arquivo externo com regras configuráveis  
-`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite
+`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite  
 `│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco
 `├── models/`  
 `│   └── __init__.py`            
@@ -34,7 +34,7 @@ Usando:
 `│   ├── __init__.py`
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
 `│   ├── motor.py`                # Motor de inferência  
-`│   ├── regra.py`                # Representação de regra lógica
+`│   ├── regra.py`                # Representação de regra lógica  
 `│   └── logica.py`                # Implementação das regras lógicas  
 `├── reports/`  
 `│   └── __init__.py`            
