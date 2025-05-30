@@ -1,108 +1,190 @@
 """
 Motor de inferência para o sistema de recomendação de carreiras.
 """
-from logic.logica import pode_seguir_carreira, carreiras_proximas, CARREIRAS, regra_interesse, regra_habilidade, regra_desempenho
+import json
+import os
 
 class MotorDeInferencia:
     """
     Motor de inferência que processa o perfil do estudante e retorna recomendações de carreiras.
-    Implementa o paradigma lógico através de fatos e regras.
+    Lê as carreiras e critérios do arquivo regras.json, usando pesos para disciplinas.
     """
-    
-    def __init__(self):
-        """Inicializa o motor de inferência."""
-        pass
-    
-    def _explica_regra(self, estudante, carreira, tipo_regra, pontuacao):
-        """
-        Gera uma explicação sobre como uma regra foi aplicada.
-        
-        Args:
-            estudante (dict): Perfil do estudante
-            carreira (str): Nome da carreira
-            tipo_regra (str): Tipo da regra (interesse, habilidade, desempenho)
-            pontuacao (float): Pontuação obtida na regra
-            
-        Returns:
-            str: Explicação da regra
-        """
-        if tipo_regra == 'interesse':
-            interesses_carreira = CARREIRAS[carreira]['interesses']
-            interesses_estudante = set(estudante['interesses'])
-            interesses_faltantes = [i for i in interesses_carreira if i not in interesses_estudante]
-            return f"Regra de Interesse: Você tem {len(interesses_estudante)} dos {len(interesses_carreira)} interesses necessários. " + \
-                   (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos.")
-        
-        elif tipo_regra == 'habilidade':
-            habilidades_carreira = CARREIRAS[carreira]['habilidades']
-            habilidades_estudante = set(estudante['habilidades'])
-            habilidades_faltantes = [h for h in habilidades_carreira if h not in habilidades_estudante]
-            return f"Regra de Habilidade: Você tem {len(habilidades_estudante)} das {len(habilidades_carreira)} habilidades necessárias. " + \
-                   (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas.")
-        
-        elif tipo_regra == 'desempenho':
-            desempenho_carreira = CARREIRAS[carreira]['desempenho']
-            desempenho_estudante = estudante['desempenho_escolar']
-            materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
-            return f"Regra de Desempenho: Você tem {len(desempenho_carreira) - len(materias_faltantes)} das {len(desempenho_carreira)} notas necessárias. " + \
-                   (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-    
+
+    def __init__(self, caminho_regras):
+        with open(caminho_regras, encoding='utf-8') as f:
+            self.regras = json.load(f)
+
     def processa_estudante(self, estudante):
         """
         Processa o perfil do estudante e retorna as carreiras recomendadas e próximas.
+        O score de cada carreira é calculado com base nos pesos definidos para cada disciplina.
         """
         carreiras_recomendadas = []
-        lista_carreiras_proximas = []
-        
-        
-        for carreira in CARREIRAS:
-            # verif se o estudante pode seguir a carreira
-            pode_seguir, pontuacao_total = pode_seguir_carreira(estudante, carreira)
-            
-            if pode_seguir:
-                # da as pontuações individuais para a explicação
-                _, pont_int = regra_interesse(estudante, carreira)
-                _, pont_hab = regra_habilidade(estudante, carreira)
-                _, pont_des = regra_desempenho(estudante, carreira)
-                
-                # calcula o que o estudante tem e o que falta
-                interesses_estudante = set(estudante['interesses'])
-                interesses_carreira = set(CARREIRAS[carreira]['interesses'])
-                interesses_faltantes = list(interesses_carreira - interesses_estudante)
-                interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
-                
-                habilidades_estudante = set(estudante['habilidades'])
-                habilidades_carreira = set(CARREIRAS[carreira]['habilidades'])
-                habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
-                habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
-                
-                desempenho_carreira = CARREIRAS[carreira]['desempenho']
-                desempenho_estudante = estudante['desempenho_escolar']
-                materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
-                materias_atendidas = len([m for m in desempenho_carreira if m in desempenho_estudante and desempenho_estudante[m] >= 7])
-                
-                explicacao = {
-                    'interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_carreira)} interesses necessários. " + \
-                               (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
-                    'habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_carreira)} habilidades necessárias. " + \
-                                (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
-                    'desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_carreira)} notas necessárias. " + \
-                                 (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-                }
-                
+        carreiras_proximas = []
+
+        for regra in self.regras:
+            cond = regra["condicoes"]
+            pesos = cond.get("pesos", {})
+            score = 0
+            score_max = 0
+
+            # Interesses e habilidades: exige pelo menos um de cada
+            interesses_ok = any(i.lower() in [ei.lower() for ei in estudante["interesses"]] for i in cond.get("interesses", []))
+            habilidades_ok = any(h.lower() in [eh.lower() for eh in estudante["habilidades"]] for h in cond.get("habilidades", []))
+
+            # Desempenho ponderado
+            desempenho_ok = True
+            materias_faltantes = []
+            for materia, nota_min in cond.get("desempenho", {}).items():
+                peso = pesos.get(materia, 1)
+                score_max += 10 * peso  # nota máxima considerada é 10
+                nota_estudante = estudante["desempenho"].get(materia, 0)
+                score += max(0, min(nota_estudante, 10)) * peso
+                if nota_estudante < nota_min:
+                    desempenho_ok = False
+                    materias_faltantes.append(materia)
+
+            # Para explicação
+            interesses_carreira = set([i.lower() for i in cond.get("interesses", [])])
+            interesses_estudante = set([i.lower() for i in estudante["interesses"]])
+            interesses_faltantes = list(interesses_carreira - interesses_estudante)
+            interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
+
+            habilidades_carreira = set([h.lower() for h in cond.get("habilidades", [])])
+            habilidades_estudante = set([h.lower() for h in estudante["habilidades"]])
+            habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
+            habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
+
+            desempenho_carreira = cond.get("desempenho", {})
+            desempenho_estudante = estudante["desempenho"]
+            materias_atendidas = len([m for m in desempenho_carreira if desempenho_estudante.get(m, 0) >= desempenho_carreira[m]])
+
+            explicacao = {
+                'interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_carreira)} interesses necessários. " +
+                             (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
+                'habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_carreira)} habilidades necessárias. " +
+                              (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
+                'desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_carreira)} notas necessárias. " +
+                              (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
+            }
+
+            # Carreira recomendada
+            if interesses_ok and habilidades_ok and desempenho_ok:
                 carreiras_recomendadas.append({
-                    'carreira': carreira,
-                    'score': pontuacao_total,
-                    'explicacao': explicacao
+                    "carreira": regra["carreira"],
+                    "score": round(score / score_max * 100, 2) if score_max > 0 else 0,
+                    "justificativa": regra["justificativa"],
+                    "explicacao": explicacao
                 })
-        
-        # ordena as carreiras recomendadas por score
+            # Carreira próxima: falta só um dos critérios
+            else:
+                faltas = sum([not interesses_ok, not habilidades_ok, not desempenho_ok])
+                if faltas == 1:
+                    carreiras_proximas.append({
+                        "carreira": regra["carreira"],
+                        "score": round(score / score_max * 100, 2) if score_max > 0 else 0,
+                        "justificativa": regra["justificativa"],
+                        "explicacao": explicacao
+                    })
+
         carreiras_recomendadas.sort(key=lambda x: x['score'], reverse=True)
-        
-        # da as carreiras próximas
-        lista_carreiras_proximas = carreiras_proximas(estudante)
-        
-        return {
-            'carreiras_recomendadas': carreiras_recomendadas,
-            'carreiras_proximas': lista_carreiras_proximas
-        }
+        carreiras_proximas.sort(key=lambda x: x['score'], reverse=True)
+        return carreiras_recomendadas, carreiras_proximas
+
+def carregar_regras(caminho_regras):
+    with open(caminho_regras, encoding='utf-8') as f:
+        return json.load(f)
+
+def criar_estudante(caminho_regras):
+    """
+    Solicita ao usuário os dados de um estudante e retorna um dicionário com essas informações,
+    usando seleção numérica para evitar erros de digitação.
+
+    Returns:
+        dict: Dicionário com as chaves:
+            - 'interesses' (list): áreas de interesse do estudante.
+            - 'habilidades' (list): habilidades do estudante.
+            - 'desempenho' (dict): disciplinas (str) e respectivas notas (float).
+    """
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("Criando estudante...")
+    print("Insira os dados do estudante:")
+
+    regras = carregar_regras(caminho_regras)
+
+    # Habilidades disponíveis
+    habilidades_exemplo = sorted({h for regra in regras for h in regra["condicoes"].get("habilidades", [])})
+    print("Selecione suas habilidades (digite os números separados por vírgula):")
+    for idx, habilidade in enumerate(habilidades_exemplo, 1):
+        print(f"{idx}. {habilidade}")
+    while True:
+        try:
+            indices = [int(i.strip()) for i in input("Números das habilidades: ").split(',')]
+            habilidades_validas = [habilidades_exemplo[i-1] for i in indices if 1 <= i <= len(habilidades_exemplo)]
+            if habilidades_validas:
+                break
+            else:
+                print("Selecione pelo menos uma habilidade válida.")
+        except Exception:
+            print("Entrada inválida. Tente novamente.")
+
+    # Interesses disponíveis
+    os.system('cls' if os.name == 'nt' else 'clear')
+    interesses_exemplo = sorted({i for regra in regras for i in regra["condicoes"].get("interesses", [])})
+    print("Selecione seus interesses (digite os números separados por vírgula):")
+    for idx, interesse in enumerate(interesses_exemplo, 1):
+        print(f"{idx}. {interesse}")
+    while True:
+        try:
+            indices = [int(i.strip()) for i in input("Números dos interesses: ").split(',')]
+            interesses_validos = [interesses_exemplo[i-1] for i in indices if 1 <= i <= len(interesses_exemplo)]
+            if interesses_validos:
+                break
+            else:
+                print("Selecione pelo menos um interesse válido.")
+        except Exception:
+            print("Entrada inválida. Tente novamente.")
+
+    # Disciplinas disponíveis
+    disciplinas_exemplo = sorted({d for regra in regras for d in regra["condicoes"].get("desempenho", {}).keys()})
+    desempenho = {}
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("Informe suas notas nas disciplinas. Digite o número da disciplina e a nota (0 a 10). Digite '0' para finalizar.")
+    for idx, disciplina in enumerate(disciplinas_exemplo, 1):
+        print(f"{idx}. {disciplina}")
+    while True:
+        try:
+            entrada = input("Número da disciplina (ou '0' para finalizar): ").strip()
+            if entrada == '0':
+                break
+            num = int(entrada)
+            if 1 <= num <= len(disciplinas_exemplo):
+                nome_disc = disciplinas_exemplo[num-1]
+                nota = float(input(f"Nota em {nome_disc}: "))
+                while nota < 0 or nota > 10:
+                    print("Nota inválida. Deve ser entre 0 e 10.")
+                    nota = float(input(f"Nota em {nome_disc}: "))
+                desempenho[nome_disc] = nota
+            else:
+                print("Número de disciplina inválido.")
+        except Exception:
+            print("Entrada inválida. Tente novamente.")
+
+    return {
+        "interesses": interesses_validos,
+        "habilidades": habilidades_validas,
+        "desempenho": desempenho
+    }
+
+# Exemplo de uso
+if __name__ == "__main__":
+    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
+    estudante = criar_estudante(CAMINHO_REGRAS)
+    motor = MotorDeInferencia(CAMINHO_REGRAS)
+    recomendadas, proximas = motor.processa_estudante(estudante)
+    print("\nCarreiras recomendadas:")
+    for c in recomendadas:
+        print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")
+    print("\nCarreiras próximas:")
+    for c in proximas:
+        print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")

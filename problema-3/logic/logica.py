@@ -121,7 +121,7 @@ def pode_seguir_carreira(estudante, carreira):
     tem_hab, pont_hab = regra_habilidade(estudante, carreira)
     tem_des, pont_des = regra_desempenho(estudante, carreira)
     
-    # calcula os pesos totais de cada regra
+    # Calcula os pesos totais de cada regra
     peso_interesse = sum(CARREIRAS[carreira]['interesses'].values())
     peso_habilidade = sum(CARREIRAS[carreira]['habilidades'].values())
     peso_desempenho = sum(CARREIRAS[carreira]['desempenho'].values())
@@ -200,3 +200,34 @@ def carreiras_proximas(estudante):
             })
     
     return sorted(resultados, key=lambda x: x['proximidade'], reverse=True) 
+
+def gerar_fatos_de_interesses(estudante):
+    """
+    Gera fatos lógicos a partir dos dados do estudante.
+
+    Args:
+        estudante (Estudante): Objeto estudante com interesses, habilidades e desempenho.
+
+    Returns:
+        list[str]: Lista de fatos lógicos no formato "tipo:valor".
+    """
+    fatos = []
+    
+    # Converte o estudante para dicionário se necessário
+    if not isinstance(estudante, dict):
+        estudante = estudante.to_dict()
+    
+    # Fatos de interesse
+    for interesse in estudante['interesses']:
+        fatos.append(f"interesse:{interesse}")
+    
+    # Fatos de habilidade
+    for habilidade in estudante['habilidades']:
+        fatos.append(f"habilidade:{habilidade}")
+    
+    # Fatos de desempenho
+    for materia, nota in estudante['desempenho_escolar'].items():
+        if nota >= 7:  # Considera apenas notas boas
+            fatos.append(f"desempenho:{materia}")
+    
+    return fatos
