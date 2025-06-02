@@ -4,8 +4,9 @@ Módulo do fluxo principal do sistema.
 Contém funções para gerenciar o fluxo de execução do sistema.
 """
 import json
+import os
 from data.estudante_db import criar_tabela_estudantes, salvar_estudante, listar_estudantes
-from logic.logica import gerar_fatos_de_interesses, pode_seguir_carreira, carreiras_proximas
+from logic.motor import MotorDeInferencia
 from utils.interface import (
     coletar_interesses,
     coletar_habilidades,
@@ -36,13 +37,9 @@ def cadastrar_estudante():
         estudante = coletar_habilidades(estudante)
         estudante = coletar_desempenho_academico(estudante)
         
-        # Processa os dados
-        fatos = gerar_fatos_de_interesses(estudante)
-        exibir_fatos(fatos)
-        
         # Salva no banco
         salvar_estudante(estudante)
-        print("\n Estudante cadastrado com sucesso! \n")
+        print("\nEstudante cadastrado com sucesso! \n")
     except Exception as e:
         print(f"\nErro ao cadastrar estudante: {str(e)}")
 
@@ -76,36 +73,49 @@ def ver_recomendacoes():
         'nome': estudante[1],
         'interesses': estudante[2] if estudante[2] else [],
         'habilidades': estudante[3] if len(estudante) > 3 and estudante[3] else [],
-        'desempenho_escolar': estudante[4] if len(estudante) > 4 and estudante[4] else {}
+        'desempenho': estudante[4] if len(estudante) > 4 and estudante[4] else {}
     }
     
-    # Gera fatos e recomendações
-    fatos = gerar_fatos_de_interesses(dados_estudante)
+    # Processa recomendações usando o motor de inferência
+    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
+    motor = MotorDeInferencia(CAMINHO_REGRAS)
+    recomendadas, proximas = motor.processa_estudante(dados_estudante)
+    
+    # Exibe as recomendações
     print("\n=== Recomendações de Carreira ===")
     
-    # Verifica carreiras possíveis
-    carreiras_possiveis = []
-    for carreira in ['desenvolvimento_software', 'data_science', 'ciencias_humanas']:
-        if pode_seguir_carreira(dados_estudante, carreira):
-            carreiras_possiveis.append(carreira)
-    
-    if carreiras_possiveis:
-        print("\nCarreiras recomendadas:")
-        for carreira in carreiras_possiveis:
-            print(f"- {carreira.replace('_', ' ').title()}")
-    else:
-        print("\nNenhuma carreira específica recomendada.")
-    
-    # Verifica carreiras próximas
-    carreiras_proximas_list = carreiras_proximas(dados_estudante)
-    if carreiras_proximas_list:
-        print("\nCarreiras próximas (requerem desenvolvimento adicional):")
-        for carreira in carreiras_proximas_list:
-            print(f"- {carreira['carreira'].replace('_', ' ').title()}")
-            print(f"  Proximidade: {carreira['proximidade']:.2%}")
+    print("\nCarreiras recomendadas:")
+    if recomendadas:
+        for c in recomendadas:
+            print(f"\n- {c['carreira']} (score: {c['score']}%)")
+            print(f"  Justificativa: {c['justificativa']}")
             print("\n  Explicação:")
-            for tipo, explicacao in carreira['explicacao'].items():
+            for tipo, explicacao in c['explicacao'].items():
                 print(f"  - {explicacao}")
+    else:
+        print("\nNenhuma carreira recomendada no momento.")
+        print("Para ter uma carreira recomendada, você precisa atender TODOS os critérios")
+        print("(interesses, habilidades e desempenho) para pelo menos uma carreira.")
+    
+    print("\nCarreiras próximas:")
+    if proximas:
+        # Ordena as carreiras próximas pelo score
+        proximas.sort(key=lambda x: x['score'], reverse=True)
+        
+        for c in proximas:
+            print(f"\n- {c['carreira']} (score: {c['score']}%)")
+            print(f"  Justificativa: {c['justificativa']}")
+            print("\n  Explicação:")
+            for tipo, explicacao in c['explicacao'].items():
+                print(f"  - {explicacao}")
+            
+            # Adiciona sugestões de melhoria
+            print("\n  Sugestões para transformar em carreira recomendada:")
+            for tipo, explicacao in c['explicacao'].items():
+                if "Faltam" in explicacao:
+                    print(f"  - {explicacao.replace('Faltam', 'Adquira')}")
+    else:
+        print("Nenhuma carreira próxima no momento.")
 
 def executar_fluxo():
     """

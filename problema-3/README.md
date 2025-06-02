@@ -16,7 +16,7 @@ Usando:
 -> Estrutura sugerida do sistema : 
 
 `/sistema_carreiras/`  
-`├── main.py`                     # Menu principal e execução 
+`├── main.py`                     # Menu principal e execução  
 `├── __init__.py`                             
 `├── utils/`  
 `│   └── __init__.py`            
@@ -24,17 +24,17 @@ Usando:
 `│   └── __init__.py`            
 `│   └── conexao.py`              # Criação e acesso ao banco  
 `│   └── regras.json`             # Arquivo externo com regras configuráveis  
-`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite
-`│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco
+`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite  
+`│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco  
 `├── models/`  
 `│   └── __init__.py`            
 `│   ├── estudante.py`            # Classe Estudante  
 `│   └── carreira.py`             # Classe Carreira  
 `├── logic/`  
-`│   ├── __init__.py`
+`│   ├── __init__.py`  
 `│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
 `│   ├── motor.py`                # Motor de inferência  
-`│   ├── regra.py`                # Representação de regra lógica
+`│   ├── regra.py`                # Representação de regra lógica  
 `│   └── logica.py`                # Implementação das regras lógicas  
 `├── reports/`  
 `│   └── __init__.py`            
@@ -47,15 +47,15 @@ Usando:
 
 -> Uteis para o grupo : 
 
-black -> formata e identa o codigo com base em boas praticas em python
-poetry -> gestão de dependencias
-pip install black -> instala o formatador
-black nomeDoArquivo -> formata o código do arquivo
-black nomeDaPasta -> formata os códigos da pasta
-pip install poetry -> instala o poetry
-poetry add nomeDaDependencia -> adiciona a dependencia 
-poetry install -> instala as dependencias
-poetry new <nome_do_projeto> -> cria uma nova estrutura de projeto com o poetry.
+black -> formata e identa o codigo com base em boas praticas em python  
+poetry -> gestão de dependencias  
+pip install black -> instala o formatador  
+black nomeDoArquivo -> formata o código do arquivo  
+black nomeDaPasta -> formata os códigos da pasta  
+pip install poetry -> instala o poetry  
+poetry add nomeDaDependencia -> adiciona a dependencia  
+poetry install -> instala as dependencias  
+poetry new <nome_do_projeto> -> cria uma nova estrutura de projeto com o poetry.  
 
 -> Organização de tarefas : 
 
