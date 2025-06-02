@@ -28,11 +28,11 @@ class MotorDeInferencia:
             score = 0
             score_max = 0
 
-            # Interesses e habilidades: exige pelo menos um de cada
+            # interesses e habilidades: exige pelo menos um de cada
             interesses_ok = any(i.lower() in [ei.lower() for ei in estudante["interesses"]] for i in cond.get("interesses", []))
             habilidades_ok = any(h.lower() in [eh.lower() for eh in estudante["habilidades"]] for h in cond.get("habilidades", []))
 
-            # Desempenho ponderado
+            # desempenho ponderado
             desempenho_ok = True
             materias_faltantes = []
             for materia, nota_min in cond.get("desempenho", {}).items():
@@ -44,7 +44,7 @@ class MotorDeInferencia:
                     desempenho_ok = False
                     materias_faltantes.append(materia)
 
-            # Para explicação
+            # pra explicação
             interesses_carreira = set([i.lower() for i in cond.get("interesses", [])])
             interesses_estudante = set([i.lower() for i in estudante["interesses"]])
             interesses_faltantes = list(interesses_carreira - interesses_estudante)
@@ -68,7 +68,7 @@ class MotorDeInferencia:
                               (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
             }
 
-            # Carreira recomendada
+            # carreira recomendada
             if interesses_ok and habilidades_ok and desempenho_ok:
                 carreiras_recomendadas.append({
                     "carreira": regra["carreira"],
@@ -76,7 +76,7 @@ class MotorDeInferencia:
                     "justificativa": regra["justificativa"],
                     "explicacao": explicacao
                 })
-            # Carreira próxima: falta só um dos critérios
+            # carreira próxima: falta só um dos critérios
             else:
                 faltas = sum([not interesses_ok, not habilidades_ok, not desempenho_ok])
                 if faltas == 1:
@@ -112,7 +112,7 @@ def criar_estudante(caminho_regras):
 
     regras = carregar_regras(caminho_regras)
 
-    # Habilidades disponíveis
+    # habilidades disponíveis
     habilidades_exemplo = sorted({h for regra in regras for h in regra["condicoes"].get("habilidades", [])})
     print("Selecione suas habilidades (digite os números separados por vírgula):")
     for idx, habilidade in enumerate(habilidades_exemplo, 1):
@@ -128,7 +128,7 @@ def criar_estudante(caminho_regras):
         except Exception:
             print("Entrada inválida. Tente novamente.")
 
-    # Interesses disponíveis
+    # interesses disponíveis
     os.system('cls' if os.name == 'nt' else 'clear')
     interesses_exemplo = sorted({i for regra in regras for i in regra["condicoes"].get("interesses", [])})
     print("Selecione seus interesses (digite os números separados por vírgula):")
@@ -145,30 +145,23 @@ def criar_estudante(caminho_regras):
         except Exception:
             print("Entrada inválida. Tente novamente.")
 
-    # Disciplinas disponíveis
+    # disciplinas disponíveis
     disciplinas_exemplo = sorted({d for regra in regras for d in regra["condicoes"].get("desempenho", {}).keys()})
     desempenho = {}
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("Informe suas notas nas disciplinas. Digite o número da disciplina e a nota (0 a 10). Digite '0' para finalizar.")
-    for idx, disciplina in enumerate(disciplinas_exemplo, 1):
-        print(f"{idx}. {disciplina}")
-    while True:
-        try:
-            entrada = input("Número da disciplina (ou '0' para finalizar): ").strip()
-            if entrada == '0':
-                break
-            num = int(entrada)
-            if 1 <= num <= len(disciplinas_exemplo):
-                nome_disc = disciplinas_exemplo[num-1]
-                nota = float(input(f"Nota em {nome_disc}: "))
-                while nota < 0 or nota > 10:
+    print("Informe suas notas nas disciplinas (0 a 10):")
+    
+    for disciplina in disciplinas_exemplo:
+        while True:
+            try:
+                nota = float(input(f"Nota em {disciplina}: "))
+                if 0 <= nota <= 10:
+                    desempenho[disciplina] = nota
+                    break
+                else:
                     print("Nota inválida. Deve ser entre 0 e 10.")
-                    nota = float(input(f"Nota em {nome_disc}: "))
-                desempenho[nome_disc] = nota
-            else:
-                print("Número de disciplina inválido.")
-        except Exception:
-            print("Entrada inválida. Tente novamente.")
+            except ValueError:
+                print("Por favor, digite um número válido.")
 
     return {
         "interesses": interesses_validos,
@@ -176,15 +169,3 @@ def criar_estudante(caminho_regras):
         "desempenho": desempenho
     }
 
-# Exemplo de uso
-if __name__ == "__main__":
-    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
-    estudante = criar_estudante(CAMINHO_REGRAS)
-    motor = MotorDeInferencia(CAMINHO_REGRAS)
-    recomendadas, proximas = motor.processa_estudante(estudante)
-    print("\nCarreiras recomendadas:")
-    for c in recomendadas:
-        print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")
-    print("\nCarreiras próximas:")
-    for c in proximas:
-        print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")

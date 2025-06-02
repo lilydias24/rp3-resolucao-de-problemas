@@ -4,6 +4,12 @@ Módulo de interface com o usuário.
 Contém funções para interação com o usuário via terminal.
 """
 import json
+import sys
+import os
+
+# Adiciona o diretório raiz ao PYTHONPATH
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from models.estudante import Estudante
 
 def coletar_interesses():

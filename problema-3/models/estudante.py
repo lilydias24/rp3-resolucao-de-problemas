@@ -84,4 +84,4 @@ if __name__ == "__main__":
     aluno.adicionar_habilidade("programação")
     aluno.adicionar_habilidade("física")
     print(aluno.to_dict())
-    # saída esperada --> {'nome': 'Mariana', 'interesses': [], 'habilidades': ['programação', 'física'], 'desempenho_escolar': {}}
+    # saída esperada --> {'nome': 'Mariana', 'interesses': [], 'habilidades': ['programação', 'física'], 'desempenho_escolar': {}}                                      
