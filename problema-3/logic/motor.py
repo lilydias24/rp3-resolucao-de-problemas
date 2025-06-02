@@ -50,59 +50,49 @@ class MotorDeInferencia:
     def processa_estudante(self, estudante):
         """
         Processa o perfil do estudante e retorna as carreiras recomendadas e próximas.
+        O score de cada carreira é calculado com base nos pesos definidos para cada disciplina.
         """
+        # Converte o objeto Estudante para dicionário
+        dados_estudante = estudante.to_dict()
+        
         carreiras_recomendadas = []
-        lista_carreiras_proximas = []
-        
-        # 
-        for carreira in CARREIRAS:
-            # verif se o estudante pode seguir a carreira
-            pode_seguir, pontuacao_total = pode_seguir_carreira(estudante, carreira)
-            
-            if pode_seguir:
-                # da as pontuações individuais para a explicação
-                _, pont_int = regra_interesse(estudante, carreira)
-                _, pont_hab = regra_habilidade(estudante, carreira)
-                _, pont_des = regra_desempenho(estudante, carreira)
-                
-                # calcula o que o estudante tem e o que falta
-                interesses_estudante = set(estudante['interesses'])
-                interesses_carreira = set(CARREIRAS[carreira]['interesses'])
-                interesses_faltantes = list(interesses_carreira - interesses_estudante)
-                interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
-                
-                habilidades_estudante = set(estudante['habilidades'])
-                habilidades_carreira = set(CARREIRAS[carreira]['habilidades'])
-                habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
-                habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
-                
-                desempenho_carreira = CARREIRAS[carreira]['desempenho']
-                desempenho_estudante = estudante['desempenho_escolar']
-                materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
-                materias_atendidas = len([m for m in desempenho_carreira if m in desempenho_estudante and desempenho_estudante[m] >= 7])
-                
-                explicacao = {
-                    'interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_carreira)} interesses necessários. " + \
-                               (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
-                    'habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_carreira)} habilidades necessárias. " + \
-                                (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
-                    'desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_carreira)} notas necessárias. " + \
-                                 (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-                }
-                
-                carreiras_recomendadas.append({
-                    'carreira': carreira,
-                    'score': pontuacao_total,
-                    'explicacao': explicacao
-                })
-        
-        # ordena as carreiras recomendadas por score
-        carreiras_recomendadas.sort(key=lambda x: x['score'], reverse=True)
-        
-        # da as carreiras próximas
-        lista_carreiras_proximas = carreiras_proximas(estudante)
-        
-        return {
-            'carreiras_recomendadas': carreiras_recomendadas,
-            'carreiras_proximas': lista_carreiras_proximas
-        }
+        carreiras_proximas = []
+
+        for regra in self.regras:
+            cond = regra["condicoes"]
+            pesos = cond.get("pesos", {})
+            score = 0
+            score_max = 0
+
+            # interesses e habilidades: exige pelo menos um de cada
+            interesses_ok = any(i.lower() in [ei.lower() for ei in dados_estudante["interesses"]] for i in cond.get("interesses", []))
+            habilidades_ok = any(h.lower() in [eh.lower() for eh in dados_estudante["habilidades"]] for h in cond.get("habilidades", []))
+
+            # desempenho ponderado
+            desempenho_ok = True
+            materias_faltantes = []
+            for materia, nota_min in cond.get("desempenho", {}).items():
+                peso = pesos.get(materia, 1)
+                score_max += 10 * peso  # nota máxima considerada é 10
+                nota_estudante = dados_estudante["desempenho"].get(materia, 0)
+                score += max(0, min(nota_estudante, 10)) * peso
+                if nota_estudante < nota_min:
+                    desempenho_ok = False
+                    materias_faltantes.append(materia)
+
+            # pra explicação
+            interesses_carreira = set([i.lower() for i in cond.get("interesses", [])])
+            interesses_estudante = set([i.lower() for i in dados_estudante["interesses"]])
+            interesses_faltantes = list(interesses_carreira - interesses_estudante)
+            interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
+
+            habilidades_carreira = set([h.lower() for h in cond.get("habilidades", [])])
+            habilidades_estudante = set([h.lower() for h in dados_estudante["habilidades"]])
+            habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
+            habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
+
+            desempenho_carreira = cond.get("desempenho", {})
+            desempenho_estudante = dados_estudante["desempenho"]
+            materias_atendidas = len([m for m in desempenho_carreira if desempenho_estudante.get(m, 0) >= desempenho_carreira[m]])
+
+            # ... existing code ...
