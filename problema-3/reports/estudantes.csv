@@ -1,0 +1,13 @@
+id,nome,interesses,habilidades,desempenho_escolar
+1,amelie,"[""ciencia"", ""artes""]",[],{}
+2,robert,"[""tecnologia"", ""ciencia""]",[],{}
+3,Ester,"[""data science"", ""artes""]",[],"{""matematica"": 10.0, ""fisica"": 8.0, ""quimica"": 9.0, ""biologia"": 7.0, ""historia"": 4.0, ""geografia"": 5.0, ""portugues"": 6.0, ""ingles"": 7.0, ""programacao"": 9.0, ""estatistica"": 8.0, ""logica"": 10.0}"
+4,abc,"[""artes""]",[],"{""matematica"": 10.0, ""fisica"": 5.6, ""quimica"": 4.9, ""biologia"": 6.0, ""portugues"": 5.0, ""ingles"": 7.0, ""programacao"": 5.0, ""estatistica"": 4.0, ""logica"": 3.0}"
+5,amelie,"[""artes"", ""tecnologia""]",[],"{""matematica"": 10.0, ""portugues"": 4.0, ""fisica"": 3.0, ""quimica"": 3.0, ""biologia"": 5.0, ""historia"": 6.0, ""geografia"": 7.0, ""ingles"": 10.0, ""programacao"": 3.0, ""artes"": 7.0}"
+6,lala,"[""artes""]",[],{}
+7,leona,"[""tecnologia"", ""matematica""]",[],"{""matematica"": 10.0, ""portugues"": 6.0, ""fisica"": 7.0, ""quimica"": 8.0, ""biologia"": 7.0, ""historia"": 5.0, ""geografia"": 6.0, ""ingles"": 6.0, ""programacao"": 8.0, ""artes"": 8.0}"
+8,emy,"[""tecnologia"", ""programacao"", ""analise de dados""]",[],"{""matematica"": 10.0, ""portugues"": 7.0, ""fisica"": 7.0, ""quimica"": 8.0, ""biologia"": 8.0, ""historia"": 6.0, ""geografia"": 7.0, ""ingles"": 7.0, ""programacao"": 9.0, ""artes"": 7.0}"
+9,lore,"[""ciencia"", ""biologia""]",[],"{""matematica"": 4.0, ""portugues"": 4.0, ""fisica"": 4.0, ""quimica"": 4.0, ""biologia"": 10.0, ""historia"": 10.0, ""geografia"": 10.0, ""ingles"": 6.0, ""programacao"": 6.0, ""artes"": 10.0}"
+10,guri,"[""programa\u00e7\u00e3o"", ""tecnologia""]",[],"{""matematica"": 10.0, ""portugues"": 7.0, ""fisica"": 7.0, ""quimica"": 9.0, ""biologia"": 8.0, ""historia"": 4.0, ""geografia"": 6.0, ""ingles"": 6.0, ""programacao"": 9.0, ""artes"": 4.0}"
+11,boris,"[""tecnologia"", ""programa\u00e7\u00e3o""]",[],"{""matematica"": 10.0, ""portugues"": 10.0, ""fisica"": 10.0, ""quimica"": 10.0, ""biologia"": 10.0, ""historia"": 10.0, ""geografia"": 10.0, ""ingles"": 10.0, ""programacao"": 10.0, ""artes"": 10.0}"
+12,gigi,"[""humanas"", ""direito""]","[""trabalho em equipe"", ""resolu\u00e7\u00e3o de problemas""]","{""matematica"": 7.4, ""portugues"": 9.9, ""fisica"": 7.2, ""quimica"": 8.2, ""biologia"": 9.7, ""historia"": 9.3, ""geografia"": 9.4, ""ingles"": 9.0, ""programacao"": 7.0, ""artes"": 10.0}"
