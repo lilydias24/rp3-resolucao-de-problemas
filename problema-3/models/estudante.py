@@ -1,5 +1,3 @@
-from typing import List
-
 class Estudante:
     '''
     regras de inferencia básicas
