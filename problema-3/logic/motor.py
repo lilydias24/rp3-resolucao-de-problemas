@@ -3,6 +3,56 @@ Motor de inferência para o sistema de recomendação de carreiras.
 """
 import json
 import os
+from typing import Dict, List, Any, Tuple
+from utils.gestor_interface import DISCIPLINAS, INTERESSES, HABILIDADES, selecionar_opcoes
+
+def criar_estudante(caminho_regras: str) -> Dict[str, Any]:
+    """
+    Cria um estudante a partir da entrada do usuário.
+    
+    Args:
+        caminho_regras: Caminho para o arquivo de regras
+        
+    Returns:
+        Dicionário com os dados do estudante
+    """
+    print("\n=== Cadastro de Estudante ===")
+    
+    nome = input("\nNome do estudante: ").strip()
+    while not nome:
+        print("O nome não pode estar vazio!")
+        nome = input("Nome do estudante: ").strip()
+    
+    interesses = selecionar_opcoes(INTERESSES, "Selecione seus Interesses")
+    while not interesses:
+        print("Você deve selecionar pelo menos um interesse!")
+        interesses = selecionar_opcoes(INTERESSES, "Selecione seus Interesses")
+    
+    habilidades = selecionar_opcoes(HABILIDADES, "Selecione suas Habilidades")
+    while not habilidades:
+        print("Você deve selecionar pelo menos uma habilidade!")
+        habilidades = selecionar_opcoes(HABILIDADES, "Selecione suas Habilidades")
+    
+    print("\nInforme suas notas nas disciplinas (0 a 10):")
+    notas = {}
+    for disciplina in DISCIPLINAS:
+        while True:
+            try:
+                nota = float(input(f"Nota em {disciplina}: "))
+                if 0 <= nota <= 10:
+                    notas[disciplina] = nota
+                    break
+                else:
+                    print("A nota deve estar entre 0 e 10!")
+            except ValueError:
+                print("Por favor, digite um número válido!")
+    
+    return {
+        "nome": nome,
+        "interesses": interesses,
+        "habilidades": habilidades,
+        "notas": notas
+    }
 
 class MotorDeInferencia:
     """
@@ -38,7 +88,7 @@ class MotorDeInferencia:
             for materia, nota_min in cond.get("desempenho", {}).items():
                 peso = pesos.get(materia, 1)
                 score_max += 10 * peso  # nota máxima considerada é 10
-                nota_estudante = estudante["desempenho"].get(materia, 0)
+                nota_estudante = estudante["notas"].get(materia, 0)
                 score += max(0, min(nota_estudante, 10)) * peso
                 if nota_estudante < nota_min:
                     desempenho_ok = False
@@ -56,7 +106,7 @@ class MotorDeInferencia:
             habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
 
             desempenho_carreira = cond.get("desempenho", {})
-            desempenho_estudante = estudante["desempenho"]
+            desempenho_estudante = estudante["notas"]
             materias_atendidas = len([m for m in desempenho_carreira if desempenho_estudante.get(m, 0) >= desempenho_carreira[m]])
 
             explicacao = {
@@ -94,78 +144,4 @@ class MotorDeInferencia:
 def carregar_regras(caminho_regras):
     with open(caminho_regras, encoding='utf-8') as f:
         return json.load(f)
-
-def criar_estudante(caminho_regras):
-    """
-    Solicita ao usuário os dados de um estudante e retorna um dicionário com essas informações,
-    usando seleção numérica para evitar erros de digitação.
-
-    Returns:
-        dict: Dicionário com as chaves:
-            - 'interesses' (list): áreas de interesse do estudante.
-            - 'habilidades' (list): habilidades do estudante.
-            - 'desempenho' (dict): disciplinas (str) e respectivas notas (float).
-    """
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Criando estudante...")
-    print("Insira os dados do estudante:")
-
-    regras = carregar_regras(caminho_regras)
-
-    # habilidades disponíveis
-    habilidades_exemplo = sorted({h for regra in regras for h in regra["condicoes"].get("habilidades", [])})
-    print("Selecione suas habilidades (digite os números separados por vírgula):")
-    for idx, habilidade in enumerate(habilidades_exemplo, 1):
-        print(f"{idx}. {habilidade}")
-    while True:
-        try:
-            indices = [int(i.strip()) for i in input("Números das habilidades: ").split(',')]
-            habilidades_validas = [habilidades_exemplo[i-1] for i in indices if 1 <= i <= len(habilidades_exemplo)]
-            if habilidades_validas:
-                break
-            else:
-                print("Selecione pelo menos uma habilidade válida.")
-        except Exception:
-            print("Entrada inválida. Tente novamente.")
-
-    # interesses disponíveis
-    os.system('cls' if os.name == 'nt' else 'clear')
-    interesses_exemplo = sorted({i for regra in regras for i in regra["condicoes"].get("interesses", [])})
-    print("Selecione seus interesses (digite os números separados por vírgula):")
-    for idx, interesse in enumerate(interesses_exemplo, 1):
-        print(f"{idx}. {interesse}")
-    while True:
-        try:
-            indices = [int(i.strip()) for i in input("Números dos interesses: ").split(',')]
-            interesses_validos = [interesses_exemplo[i-1] for i in indices if 1 <= i <= len(interesses_exemplo)]
-            if interesses_validos:
-                break
-            else:
-                print("Selecione pelo menos um interesse válido.")
-        except Exception:
-            print("Entrada inválida. Tente novamente.")
-
-    # disciplinas disponíveis
-    disciplinas_exemplo = sorted({d for regra in regras for d in regra["condicoes"].get("desempenho", {}).keys()})
-    desempenho = {}
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Informe suas notas nas disciplinas (0 a 10):")
-    
-    for disciplina in disciplinas_exemplo:
-        while True:
-            try:
-                nota = float(input(f"Nota em {disciplina}: "))
-                if 0 <= nota <= 10:
-                    desempenho[disciplina] = nota
-                    break
-                else:
-                    print("Nota inválida. Deve ser entre 0 e 10.")
-            except ValueError:
-                print("Por favor, digite um número válido.")
-
-    return {
-        "interesses": interesses_validos,
-        "habilidades": habilidades_validas,
-        "desempenho": desempenho
-    }
 
