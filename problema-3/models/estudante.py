@@ -1,19 +1,9 @@
-"""
-Módulo de definição da classe Estudante.
+from typing import List
 
-A classe Estudante representa um indivíduo com interesses, habilidades
-e desempenho escolar, utilizados para recomendação de carreiras.
-"""
 class Estudante:
-    """
-    Representa um estudante com dados relevantes para recomendação de carreira.
-
-    Atributos:
-        nome (str): Nome do estudante.
-        interesses (list[str]): Lista de áreas de interesse (ex: 'artes', 'tecnologia').
-        habilidades (list[str]): Lista de habilidades do estudante (ex: 'programação').
-        desempenho_escolar (dict): Notas em disciplinas, no formato {'matemática': 8.5}.
-    """
+    '''
+    regras de inferencia básicas
+    '''
     REGRAS_CARREIRA: dict[str, str] = \
         {
             "programação": "Desenvolvedor(a)",
@@ -22,66 +12,74 @@ class Estudante:
             "matemática": "Analista de Dados",
         }
 
-    def __init__(self, nome: str, interesses: list[str] = None) -> None:
-        """
-        Inicializa um estudante com dados fornecidos.
-
-        Args:
-            nome (str): Nome do estudante.
-            interesses (list[str], optional): Interesses pessoais.
-        """
+    def __init__(self, nome: str) -> None:
         self.nome: str = nome
-        self.interesses: list[str] = interesses or []
         self.habilidades: set[str] = set()
-        self.desempenho_escolar: dict[str, float] = {}
+        self.historico_desempenho: list[dict[str, float]] = []
 
     def adicionar_habilidade(self, habilidade: str) -> None:
-        """
-        Adiciona uma habilidade ao estudante após validação.
-
-        Args:
-            habilidade (str): Habilidade a ser adicionada.
-
-        Raises:
-            TypeError: Se a habilidade não for uma string.
-            ValueError: Se a habilidade for uma string vazia.
-        """
+        '''
+        valida dados inseridos entradas inválidas,
+        e adiciona uma habilidade ao estudante caso passe nas validações
+        '''
         if not isinstance(habilidade, str):
-            raise TypeError("A habilidade precisa ser uma string.")
+            raise TypeError("a habilidade precisa ser uma string.")
 
         texto = habilidade.strip().lower()
         if not texto:
-            raise ValueError("Campo vazio.")
+            raise ValueError("campo vazio.")
 
-        if texto not in self.habilidades:
-            self.habilidades.add(texto)
+        self.habilidades.add(texto)
 
-    def to_dict(self) -> dict:
-        """
-        Converte o objeto Estudante em um dicionário para uso nas regras lógicas.
+    def metricas_escola(self, materia_escola: str, desempenho: float) -> list[dict[str, float]]:
+        '''
+        Registra (ou atualiza) o desempenho do estudante em uma determinada matéria.
+        Se a matéria já existir no histórico, atualiza a nota; caso contrário, adiciona.
+        Retorna sempre a lista completa de histórico de desempenho.
+        '''
+        # validações básicas
+        if not isinstance(materia_escola, str):
+            raise TypeError("O nome da matéria precisa ser uma string")
 
-        Returns:
-            dict: Dicionário com os dados do estudante.
-        """
-        return {
-            'nome': self.nome,
-            'interesses': self.interesses,
-            'habilidades': list(self.habilidades),
-            'desempenho': self.desempenho_escolar
-        }
+        if not materia_escola.strip():
+            raise ValueError("O nome da matéria não pode ser vazio")
 
-    def __str__(self):
-        """
-        Retorna uma representação legível do estudante.
+        if not isinstance(desempenho, (int, float)):
+            raise TypeError("O desempenho precisa ser um número")
 
-        Returns:
-            str: Texto com os dados principais do estudante.
-        """
-        return (f"Estudante(Nome: {self.nome}, Interesses: {self.interesses}, "
-                f"Habilidades: {self.habilidades}, Desempenho Escolar: {self.desempenho_escolar})")
 
-    def __repr__(self):
-        return self.__str__()
+        chave = materia_escola.strip()
+        # dicionário a ser inserido ou atualizado
+        novo_registro = {chave: float(desempenho)}
+
+        # se a lista estiver vazia, basta adicionar
+        if not self.historico_desempenho:
+            self.historico_desempenho.append(novo_registro)
+
+        else:
+            # tenta encontrar registro existente para essa matéria
+            for registro in self.historico_desempenho:
+                if chave in registro:
+                    registro[chave] = float(desempenho)
+                    break
+            else:
+                # só chega aqui se não encontrou a matéria
+                self.historico_desempenho.append(novo_registro)
+
+        return self.historico_desempenho
+
+
+    def possiveis_carreiras(self) -> list[str]:
+        '''
+        retorna carreiras compatíveis com as habilidades informadas,
+        caso não haja carreira compativel retorna 'carreira não definida'
+        '''
+        carreiras = [
+            carreira
+            for chave, carreira in self.REGRAS_CARREIRA.items()
+            if chave in self.habilidades
+        ]
+        return carreiras or ["carreira não definida"]
 
     def metricas_escola(self, materia_escola: str, desempenho: float) -> dict[str, float]:
         '''
@@ -105,9 +103,23 @@ class Estudante:
 
 
 if __name__ == "__main__":
-    # Testes básicos
     aluno = Estudante("Mariana")
-    aluno.adicionar_habilidade("programação")
+    aluno.adicionar_habilidade(" programação ")
     aluno.adicionar_habilidade("física")
     print(aluno.to_dict())
-    # saída esperada --> {'nome': 'Mariana', 'interesses': [], 'habilidades': ['programação', 'física'], 'desempenho': {}}
+    # saída esperada --> {'nome': 'Mariana', 'interesses': [], 'habilidades': ['programação', 'física'], 'desempenho_escolar': {}}                                      
+    
+    print(aluno.possiveis_carreiras())
+    '''
+    saída esperada --> ['desenvolvedor(a)', 'engenheiro(a) de hardware']
+    '''
+    outro = Estudante("carlos")
+    outro.adicionar_habilidade("culinária")
+    print(outro.possiveis_carreiras())
+    '''
+    saída esperada --> ['carreira não definida']
+    '''
+    print(aluno.metricas_escola("matematica",2.0))
+    print(aluno.metricas_escola("fisica", 4.0))
+    print(aluno.metricas_escola("matematica", 6.0))
+    print(aluno.metricas_escola("resolução problemas", 12.0))

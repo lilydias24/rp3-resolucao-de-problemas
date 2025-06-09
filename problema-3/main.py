@@ -8,34 +8,56 @@ Este módulo executa o fluxo principal do sistema:
 - Salva os dados no banco SQLite
 - Lista os estudantes registrados
 """
-from utils.sistema import (
-    exibir_menu_principal,
-    cadastrar_estudante,
-    gerenciar_estudantes,
-    gerar_relatorios
-)
+import os
+from logic.motor import MotorDeInferencia, criar_estudante
+
+def exibir_recomendacoes(recomendadas, proximas):
+    """
+    Exibe as recomendações de carreira de forma mais detalhada e informativa.
+    """
+    print("\nCarreiras recomendadas:")
+    if recomendadas:
+        for c in recomendadas:
+            print(f"\n- {c['carreira']} (score: {c['score']}%)")
+            print(f"  Justificativa: {c['justificativa']}")
+            print("\n  Explicação:")
+            for tipo, explicacao in c['explicacao'].items():
+                print(f"  - {explicacao}")
+    else:
+        print("\nNenhuma carreira recomendada no momento.")
+        print("Para ter uma carreira recomendada, você precisa atender TODOS os critérios")
+        print("(interesses, habilidades e desempenho) para pelo menos uma carreira.")
+    
+    print("\nCarreiras próximas:")
+    if proximas:
+        # Ordena as carreiras próximas pelo score
+        proximas.sort(key=lambda x: x['score'], reverse=True)
+        
+        for c in proximas:
+            print(f"\n- {c['carreira']} (score: {c['score']}%)")
+            print(f"  Justificativa: {c['justificativa']}")
+            print("\n  Explicação:")
+            for tipo, explicacao in c['explicacao'].items():
+                print(f"  - {explicacao}")
+            
+            # Adiciona sugestões de melhoria
+            print("\n  Sugestões para transformar em carreira recomendada:")
+            for tipo, explicacao in c['explicacao'].items():
+                if "Faltam" in explicacao:
+                    print(f"  - {explicacao.replace('Faltam', 'Adquira')}")
+    else:
+        print("Nenhuma carreira próxima no momento.")
 
 def main():
     """
     Função principal que inicia o sistema.
     """
-    while True:
-        exibir_menu_principal()
-        opcao = input("\nEscolha uma opção: ").strip()
-        
-        if opcao == "1":
-            cadastrar_estudante()
-        elif opcao == "2":
-            gerenciar_estudantes()
-        elif opcao == "3":
-            gerar_relatorios()
-        elif opcao == "0":
-            print("\nSaindo do sistema...")
-            break
-        else:
-            print("\nOpção inválida! Tente novamente.")
-        
-        input("\nPressione Enter para continuar...")
+    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), 'data', 'regras.json')
+    estudante = criar_estudante(CAMINHO_REGRAS)
+    motor = MotorDeInferencia(CAMINHO_REGRAS)
+    recomendadas, proximas = motor.processa_estudante(estudante)
+    
+    exibir_recomendacoes(recomendadas, proximas)
 
 if __name__ == "__main__":
     main()

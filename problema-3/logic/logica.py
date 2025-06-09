@@ -231,3 +231,4 @@ def gerar_fatos_de_interesses(estudante):
             fatos.append(f"desempenho:{materia}")
     
     return fatos
+
