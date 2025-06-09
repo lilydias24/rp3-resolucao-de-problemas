@@ -19,6 +19,7 @@ from utils.interface import (
     exibir_fatos,
     exibir_estudantes
 )
+from utils.gestor_interface import executar_menu_gestor
 
 def exibir_menu():
     """
@@ -29,7 +30,8 @@ def exibir_menu():
     print("2. Listar estudantes cadastrados")
     print("3. Buscar estudante por nome")
     print("4. Ver recomendações de carreira")
-    print("5. Sair")
+    print("5. Menu do Gestor Acadêmico")
+    print("6. Sair")
     return input("\nEscolha uma opção: ").strip()
 
 def cadastrar_estudante():
@@ -37,12 +39,12 @@ def cadastrar_estudante():
     Executa o fluxo de cadastro de um novo estudante.
     """
     try:
-        # Coleta dados do estudante
+       
         estudante = coletar_interesses()
         estudante = coletar_habilidades(estudante)
         estudante = coletar_desempenho_academico(estudante)
         
-        # Salva no banco
+       
         salvar_estudante(estudante)
         print("\nEstudante cadastrado com sucesso! \n")
     except Exception as e:
@@ -73,7 +75,7 @@ def ver_recomendacoes():
         print(f"\nEstudante '{nome}' não encontrado.")
         return
     
-    # Converte os dados do estudante para o formato esperado pela lógica
+    # converte os dados do estudante pro formato esperado pela lógica
     dados_estudante = {
         'nome': estudante[1],
         'interesses': estudante[2] if estudante[2] else [],
@@ -81,12 +83,12 @@ def ver_recomendacoes():
         'desempenho': estudante[4] if len(estudante) > 4 and estudante[4] else {}
     }
     
-    # Processa recomendações usando o motor de inferência
+    # processa recomendações usando o motor 
     CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
     motor = MotorDeInferencia(CAMINHO_REGRAS)
     recomendadas, proximas = motor.processa_estudante(dados_estudante)
     
-    # Exibe as recomendações
+    
     print("\n=== Recomendações de Carreira ===")
     
     print("\nCarreiras recomendadas:")
@@ -104,7 +106,7 @@ def ver_recomendacoes():
     
     print("\nCarreiras próximas:")
     if proximas:
-        # Ordena as carreiras próximas pelo score
+        
         proximas.sort(key=lambda x: x['score'], reverse=True)
         
         for c in proximas:
@@ -114,7 +116,7 @@ def ver_recomendacoes():
             for tipo, explicacao in c['explicacao'].items():
                 print(f"  - {explicacao}")
             
-            # Adiciona sugestões de melhoria
+            
             print("\n  Sugestões para transformar em carreira recomendada:")
             for tipo, explicacao in c['explicacao'].items():
                 if "Faltam" in explicacao:
@@ -127,7 +129,7 @@ def executar_fluxo():
     Executa o fluxo principal do sistema com menu interativo.
     """
     try:
-        # Inicializa o banco de dados
+        
         criar_tabela_estudantes()
         
         while True:
@@ -141,10 +143,14 @@ def executar_fluxo():
             elif opcao == "3":
                 self.excluir_estudante_sistema()
             elif opcao == "4":
-                self.gerar_relatorios()
-            elif opcao == "0":
-                print("\nSaindo do sistema...")
-                break
+                ver_recomendacoes()
+            elif opcao == "5":
+                CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
+                executar_menu_gestor(CAMINHO_REGRAS)
+            elif opcao == "6":
+                if input("\nTem certeza que deseja sair? (s/n): ").lower() == 's':
+                    print("\nEncerrando o sistema...")
+                    break
             else:
                 print("\nOpção inválida!")
             

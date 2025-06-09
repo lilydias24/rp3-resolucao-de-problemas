@@ -7,10 +7,11 @@ import json
 import sys
 import os
 
-# Adiciona o diretório raiz ao PYTHONPATH
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.estudante import Estudante
+from utils.gestor_interface import DISCIPLINAS
 
 def coletar_interesses():
     """
@@ -70,14 +71,9 @@ def coletar_desempenho_academico(estudante):
     print("Digite suas notas (0-10) para cada disciplina.")
     print("Digite 'fim' para sair ou deixar uma nota em branco.")
     
-    disciplinas = [
-        "matematica", "portugues", "fisica", "quimica", "biologia",
-        "historia", "geografia", "ingles", "programacao", "artes"
-    ]
-    
     desempenho = {}
     
-    for disciplina in disciplinas:
+    for disciplina in DISCIPLINAS:
         while True:
             try:
                 nota = input(f"Nota em {disciplina} : ").strip().lower()
@@ -132,16 +128,16 @@ def exibir_estudantes(estudantes):
         print(f"\nID: {est[0]}")
         print(f"Nome: {est[1]}")
         
-        # Interesses
+        
         interesses = est[2] if est[2] else []
         print(f"Interesses: {interesses}")
         
-        # Habilidades
+        
         habilidades = est[3] if est[3] else []
         if habilidades:
             print(f"Habilidades: {habilidades}")
         
-        # Desempenho Escolar
+        
         desempenho = est[4] if est[4] else {}
         if desempenho:
             print("Desempenho Acadêmico:")

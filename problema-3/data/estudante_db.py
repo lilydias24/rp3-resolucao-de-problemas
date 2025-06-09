@@ -21,7 +21,7 @@ def criar_tabela_estudantes():
     con = conectar()
     cur = con.cursor()
     
-    # Cria a tabela se não existir
+    # cria se n existir
     cur.execute("""
         CREATE TABLE IF NOT EXISTS estudantes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +32,7 @@ def criar_tabela_estudantes():
         )
     """)
     
-    # Verifica se as novas colunas existem e as adiciona se necessário
+    # verifica se as novas colunas existem e as adiciona se necessário
     cur.execute("PRAGMA table_info(estudantes)")
     colunas_existentes = [coluna[1] for coluna in cur.fetchall()]
     
@@ -55,17 +55,18 @@ def salvar_estudante(estudante):
     con = conectar()
     cur = con.cursor()
     
-    # Converte o estudante para dicionário
-    dados = estudante.to_dict()
+    # joga os dados pra json
+    interesses_json = json.dumps(estudante.interesses)
+    habilidades_json = json.dumps(estudante.habilidades)
+    desempenho_json = json.dumps(estudante.desempenho_escolar)
     
-    # Garante que o desempenho seja um dicionário
-    if not isinstance(dados['desempenho'], dict):
-        dados['desempenho'] = {}
-    
-    # Converte os dados para JSON
-    interesses_json = json.dumps(dados['interesses'])
-    habilidades_json = json.dumps(dados['habilidades'])
-    desempenho_json = json.dumps(dados['desempenho'])
+    # debug: imprime os dados antes de salvar
+    print("\nDados a serem salvos:")
+    print(f"Nome: {estudante.nome}")
+    print(f"Interesses: {interesses_json}")
+    print(f"Habilidades: {habilidades_json}")
+    print(f"Desempenho (raw): {desempenho_json}")
+    print(f"Desempenho (dict): {estudante.desempenho_escolar}")
     
     cur.execute("""
         INSERT INTO estudantes (nome, interesses, habilidades, desempenho_escolar)
@@ -85,17 +86,35 @@ def listar_estudantes():
     con = conectar()
     cur = con.cursor()
     
-    # Busca os dados
+    # debug: verifica a estrutura da tabela
+    cur.execute("PRAGMA table_info(estudantes)")
+    colunas = cur.fetchall()
+    print("\nEstrutura da tabela:")
+    for coluna in colunas:
+        print(f"Coluna: {coluna[1]}, Tipo: {coluna[2]}")
+    
     cur.execute("""
         SELECT id, nome, interesses, habilidades, desempenho_escolar 
         FROM estudantes
     """)
     rows = cur.fetchall()
     
-    # Converte os dados JSON de volta para objetos Python
+    # debug: imprime os dados brutos
+    print("\nDados brutos do banco:")
+    for row in rows:
+        print(f"\nID: {row[0]}")
+        print(f"Nome: {row[1]}")
+        print(f"Interesses (raw): {row[2]}")
+        print(f"Habilidades (raw): {row[3]}")
+        print(f"Desempenho (raw): {row[4]}")
+    
+    # converte os dados json de volta para objetos python
     estudantes = []
     for row in rows:
         id_, nome, interesses_json, habilidades_json, desempenho_json = row
+        
+        # debug: imprime os dados dps conversão
+        print(f"\nProcessando estudante {nome}:")
         
         try:
             interesses = json.loads(interesses_json) if interesses_json else []
@@ -109,7 +128,12 @@ def listar_estudantes():
         
         try:
             desempenho = json.loads(desempenho_json) if desempenho_json else {}
-        except Exception:
+            print(f"Desempenho convertido: {desempenho}")
+            print(f"Desempenho (tipo): {type(desempenho)}")
+            print(f"Desempenho (chaves): {list(desempenho.keys())}")
+            print(f"Desempenho (valores): {list(desempenho.values())}")
+        except Exception as e:
+            print(f"Erro ao converter desempenho: {str(e)}")
             desempenho = {}
         
         estudantes.append((id_, nome, interesses, habilidades, desempenho))
