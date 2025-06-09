@@ -1,9 +1,25 @@
 """
 Interface para o Gestor Acadêmico gerenciar as regras de carreiras.
 """
+import json
 import os
 from typing import Dict, Any, List
 from .gestor import GestorRegras
+from data.conexao import conectar, desconectar
+from data.transacao import ConexaoErro
+from reports.gerar_relatorios import gerar_relatorios
+
+from data.estudante_db import (
+    listar_estudantes,
+    obter_disciplinas,
+    buscar_estudante
+)
+from reports.graficos import GeradorGraficos
+from data.relatorio_db import RelatorioDB
+from utils.cores import (
+    titulo, sucesso, erro, aviso, destaque, cabecalho,
+    menu_item, info, score, negrito, sublinhado
+)
 
 
 DISCIPLINAS = [
@@ -78,124 +94,138 @@ def exibir_menu_gestor() -> str:
     Exibe o menu do gestor acadêmico.
     
     Returns:
-        Opção escolhida pelo usuário
+        Opção selecionada pelo usuário
     """
-    print("\n=== Menu do Gestor Acadêmico ===")
-    print("1. Listar todas as regras")
-    print("2. Adicionar nova regra")
-    print("3. Editar regra existente")
-    print("4. Remover regra")
-    print("5. Visualizar regra específica")
-    print("6. Voltar ao menu principal")
-    return input("\nEscolha uma opção: ").strip()
+    print(cabecalho("Menu do Gestor Acadêmico"))
+    print(menu_item("1", "Adicionar regra de carreira"))
+    print(menu_item("2", "Editar regra de carreira"))
+    print(menu_item("3", "Remover regra de carreira"))
+    print(menu_item("4", "Listar regras de carreira"))
+    print(menu_item("5", "Gerar relatórios"))
+    print(menu_item("6", "Voltar ao menu principal"))
+    return input("\n" + destaque("Escolha uma opção: ")).strip()
 
-def selecionar_opcoes(lista_opcoes: List[str], titulo: str) -> List[str]:
+def selecionar_opcoes(titulo_texto, opcoes):
     """
-    Permite selecionar múltiplas opções de uma lista.
+    Permite que o usuário selecione múltiplas opções de uma lista.
     
     Args:
-        lista_opcoes: Lista de opções disponíveis
-        titulo: Título da seleção
+        titulo_texto: Título da seleção
+        opcoes: Lista de opções disponíveis
         
     Returns:
-        Lista de opções selecionadas
+        Lista com as opções selecionadas
     """
-    selecionados = []
-    print(f"\n=== {titulo} ===")
+    print(cabecalho(titulo_texto))
+    
+    for i, opcao in enumerate(opcoes, 1):
+        print(menu_item(str(i), opcao))
     
     while True:
-        print("\nOpções disponíveis:")
-        for i, opcao in enumerate(lista_opcoes, 1):
-            print(f"{i}. {opcao}")
-        print("0. Finalizar seleção")
+        escolha = input("\n" + destaque("Digite os números das opções desejadas (separados por vírgula)\nExemplo: 1,3,5\n\nSua escolha: ")).strip()
         
         try:
-            escolha = int(input("\nEscolha uma opção (número): "))
-            if escolha == 0:
-                break
-            if 1 <= escolha <= len(lista_opcoes):
-                opcao = lista_opcoes[escolha - 1]
-                if opcao not in selecionados:
-                    selecionados.append(opcao)
-                    print(f"\n{opcao} adicionado!")
-                else:
-                    print("\nEsta opção já foi selecionada!")
+            indices = [int(x.strip()) for x in escolha.split(',')]
+            if all(1 <= i <= len(opcoes) for i in indices):
+                return [opcoes[i-1] for i in indices]
             else:
-                print("\nOpção inválida!")
+                print(erro("\nNúmeros inválidos! Use apenas números entre 1 e", len(opcoes)))
         except ValueError:
-            print("\nPor favor, digite um número válido!")
+            print(erro("\nFormato inválido! Use números separados por vírgula."))
+
+def carregar_regras(caminho_arquivo: str) -> Dict[str, Any]:
+    """
+    Carrega as regras de carreira do arquivo JSON.
     
-    return selecionados
+    Args:
+        caminho_arquivo: Caminho do arquivo de regras
+        
+    Returns:
+        Dicionário com as regras de carreira
+        
+    Raises:
+        FileNotFoundError: Se o arquivo não existir
+        json.JSONDecodeError: Se o arquivo não for um JSON válido
+    """
+    try:
+        with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(aviso(f"\nArquivo de regras não encontrado: {caminho_arquivo}"))
+        return {"carreiras": []}
+    except json.JSONDecodeError as e:
+        print(f"\nErro ao carregar regras: {str(e)}")
+        return {"carreiras": []}
+
+def salvar_regras(caminho_arquivo: str, regras: Dict[str, Any]) -> None:
+    """
+    Salva as regras de carreira no arquivo JSON.
+    
+    Args:
+        caminho_arquivo: Caminho do arquivo de regras
+        regras: Dicionário com as regras de carreira
+        
+    Raises:
+        IOError: Se houver erro ao salvar o arquivo
+    """
+    try:
+        with open(caminho_arquivo, 'w', encoding='utf-8') as f:
+            json.dump(regras, f, indent=2, ensure_ascii=False)
+        print(sucesso("\nRegras salvas com sucesso!"))
+    except IOError as e:
+        print(f"\nErro ao salvar regras: {str(e)}")
 
 def coletar_dados_regra() -> Dict[str, Any]:
     """
-    Coleta os dados para uma nova regra.
+    Coleta os dados para uma nova regra de carreira.
     
     Returns:
         Dicionário com os dados da regra
     """
-    print("\n=== Nova Regra de Carreira ===")
+    print(cabecalho("Nova Regra de Carreira"))
     
-    carreira = input("\nNome da carreira: ").strip()
-    while not carreira:
-        print("O nome da carreira não pode estar vazio!")
-        carreira = input("Nome da carreira: ").strip()
+    nome = input("\n" + destaque("Nome da carreira: ")).strip()
+    if not nome:
+        print(erro("\nNome da carreira não pode estar vazio!"))
+        return None
     
-    interesses = selecionar_opcoes(INTERESSES, "Selecione os Interesses")
-    while not interesses:
-        print("Você deve selecionar pelo menos um interesse!")
-        interesses = selecionar_opcoes(INTERESSES, "Selecione os Interesses")
+    descricao = input("\n" + destaque("Descrição da carreira: ")).strip()
+    if not descricao:
+        print(erro("\nDescrição da carreira não pode estar vazia!"))
+        return None
     
-    habilidades = selecionar_opcoes(HABILIDADES, "Selecione as Habilidades")
-    while not habilidades:
-        print("Você deve selecionar pelo menos uma habilidade!")
-        habilidades = selecionar_opcoes(HABILIDADES, "Selecione as Habilidades")
+    print("\n" + destaque("Selecione os interesses necessários:"))
+    interesses = selecionar_opcoes("Interesses", INTERESSES)
     
-    print("\nNotas mínimas necessárias:")
+    print("\n" + destaque("Selecione as habilidades necessárias:"))
+    habilidades = selecionar_opcoes("Habilidades", HABILIDADES)
+    
+    print("\n" + destaque("Defina as notas mínimas para cada disciplina:"))
     desempenho = {}
-    disciplinas_selecionadas = selecionar_opcoes(DISCIPLINAS, "Selecione as Disciplinas")
-    while not disciplinas_selecionadas:
-        print("Você deve selecionar pelo menos uma disciplina!")
-        disciplinas_selecionadas = selecionar_opcoes(DISCIPLINAS, "Selecione as Disciplinas")
-    
-    for disciplina in disciplinas_selecionadas:
+    for disciplina in DISCIPLINAS:
         while True:
             try:
-                nota = float(input(f"\nNota mínima para {disciplina} (0-10): "))
+                nota = float(input(f"\n{destaque(f'Nota mínima em {disciplina} (0-10): ')}").strip())
                 if 0 <= nota <= 10:
                     desempenho[disciplina] = nota
                     break
                 else:
-                    print("A nota deve estar entre 0 e 10!")
+                    print(erro("\nA nota deve estar entre 0 e 10!"))
             except ValueError:
-                print("Por favor, digite um número válido!")
+                print(erro("\nPor favor, digite um número válido!"))
     
-    print("\nPesos das disciplinas:")
-    pesos = {}
-    for disciplina in disciplinas_selecionadas:
-        while True:
-            try:
-                peso = float(input(f"\nPeso para {disciplina} (1-3): "))
-                if 1 <= peso <= 3:
-                    pesos[disciplina] = peso
-                    break
-                else:
-                    print("O peso deve estar entre 1 e 3!")
-            except ValueError:
-                print("Por favor, digite um número válido!")
-    
-    justificativa = input("\nJustificativa para a carreira: ").strip()
-    while not justificativa:
-        print("A justificativa não pode estar vazia!")
-        justificativa = input("Justificativa para a carreira: ").strip()
+    justificativa = input("\n" + destaque("Justificativa para a carreira: ")).strip()
+    if not justificativa:
+        print(erro("\nJustificativa não pode estar vazia!"))
+        return None
     
     return {
-        "carreira": carreira,
+        "nome": nome,
+        "descricao": descricao,
         "condicoes": {
             "interesses": interesses,
             "habilidades": habilidades,
-            "desempenho": desempenho,
-            "pesos": pesos
+            "desempenho": desempenho
         },
         "justificativa": justificativa
     }
@@ -207,8 +237,8 @@ def exibir_regra(regra: Dict[str, Any]) -> None:
     Args:
         regra: Regra a ser exibida
     """
-    print(f"\n=== Regra: {regra['carreira']} ===")
-    print(f"\nJustificativa: {regra['justificativa']}")
+    print(f"\n=== Regra: {regra['nome']} ===")
+    print(f"\nDescrição: {regra['descricao']}")
     
     print("\nCondições:")
     condicoes = regra['condicoes']
@@ -227,125 +257,98 @@ def exibir_regra(regra: Dict[str, Any]) -> None:
         print("\nNotas mínimas necessárias:")
         for disciplina, nota in condicoes['desempenho'].items():
             print(f"- {disciplina}: {nota}")
-    
-    if condicoes.get('pesos'):
-        print("\nPesos das disciplinas:")
-        for disciplina, peso in condicoes['pesos'].items():
-            print(f"- {disciplina}: {peso}")
 
 def executar_menu_gestor(caminho_regras: str) -> None:
     """
     Executa o menu do gestor acadêmico.
     
     Args:
-        caminho_regras: Caminho para o arquivo de regras
+        caminho_regras: Caminho do arquivo de regras
     """
-    gestor = GestorRegras(caminho_regras)
-    
     while True:
         opcao = exibir_menu_gestor()
         
-        if opcao == "1":  # listar regras
-            regras = gestor.listar_regras()
-            if regras:
-                print("\nRegras existentes:")
-                for regra in regras:
-                    print(f"- {regra['carreira']}")
-            else:
-                print("\nNenhuma regra cadastrada.")
+        if opcao == "1":  # Adicionar regra
+            regras = carregar_regras(caminho_regras)
+            nova_regra = coletar_dados_regra()
+            
+            if nova_regra:
+                regras["carreiras"].append(nova_regra)
+                salvar_regras(caminho_regras, regras)
         
-        elif opcao == "2":  # adicionar regra
-            regra = coletar_dados_regra()
-            if gestor.adicionar_regra(regra):
-                print("\nRegra adicionada com sucesso!")
-            else:
-                print("\nErro ao adicionar regra. Verifique se os dados estão corretos.")
-        
-        elif opcao == "3":  # editar regra
-            regras = gestor.listar_regras()
-            if not regras:
-                print("\nNenhuma regra cadastrada para editar.")
+        elif opcao == "2":  # Editar regra
+            regras = carregar_regras(caminho_regras)
+            if not regras["carreiras"]:
+                print(aviso("\nNão há regras para editar!"))
                 continue
                 
-            print("\nCarreiras disponíveis:")
-            for i, regra in enumerate(regras, 1):
-                print(f"{i}. {regra['carreira']}")
+            print(cabecalho("Editar Regra de Carreira"))
+            for i, regra in enumerate(regras["carreiras"], 1):
+                print(menu_item(str(i), regra['nome']))
             
-            while True:
-                try:
-                    escolha = int(input("\nEscolha o número da carreira a ser editada: "))
-                    if 1 <= escolha <= len(regras):
-                        carreira = regras[escolha - 1]['carreira']
-                        regra_atual = gestor.obter_regra(carreira)
-                        print("\nRegra atual:")
-                        exibir_regra(regra_atual)
-                        print("\nNovos dados:")
-                        nova_regra = coletar_dados_regra()
-                        if gestor.editar_regra(carreira, nova_regra):
-                            print("\nRegra atualizada com sucesso!")
-                        else:
-                            print("\nErro ao atualizar regra. Verifique se os dados estão corretos.")
-                        break
-                    else:
-                        print("\nOpção inválida!")
-                except ValueError:
-                    print("\nPor favor, digite um número válido!")
-        
-        elif opcao == "4":  # remover regra
-            regras = gestor.listar_regras()
-            if not regras:
-                print("\nNenhuma regra cadastrada para remover.")
+            try:
+                indice = int(input("\n" + destaque("Digite o número da regra a editar: ")).strip()) - 1
+                if 0 <= indice < len(regras["carreiras"]):
+                    regras["carreiras"][indice] = coletar_dados_regra()
+                    salvar_regras(caminho_regras, regras)
+                else:
+                    print(erro("\nNúmero de regra inválido!"))
+            except ValueError:
+                print(erro("\nPor favor, digite um número válido!"))
+            
+        elif opcao == "3":  # Remover regra
+            regras = carregar_regras(caminho_regras)
+            if not regras["carreiras"]:
+                print(aviso("\nNão há regras para remover!"))
                 continue
                 
-            print("\nCarreiras disponíveis:")
-            for i, regra in enumerate(regras, 1):
-                print(f"{i}. {regra['carreira']}")
+            print(cabecalho("Remover Regra de Carreira"))
+            for i, regra in enumerate(regras["carreiras"], 1):
+                print(menu_item(str(i), regra['nome']))
             
-            while True:
-                try:
-                    escolha = int(input("\nEscolha o número da carreira a ser removida: "))
-                    if 1 <= escolha <= len(regras):
-                        carreira = regras[escolha - 1]['carreira']
-                        if gestor.remover_regra(carreira):
-                            print("\nRegra removida com sucesso!")
-                        else:
-                            print(f"\nCarreira '{carreira}' não encontrada.")
-                        break
-                    else:
-                        print("\nOpção inválida!")
-                except ValueError:
-                    print("\nPor favor, digite um número válido!")
-        
-        elif opcao == "5":  # visualizar regra
-            regras = gestor.listar_regras()
-            if not regras:
-                print("\nNenhuma regra cadastrada para visualizar.")
+            try:
+                indice = int(input("\n" + destaque("Digite o número da regra a remover: ")).strip()) - 1
+                if 0 <= indice < len(regras["carreiras"]):
+                    regra_removida = regras["carreiras"].pop(indice)
+                    salvar_regras(caminho_regras, regras)
+                    print(f"\nRegra '{regra_removida['nome']}' removida com sucesso!")
+                else:
+                    print(erro("\nNúmero de regra inválido!"))
+            except ValueError:
+                print(erro("\nPor favor, digite um número válido!"))
+            
+        elif opcao == "4":  # Listar regras
+            regras = carregar_regras(caminho_regras)
+            if not regras["carreiras"]:
+                print(aviso("\nNão há regras cadastradas!"))
                 continue
                 
-            print("\nCarreiras disponíveis:")
-            for i, regra in enumerate(regras, 1):
-                print(f"{i}. {regra['carreira']}")
+            print(cabecalho("Regras de Carreira"))
+            for regra in regras["carreiras"]:
+                print(f"\n{destaque('Carreira:')} {negrito(regra['nome'])}")
+                print(f"{destaque('Descrição:')} {regra['descricao']}")
+                print(f"\n{destaque('Interesses:')}")
+                for interesse in regra['condicoes']['interesses']:
+                    print(f"  • {info(interesse)}")
+                print(f"\n{destaque('Habilidades:')}")
+                for habilidade in regra['condicoes']['habilidades']:
+                    print(f"  • {info(habilidade)}")
+                print(f"\n{destaque('Desempenho:')}")
+                for disciplina, nota in regra['condicoes']['desempenho'].items():
+                    print(f"  • {disciplina}: {nota}")
+                print(f"\n{destaque('Justificativa:')} {regra['justificativa']}")
+                print(separador('-'))
             
-            while True:
-                try:
-                    escolha = int(input("\nEscolha o número da carreira a ser visualizada: "))
-                    if 1 <= escolha <= len(regras):
-                        carreira = regras[escolha - 1]['carreira']
-                        regra = gestor.obter_regra(carreira)
-                        if regra:
-                            exibir_regra(regra)
-                        else:
-                            print(f"\nCarreira '{carreira}' não encontrada.")
-                        break
-                    else:
-                        print("\nOpção inválida!")
-                except ValueError:
-                    print("\nPor favor, digite um número válido!")
-        
-        elif opcao == "6":  # voltar
+        elif opcao == "5":  # Gerar relatórios
+            try:
+                gerar_relatorios()
+            except Exception as e:
+                print(f"\nErro ao gerar relatório: {str(e)}")
+            
+        elif opcao == "6":  # Voltar
             break
-        
+            
         else:
-            print("\nOpção inválida!")
+            print(erro("\nOpção inválida! Por favor, escolha uma opção válida."))
         
-        input("\nPressione Enter para continuar...") 
+        input("\n" + destaque("Pressione Enter para continuar..."))
