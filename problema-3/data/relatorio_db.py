@@ -10,6 +10,15 @@ class RelatorioDB:
         """Inicializa o gerador de relatórios."""
         pass
 
+    def listar_estudantes(self):
+        """
+        Retorna a lista de todos os estudantes cadastrados.
+        
+        Returns:
+            list: Lista de tuplas contendo (id, nome, interesses, habilidades, desempenho)
+        """
+        return listar_estudantes()
+
     def obter_disciplinas(self):
         """
         Retorna a lista de todas as disciplinas registradas no banco.

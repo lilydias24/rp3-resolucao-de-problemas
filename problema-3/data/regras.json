@@ -179,5 +179,160 @@
             }
         },
         "justificativa": "Voce tem interesses e habilidades necessárias"
+    },
+    {
+        "nome": "Ciência da Computação",
+        "descricao": "Desenvolvimento de software, algoritmos e sistemas computacionais",
+        "condicoes": {
+            "interesses": [
+                "programação",
+                "tecnologia",
+                "matemática",
+                "lógica",
+                "inovação"
+            ],
+            "habilidades": [
+                "raciocínio lógico",
+                "resolução de problemas",
+                "trabalho em equipe",
+                "comunicação",
+                "criatividade"
+            ],
+            "desempenho": {
+                "matemática": 7.0,
+                "física": 7.0,
+                "português": 6.0
+            },
+            "pesos": {
+                "matemática": 2,
+                "física": 1.5,
+                "português": 1
+            }
+        },
+        "justificativa": "Você tem aptidão para trabalhar com tecnologia e desenvolvimento de software."
+    },
+    {
+        "nome": "Medicina",
+        "descricao": "Diagnóstico, tratamento e prevenção de doenças",
+        "condicoes": {
+            "interesses": [
+                "biologia",
+                "saúde",
+                "anatomia",
+                "pesquisa",
+                "cuidados com pessoas"
+            ],
+            "habilidades": [
+                "empatia",
+                "trabalho sob pressão",
+                "comunicação",
+                "tomada de decisão",
+                "atenção aos detalhes"
+            ],
+            "desempenho": {
+                "biologia": 8.0,
+                "química": 8.0,
+                "português": 7.0
+            },
+            "pesos": {
+                "biologia": 2,
+                "química": 1.5,
+                "português": 1
+            }
+        },
+        "justificativa": "Você demonstra interesse e aptidão para a área da saúde."
+    },
+    {
+        "nome": "Direito",
+        "descricao": "Aplicação e interpretação das leis",
+        "condicoes": {
+            "interesses": [
+                "leis",
+                "justiça",
+                "debate",
+                "história",
+                "sociedade"
+            ],
+            "habilidades": [
+                "argumentação",
+                "interpretação",
+                "comunicação",
+                "negociação",
+                "análise crítica"
+            ],
+            "desempenho": {
+                "português": 8.0,
+                "história": 7.0,
+                "geografia": 6.0
+            },
+            "pesos": {
+                "português": 2,
+                "história": 1.5,
+                "geografia": 1
+            }
+        },
+        "justificativa": "Você tem perfil para atuar na área jurídica."
+    },
+    {
+        "nome": "Engenharia Civil",
+        "descricao": "Projeto e construção de estruturas e infraestruturas",
+        "condicoes": {
+            "interesses": [
+                "construção",
+                "matemática",
+                "física",
+                "desenho",
+                "sustentabilidade"
+            ],
+            "habilidades": [
+                "cálculo",
+                "planejamento",
+                "trabalho em equipe",
+                "gestão de projetos",
+                "visão espacial"
+            ],
+            "desempenho": {
+                "matemática": 7.0,
+                "física": 7.0,
+                "química": 6.0
+            },
+            "pesos": {
+                "matemática": 2,
+                "física": 1.5,
+                "química": 1
+            }
+        },
+        "justificativa": "Você tem aptidão para trabalhar com projetos e construções."
+    },
+    {
+        "nome": "Psicologia",
+        "descricao": "Estudo do comportamento humano e processos mentais",
+        "condicoes": {
+            "interesses": [
+                "comportamento humano",
+                "saúde mental",
+                "pesquisa",
+                "ajuda ao próximo",
+                "comunicação"
+            ],
+            "habilidades": [
+                "empatia",
+                "escuta ativa",
+                "análise",
+                "comunicação",
+                "ética"
+            ],
+            "desempenho": {
+                "português": 7.0,
+                "biologia": 6.0,
+                "história": 6.0
+            },
+            "pesos": {
+                "português": 2,
+                "biologia": 1.5,
+                "história": 1
+            }
+        },
+        "justificativa": "Você tem perfil para trabalhar com pessoas e comportamento humano."
     }
 ]
