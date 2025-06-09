@@ -1,13 +1,8 @@
 """
-Módulo principal do sistema de recomendação de carreiras.
+Módulo do fluxo principal do sistema.
 
-Contém a classe Sistema que gerencia todas as funcionalidades do sistema, incluindo:
-- Menus e interfaces
-- Gerenciamento de estudantes
-- Geração de relatórios
-- Recomendações de carreiras
+Contém funções para gerenciar o fluxo de execução do sistema.
 """
-import os
 import json
 import os
 from data.estudante_db import criar_tabela_estudantes, salvar_estudante, listar_estudantes
@@ -133,15 +128,15 @@ def executar_fluxo():
         criar_tabela_estudantes()
         
         while True:
-            self.exibir_menu_principal()
-            opcao = input("\nEscolha uma opção: ").strip()
+            opcao = exibir_menu()
             
             if opcao == "1":
-                self.cadastrar_estudante()
+                cadastrar_estudante()
             elif opcao == "2":
-                self.listar_todos_estudantes()
+                estudantes = listar_estudantes()
+                exibir_estudantes(estudantes)
             elif opcao == "3":
-                self.excluir_estudante_sistema()
+                buscar_estudante()
             elif opcao == "4":
                 ver_recomendacoes()
             elif opcao == "5":
@@ -152,10 +147,7 @@ def executar_fluxo():
                     print("\nEncerrando o sistema...")
                     break
             else:
-                print("\nOpção inválida!")
-            
-            input("\nPressione Enter para continuar...")
-
-if __name__ == "__main__":
-    sistema = Sistema()
-    sistema.executar()
+                print("\nOpção inválida! Por favor, escolha uma opção válida.")
+    except Exception as e:
+        print(f"\nErro no sistema: {str(e)}")
+        print("O sistema será encerrado.") 
