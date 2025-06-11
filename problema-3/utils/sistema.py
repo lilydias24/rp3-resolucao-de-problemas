@@ -4,7 +4,8 @@ Módulo do fluxo principal do sistema.
 Contém funções para gerenciar o fluxo de execução do sistema.
 """
 import json
-from data.estudante_db import criar_tabela_estudantes, salvar_estudante, listar_estudantes
+from data.criarBanco import criar_tabelas
+from logic.estudante import salvar_estudante, listar_estudantes
 from logic.logica import gerar_fatos_de_interesses, pode_seguir_carreira, carreiras_proximas
 from utils.interface import (
     coletar_interesses,
@@ -113,7 +114,7 @@ def executar_fluxo():
     """
     try:
         # Inicializa o banco de dados
-        criar_tabela_estudantes()
+        criar_tabelas()
         
         while True:
             opcao = exibir_menu()
