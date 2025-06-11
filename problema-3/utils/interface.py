@@ -65,8 +65,8 @@ def coletar_desempenho_academico(estudante):
     print("Digite 'fim' para sair ou deixar uma nota em branco.")
     
     disciplinas = [
-        "Matemática", "Português", "Física", "Química", "Biologia",
-        "História", "Geografia", "Ingles", "Programação", "Artes"
+        "matematica", "portugues", "fisica", "quimica", "biologia",
+        "historia", "geografia", "ingles", "programacao", "artes"
     ]
     
     desempenho = {}
