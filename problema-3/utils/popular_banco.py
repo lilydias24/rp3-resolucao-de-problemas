@@ -76,4 +76,4 @@ def popular_banco_com_estudantes():
             print(f"Erro ao cadastrar {estudante['nome']}: {e}")
 
 # Para rodar, basta chamar:
-popular_banco_com_estudantes()
+# popular_banco_com_estudantes()

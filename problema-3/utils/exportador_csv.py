@@ -29,4 +29,4 @@ def exportar_tendencias_para_csv(caminho_csv):
     
     print(f"Tendências de carreira exportadas para {caminho_csv} com sucesso!")
 # Exemplo de uso:
-exportar_tendencias_para_csv('reports/tendencias_carreira.csv')
+# exportar_tendencias_para_csv('reports/tendencias_carreira.csv')
