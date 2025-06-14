@@ -79,6 +79,26 @@ class Estudante:
         ]
         return carreiras or ["carreira não definida"]
 
+    def metricas_escola(self, materia_escola: str, desempenho: float) -> dict[str, float]:
+        '''
+        Registra (ou atualiza) o desempenho do estudante em uma determinada matéria.
+        Se a matéria já existir no histórico, atualiza a nota; caso contrário, adiciona.
+        Retorna sempre o dicionário completo de desempenho.
+        '''
+        # validações básicas
+        if not isinstance(materia_escola, str):
+            raise TypeError("O nome da matéria precisa ser uma string")
+
+        if not materia_escola.strip():
+            raise ValueError("O nome da matéria não pode ser vazio")
+
+        if not isinstance(desempenho, (int, float)):
+            raise TypeError("O desempenho precisa ser um número")
+
+        chave = materia_escola.strip()
+        self.desempenho_escolar[chave] = float(desempenho)
+        return self.desempenho_escolar
+
 
 if __name__ == "__main__":
     aluno = Estudante("Mariana")
