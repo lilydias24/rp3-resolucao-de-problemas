@@ -5,15 +5,11 @@ import json
 import os
 from typing import Dict, Any, List
 from .gestor import GestorRegras
-from data.conexao import conectar, desconectar
+from data.conexao import conectar
 from data.transacao import ConexaoErro
 from reports.gerar_relatorios import gerar_relatorios
-
-from data.estudante_db import (
-    listar_estudantes,
-    obter_disciplinas,
-    buscar_estudante
-)
+from data.relatorio_db import listar_estudantes
+from logic.estudante import buscar_estudante
 from reports.graficos import GeradorGraficos
 from data.relatorio_db import RelatorioDB
 from utils.cores import (

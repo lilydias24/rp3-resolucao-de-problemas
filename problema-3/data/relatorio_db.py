@@ -3,7 +3,7 @@ Módulo para geração de relatórios e visualizações.
 """
 import json
 from data.conexao import conectar
-from data.estudante_db import listar_estudantes
+from logic.estudante import listar_estudantes
 
 class RelatorioDB:
     def __init__(self):

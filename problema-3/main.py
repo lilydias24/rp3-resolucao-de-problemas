@@ -9,13 +9,12 @@ Este módulo executa o fluxo principal do sistema:
 - Lista os estudantes registrados
 """
 import os
-from logic.motor import MotorDeInferencia, criar_estudante
+from data.conexao import conectar
+from logic.estudante import buscar_estudante, cadastrar_estudante, listar_estudantes, buscar_estudante_completo_por_nome, recomendar_carreiras
+from logic.logica import carreiras_proximas, gerar_fatos_de_interesses
+from logic.motor import MotorDeInferencia
+from logic.recomendacao import salvar_recomendacao, listar_recomendacoes
 from utils.gestor_interface import executar_menu_gestor
-from data.estudante_db import (
-    buscar_estudante_por_nome, 
-    atualizar_recomendacoes,
-    inicializar_banco
-)
 from data.transacao import ConexaoErro
 from utils.cores import titulo, sucesso, erro, aviso, destaque, cabecalho, menu_item, info, score, negrito, sublinhado
 
@@ -122,7 +121,7 @@ def exibir_recomendacoes(estudante, motor):
     
     # Atualiza as recomendações no banco de dados
     try:
-        atualizar_recomendacoes(id_, {
+        salvar_recomendacao(id_, {
             'recomendadas': recomendadas,
             'proximas': proximas
         })
@@ -134,11 +133,11 @@ def main():
     Função principal que inicia o sistema.
     """
     CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), 'data', 'regras.json')
-    motor = MotorDeInferencia(CAMINHO_REGRAS)
+    motor = MotorDeInferencia()  # Remova o argumento CAMINHO_REGRAS
     
     # Inicializa o banco de dados
     try:
-        inicializar_banco()
+        conectar()
     except ConexaoErro as e:
         print(erro(f"\nErro ao inicializar banco de dados: {str(e)}"))
         return
@@ -147,7 +146,7 @@ def main():
         opcao = exibir_menu()
         
         if opcao == "1":  
-            estudante = criar_estudante(CAMINHO_REGRAS)
+            estudante = cadastrar_estudante(CAMINHO_REGRAS)
             recomendadas, proximas = motor.processa_estudante(estudante)
             
             print("\n" + destaque("Carreiras recomendadas:"))
@@ -191,7 +190,7 @@ def main():
                 continue
             
             try:
-                estudante = buscar_estudante_por_nome(nome)
+                estudante = buscar_estudante_completo_por_nome(nome)
                 if estudante:
                     exibir_dados_estudante(estudante)
                 else:
@@ -206,7 +205,7 @@ def main():
                 continue
             
             try:
-                estudante = buscar_estudante_por_nome(nome)
+                estudante = buscar_estudante_completo_por_nome(nome)
                 if estudante:
                     exibir_recomendacoes(estudante, motor)
                 else:

@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from reports.graficos import GeradorGraficos
 from data.relatorio_db import RelatorioDB
-from data.conexao import conectar, desconectar
+from data.conexao import conectar
 from data.transacao import ConexaoErro
 
 def obter_estudantes_silencioso() -> List[Tuple[Any, ...]]:
@@ -43,8 +43,6 @@ def obter_estudantes_silencioso() -> List[Tuple[Any, ...]]:
         return estudantes
     except Exception as e:
         raise ConexaoErro(f"Erro ao obter estudantes: {str(e)}")
-    finally:
-        desconectar()
 
 def gerar_relatorios() -> None:
     """
