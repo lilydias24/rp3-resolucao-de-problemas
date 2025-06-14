@@ -1,5 +1,5 @@
 """
-Motor de inferência para o sistema de recomendação de carreiras.
+Módulo que implementa o motor de inferência para recomendações de carreira.
 """
 from data.conexao import conectar
 
