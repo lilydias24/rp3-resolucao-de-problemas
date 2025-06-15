@@ -1,12 +1,8 @@
 """
 Teste do sistema de recomendação de carreiras usando paradigma lógico.
 """
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from logic.logica import pode_seguir_carreira, carreiras_proximas, CARREIRAS, regra_interesse, regra_habilidade, regra_desempenho
-from logic.motor import MotorDeInferencia
+from logic import pode_seguir_carreira, carreiras_proximas, CARREIRAS, regra_interesse, regra_habilidade, regra_desempenho
+from logic import MotorDeInferencia
 
 def test_estudante_multiplas_carreiras():
     """

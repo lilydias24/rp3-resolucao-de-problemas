@@ -1,5 +1,5 @@
 import unittest
-from .data.validacao import *
+from data import *
 
 
 class TestValidacao(unittest.TestCase):

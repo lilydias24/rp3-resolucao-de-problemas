@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from logic.motor_inferencia import MotorDeInferencia
+from logic import MotorDeInferencia
 
 # Simulação de regra vinda do banco
 mock_regras = [

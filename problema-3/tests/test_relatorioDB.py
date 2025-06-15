@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from .data import RelatorioDB
+from data import RelatorioDB
 
 # Dados simulados
 mock_estudantes = [
