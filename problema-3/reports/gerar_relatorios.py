@@ -21,7 +21,7 @@ def gerar_relatorios() -> None:
         from logic.estudante import listar_estudantes
         
         # Cria diretório para relatórios
-        relatorios_dir = 'reports/relatorios'
+        relatorios_dir = os.path.join(os.path.dirname(__file__), 'relatorios')
         os.makedirs(relatorios_dir, exist_ok=True)
         
         # Gera relatório de estudantes

@@ -42,108 +42,115 @@ class GestorInterface:
     """
     
     @staticmethod
-    def coletar_dados_regra() -> Dict[str, Any]:
+    def coletar_dados_regra(regra_atual: Dict = None) -> Dict[str, Any]:
         """
-        Coleta os dados para uma nova regra de carreira.
+        Coleta os dados para uma regra de carreira.
         
+        Args:
+            regra_atual: Dicionário com os dados atuais da regra (opcional)
+            
         Returns:
-            Dict com os dados da regra
+            Dicionário com os dados da regra
         """
-        print(cabecalho("Cadastro de Nova Regra de Carreira"))
+        print("\n" + destaque("Cadastro de Regra de Carreira"))
         print(separador())
         
         # Nome da carreira
-        carreira = input(destaque("Nome da carreira: ")).strip()
-        while not carreira:
-            print(erro("Nome da carreira não pode estar vazio!"))
-            carreira = input(destaque("Nome da carreira: ")).strip()
+        nome_atual = regra_atual.get('carreira', '') if regra_atual else ''
+        carreira = input(destaque(f"Nome da carreira ({nome_atual}): ")).strip()
+        if not carreira and regra_atual:
+            carreira = nome_atual
         
         # Justificativa
-        justificativa = input(destaque("Justificativa para a carreira: ")).strip()
-        while not justificativa:
-            print(erro("Justificativa não pode estar vazia!"))
-            justificativa = input(destaque("Justificativa para a carreira: ")).strip()
+        justificativa_atual = regra_atual.get('justificativa', '') if regra_atual else ''
+        justificativa = input(destaque(f"Justificativa ({justificativa_atual}): ")).strip()
+        if not justificativa and regra_atual:
+            justificativa = justificativa_atual
         
-        # Interesses necessários
-        print("\n" + destaque("Selecione os interesses necessários:"))
+        # Interesses
+        print("\n" + destaque("Digite os interesses necessários:"))
         print(separador())
-        for i, interesse in enumerate(INTERESSES, 1):
-            print(f"{i}. {interesse}")
-        print(separador())
+        print("Digite um interesse por linha")
+        print("Pressione Enter duas vezes para manter os interesses atuais")
         
         interesses = []
-        while True:
-            try:
-                opcao = input(destaque("Digite o número do interesse (ou 0 para terminar): ")).strip()
-                if opcao == "0":
-                    break
-                idx = int(opcao) - 1
-                if 0 <= idx < len(INTERESSES):
-                    interesse = INTERESSES[idx]
-                    if interesse not in interesses:
-                        interesses.append(interesse)
-                        print(sucesso(f"Interesse '{interesse}' adicionado!"))
-                    else:
-                        print(aviso(f"Interesse '{interesse}' já foi adicionado!"))
-                else:
-                    print(erro("Opção inválida!"))
-            except ValueError:
-                print(erro("Digite um número válido!"))
+        if regra_atual:
+            print("\nInteresses atuais:")
+            for interesse in regra_atual.get('condicoes', {}).get('interesses', []):
+                print(f"  • {interesse}")
         
-        # Habilidades necessárias
-        print("\n" + destaque("Selecione as habilidades necessárias:"))
+        while True:
+            interesse = input(destaque("> ")).strip()
+            if not interesse:
+                if not interesses and regra_atual:  # Se não digitou nenhum interesse novo
+                    interesses = regra_atual.get('condicoes', {}).get('interesses', [])  # Mantém os atuais
+                break
+            interesses.append(interesse)
+        
+        # Habilidades
+        print("\n" + destaque("Digite as habilidades necessárias:"))
         print(separador())
-        for i, habilidade in enumerate(HABILIDADES, 1):
-            print(f"{i}. {habilidade}")
-        print(separador())
+        print("Digite uma habilidade por linha")
+        print("Pressione Enter duas vezes para manter as habilidades atuais")
         
         habilidades = []
+        if regra_atual:
+            print("\nHabilidades atuais:")
+            for habilidade in regra_atual.get('condicoes', {}).get('habilidades', []):
+                print(f"  • {habilidade}")
+        
         while True:
-            try:
-                opcao = input(destaque("Digite o número da habilidade (ou 0 para terminar): ")).strip()
-                if opcao == "0":
-                    break
-                idx = int(opcao) - 1
-                if 0 <= idx < len(HABILIDADES):
-                    habilidade = HABILIDADES[idx]
-                    if habilidade not in habilidades:
-                        habilidades.append(habilidade)
-                        print(sucesso(f"Habilidade '{habilidade}' adicionada!"))
-                    else:
-                        print(aviso(f"Habilidade '{habilidade}' já foi adicionada!"))
-                else:
-                    print(erro("Opção inválida!"))
-            except ValueError:
-                print(erro("Digite um número válido!"))
+            habilidade = input(destaque("> ")).strip()
+            if not habilidade:
+                if not habilidades and regra_atual:  # Se não digitou nenhuma habilidade nova
+                    habilidades = regra_atual.get('condicoes', {}).get('habilidades', [])  # Mantém as atuais
+                break
+            habilidades.append(habilidade)
         
         # Desempenho necessário
         print("\n" + destaque("Digite o desempenho necessário para cada disciplina:"))
         print(separador())
         print("Digite as notas mínimas para cada disciplina (0-10)")
-        print("Deixe em branco para pular uma disciplina")
+        print("Deixe em branco para manter a nota atual")
         print(separador())
         
         desempenho = {}
         pesos = {}
+        if regra_atual:
+            print("\nDesempenho atual:")
+            for disciplina, nota in regra_atual.get('condicoes', {}).get('desempenho', {}).items():
+                peso = regra_atual.get('condicoes', {}).get('pesos', {}).get(disciplina, 1.0)
+                print(f"  • {disciplina}: {nota} (peso: {peso})")
+        
         for disciplina in DISCIPLINAS:
+            nota_atual = regra_atual.get('condicoes', {}).get('desempenho', {}).get(disciplina) if regra_atual else None
+            peso_atual = regra_atual.get('condicoes', {}).get('pesos', {}).get(disciplina, 1.0) if regra_atual else 1.0
+            
             while True:
-                nota = input(destaque(f"{disciplina}: ")).strip()
+                nota = input(destaque(f"{disciplina} ({nota_atual if nota_atual is not None else 'não definida'}): ")).strip()
                 if not nota:
+                    if nota_atual is not None:  # Se tinha nota definida
+                        desempenho[disciplina] = nota_atual
+                        pesos[disciplina] = peso_atual
                     break
                 try:
                     nota = float(nota)
                     if 0 <= nota <= 10:
                         desempenho[disciplina] = nota
-                        peso = input(destaque(f"Peso para {disciplina} (1-5, padrão=1): ")).strip()
+                        peso = input(destaque(f"Peso para {disciplina} (1-5, atual={peso_atual}): ")).strip()
                         if peso:
                             try:
                                 peso = float(peso)
                                 if 1 <= peso <= 5:
                                     pesos[disciplina] = peso
                                 else:
-                                    print(aviso("Peso deve estar entre 1 e 5. Usando peso padrão."))
+                                    print(aviso("Peso deve estar entre 1 e 5. Mantendo peso atual."))
+                                    pesos[disciplina] = peso_atual
                             except ValueError:
-                                print(aviso("Peso inválido. Usando peso padrão."))
+                                print(aviso("Peso inválido. Mantendo peso atual."))
+                                pesos[disciplina] = peso_atual
+                        else:
+                            pesos[disciplina] = peso_atual
                         break
                     else:
                         print(erro("A nota deve estar entre 0 e 10!"))

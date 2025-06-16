@@ -203,7 +203,8 @@ class Interface:
         print(separador())
         
         for regra in regras:
-            print(f"\n{destaque('Carreira:')} {negrito(regra['carreira'])}")
+            print(f"\n{destaque('ID:')} {regra['id']}")
+            print(f"{destaque('Carreira:')} {negrito(regra['carreira'])}")
             print(f"{destaque('Justificativa:')} {regra['justificativa']}")
             
             print(f"\n{destaque('Interesses necessários:')}")
@@ -381,6 +382,126 @@ class Interface:
         
         return {
             'nome': nome,
+            'interesses': interesses,
+            'habilidades': habilidades,
+            'desempenho': desempenho
+        }
+
+    @staticmethod
+    def solicitar_id_regra() -> int:
+        """
+        Solicita o ID da regra ao usuário.
+        
+        Returns:
+            int: ID da regra selecionada
+        """
+        while True:
+            try:
+                regra_id = int(input("\n" + destaque("Digite o ID da regra: ")).strip())
+                if regra_id > 0:
+                    return regra_id
+                else:
+                    print(erro("ID deve ser um número positivo!"))
+            except ValueError:
+                print(erro("Digite um número válido!"))
+
+    @staticmethod
+    def confirmar_remocao() -> bool:
+        """
+        Solicita confirmação para remover um item.
+        
+        Returns:
+            bool: True se o usuário confirmou a remoção, False caso contrário
+        """
+        return input("\n" + destaque("Tem certeza que deseja remover? (s/n): ")).lower() == 's'
+
+    @staticmethod
+    def editar_regra(regra: Dict) -> Dict:
+        """
+        Solicita dados para edição de uma regra de carreira.
+        
+        Args:
+            regra: Dicionário com os dados atuais da regra
+            
+        Returns:
+            Dicionário com os novos dados da regra
+        """
+        print(f"\n{destaque('Editar Regra de Carreira')}")
+        print(f"Pressione Enter para manter o valor atual entre parênteses")
+        
+        # Nome da carreira
+        nome_atual = regra.get('carreira', '')
+        nome = input(f"\nNome da carreira ({nome_atual}): ").strip()
+        if not nome:
+            nome = nome_atual
+        
+        # Justificativa
+        justificativa_atual = regra.get('justificativa', '')
+        justificativa = input(f"\nJustificativa ({justificativa_atual}): ").strip()
+        if not justificativa:
+            justificativa = justificativa_atual
+        
+        # Interesses
+        print("\nInteresses atuais:")
+        for interesse in regra.get('interesses', []):
+            print(f"- {interesse}")
+        
+        print("\nDigite os novos interesses (um por linha)")
+        print("Pressione Enter duas vezes para manter os interesses atuais")
+        interesses = []
+        while True:
+            interesse = input("> ").strip()
+            if not interesse:
+                if not interesses:  # Se não digitou nenhum interesse novo
+                    interesses = regra.get('interesses', [])  # Mantém os atuais
+                break
+            interesses.append(interesse)
+        
+        # Habilidades
+        print("\nHabilidades atuais:")
+        for habilidade in regra.get('habilidades', []):
+            print(f"- {habilidade}")
+        
+        print("\nDigite as novas habilidades (uma por linha)")
+        print("Pressione Enter duas vezes para manter as habilidades atuais")
+        habilidades = []
+        while True:
+            habilidade = input("> ").strip()
+            if not habilidade:
+                if not habilidades:  # Se não digitou nenhuma habilidade nova
+                    habilidades = regra.get('habilidades', [])  # Mantém as atuais
+                break
+            habilidades.append(habilidade)
+        
+        # Desempenho
+        print("\nDesempenho atual:")
+        for disciplina, nota in regra.get('desempenho', {}).items():
+            print(f"- {disciplina}: {nota}")
+        
+        print("\nDigite o novo desempenho (disciplina=nota)")
+        print("Pressione Enter duas vezes para manter o desempenho atual")
+        desempenho = {}
+        while True:
+            entrada = input("> ").strip()
+            if not entrada:
+                if not desempenho:  # Se não digitou nenhum desempenho novo
+                    desempenho = regra.get('desempenho', {})  # Mantém o atual
+                break
+            
+            try:
+                disciplina, nota = entrada.split('=')
+                disciplina = disciplina.strip()
+                nota = float(nota.strip())
+                if 0 <= nota <= 10:
+                    desempenho[disciplina] = nota
+                else:
+                    print("Nota deve estar entre 0 e 10")
+            except ValueError:
+                print("Formato inválido. Use: disciplina=nota")
+        
+        return {
+            'carreira': nome,
+            'justificativa': justificativa,
             'interesses': interesses,
             'habilidades': habilidades,
             'desempenho': desempenho

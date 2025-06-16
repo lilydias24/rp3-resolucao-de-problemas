@@ -10,11 +10,12 @@ class Estudante:
             "matemática": "Analista de Dados",
         }
 
-    def __init__(self, nome: str) -> None:
+    def __init__(self, nome: str, interesses: list[str] = None, habilidades: list[str] = None, desempenho: dict[str, float] = None) -> None:
         self.nome: str = nome
-        self.habilidades: set[str] = set()
+        self.interesses: set[str] = set(interesses) if interesses else set()
+        self.habilidades: set[str] = set(habilidades) if habilidades else set()
+        self.desempenho: dict[str, float] = desempenho if desempenho else {}
         self.historico_desempenho: list[dict[str, float]] = []
-        self.desempenho: dict[str, float] = {}
 
     def adicionar_habilidade(self, habilidade: str) -> None:
         '''
