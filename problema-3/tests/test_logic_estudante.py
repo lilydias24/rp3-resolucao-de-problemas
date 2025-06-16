@@ -3,9 +3,15 @@ from unittest.mock import patch
 import io
 import sys
 import sqlite3
-
 import estudante
-
+"""
+test_logic_estudante.py
+Testes de funções utilitárias do módulo estudante.py (paradigma lógico):
+- exibir_estudantes(): exibição formatada ou aviso de lista vazia
+- coletar_opcoes(): parsing de input do usuário
+- listar_estudantes() e buscar_estudante_completo_por_nome(): integração com SQLite
+- recomendar_carreiras(): retorno e persistência de recomendações
+"""
 class TestExibirEstudantes(unittest.TestCase):
     def test_empty(self):
         captured = io.StringIO()

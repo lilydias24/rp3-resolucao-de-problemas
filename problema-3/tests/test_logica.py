@@ -1,6 +1,12 @@
 import unittest
 import logica
-
+"""
+test_logica.py
+Validação das regras lógicas de recomendação de carreira:
+- regra_interesse(), regra_habilidade(), regra_desempenho()
+- pode_seguir_carreira(), carreiras_proximas()
+- geração de fatos para feed de regras
+"""
 class TestLogica(unittest.TestCase):
     def setUp(self):
         # Student with all requirements met for desenvolvimento_software

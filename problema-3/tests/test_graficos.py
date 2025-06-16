@@ -3,7 +3,14 @@ import tempfile
 import unittest
 from graficos import GeradorGraficos
 from unittest.mock import patch
-
+"""
+test_graficos.py
+Casos de teste para GeradorGraficos:
+- _sanitizar_nome(): remoção de caracteres especiais e normalização
+- grafico_desempenho_disciplina(): cenários vazio, colunas faltantes e geração de arquivo
+- grafico_desempenho_estudante(): mesmos cenários para perfil individual
+- grafico_recomendacoes(): teste de distribuição de carreiras
+"""
 class TestSanitizarNome(unittest.TestCase):
     def setUp(self):
         # Use a temporary directory to avoid cluttering the file system

@@ -1,7 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from gerar_relatorios import gerar_relatorios, obter_estudantes_silencioso
-
+"""
+test_gerar_relatorios.py
+Testes para o módulo gerar_relatorios:
+- obter_estudantes_silencioso(): sucesso e falha de conexão
+- gerar_relatorios(): integração com RelatorioDB e GeradorGraficos sem exceções
+"""
 class TestGerarRelatorios(unittest.TestCase):
 
     @patch("gerar_relatorios.conectar")

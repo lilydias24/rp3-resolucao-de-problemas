@@ -1,7 +1,12 @@
 import unittest
 from motor import MotorDeInferencia
 from unittest.mock import patch
-
+"""
+test_motor.py
+Verifica o motor de inferência baseado em banco de dados:
+- _buscar_regras_do_banco(): leitura e parsing de regras, interesses, habilidades e desempenho
+- processa_estudante(): fluxos completos para estudante com perfil completo ou incompleto
+"""
 class FakeCursor:
     def __init__(self):
         self.last_sql = None

@@ -1,6 +1,13 @@
 import unittest
 from data.validacao import *
-
+"""
+test_validacao.py
+Testes das funções de validação em data/validacao.py:
+- sanitizar_nome(): formatação e regras de tamanho
+- validar_interesses(), validar_habilidades(): tipos, listas vazias e trimming
+- validar_desempenho(): limites numéricos de notas
+- validar_estudante(): conjunto mínimo de campos e formatos
+"""
 
 class TestValidacao(unittest.TestCase):
 

@@ -1,6 +1,12 @@
 import unittest
 from models.estudante import Estudante
-
+"""
+test_estudante.py
+Contém casos de teste para a classe Estudante, validando:
+- Adição de habilidades (formatos, duplicatas e erros)
+- Registro e atualização de métricas escolares
+- Geração de possíveis carreiras com base em regras pré-definidas
+"""
 
 class TestEstudante(unittest.TestCase):
 
