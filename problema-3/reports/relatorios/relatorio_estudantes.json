@@ -222,5 +222,29 @@
       "Matemática": 10.0,
       "Português": 6.0
     }
+  ],
+  [
+    376,
+    "liliam",
+    [
+      "Matemática"
+    ],
+    [],
+    {
+      "Matemática": 10.0
+    }
+  ],
+  [
+    377,
+    "fer",
+    [
+      "Matemática"
+    ],
+    [
+      "Programação"
+    ],
+    {
+      "Matemática": 10.0
+    }
   ]
 ]

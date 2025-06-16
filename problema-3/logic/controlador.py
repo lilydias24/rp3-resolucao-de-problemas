@@ -35,12 +35,32 @@ class Controlador:
         self.motor = MotorDeInferencia()
         self.gerador_graficos = GeradorGraficos()
         
-    def executar_menu_principal(self) -> None:
+    def executar(self) -> None:
         """
-        Executa o menu principal do sistema.
+        Executa o sistema.
         """
         while True:
             opcao = Interface.exibir_menu_principal()
+            
+            if opcao == "1":
+                self.executar_menu_estudante()
+            elif opcao == "2":
+                self.executar_menu_gestor()
+            elif opcao == "3":
+                if Interface.confirmar_saida():
+                    Interface.exibir_sucesso("Encerrando o sistema...")
+                break
+            else:
+                Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
+            
+            Interface.aguardar_continuar()
+    
+    def executar_menu_estudante(self) -> None:
+        """
+        Executa o menu do estudante.
+        """
+        while True:
+            opcao = Interface.exibir_menu_estudante()
             
             if opcao == "1":
                 self.cadastrar_estudante()
@@ -51,13 +71,7 @@ class Controlador:
             elif opcao == "4":
                 self.ver_recomendacoes()
             elif opcao == "5":
-                self.executar_menu_gestor()
-            elif opcao == "6":
-                self.executar_menu_relatorios()
-            elif opcao == "7":
-                if Interface.confirmar_saida():
-                    Interface.exibir_sucesso("Encerrando o sistema...")
-                    break
+                break
             else:
                 Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
             
@@ -65,7 +79,7 @@ class Controlador:
     
     def executar_menu_gestor(self) -> None:
         """
-        Executa o menu do gestor acadêmico.
+        Executa o menu do gestor.
         """
         while True:
             opcao = Interface.exibir_menu_gestor()
@@ -79,10 +93,8 @@ class Controlador:
             elif opcao == "4":
                 self.listar_regras()
             elif opcao == "5":
-                self.gerar_relatorios()
+                self.executar_menu_relatorios()
             elif opcao == "6":
-                self.gerar_graficos()
-            elif opcao == "7":
                 break
             else:
                 Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
@@ -91,7 +103,7 @@ class Controlador:
     
     def executar_menu_relatorios(self) -> None:
         """
-        Executa o menu de relatórios.
+        Executa o menu de relatórios e gráficos.
         """
         while True:
             opcao = Interface.exibir_menu_relatorios()
@@ -103,8 +115,12 @@ class Controlador:
             elif opcao == "3":
                 self.gerar_relatorio_estatisticas()
             elif opcao == "4":
-                self.gerar_graficos()
+                self.gerar_grafico_desempenho()
             elif opcao == "5":
+                self.gerar_grafico_recomendacoes()
+            elif opcao == "6":
+                self.gerar_todos_relatorios_graficos()
+            elif opcao == "7":
                 break
             else:
                 Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
@@ -218,19 +234,21 @@ class Controlador:
                 return
             
             dados = GestorInterface.coletar_dados_regra(regra_atual)
-            # Achatar o dicionário para o formato esperado pela função editar_regra
-            if 'condicoes' in dados:
-                dados_flat = {
-                    'carreira': dados.get('carreira'),
-                    'justificativa': dados.get('justificativa'),
-                    'interesses': dados['condicoes'].get('interesses', []),
-                    'habilidades': dados['condicoes'].get('habilidades', []),
-                    'desempenho': dados['condicoes'].get('desempenho', {}),
-                    'pesos': dados['condicoes'].get('pesos', {})
-                }
-            else:
-                dados_flat = dados
-            editar_regra(regra_id, dados_flat)
+            # Insere novas habilidades
+            for habilidade in regra_atual['condicoes']['habilidades']:
+                cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
+                row = cursor.fetchone()
+                if not row:
+                    # Cadastra a habilidade se não existir
+                    cursor.execute("INSERT INTO habilidades (habilidade) VALUES (?)", (habilidade,))
+                    habilidade_id = cursor.lastrowid
+                else:
+                    habilidade_id = row[0]
+                cursor.execute(
+                    "INSERT INTO regras_habilidades (regra_id, habilidade_id) VALUES (?, ?)",
+                    (regra_id, habilidade_id)
+                )
+            editar_regra(regra_id, dados)
             Interface.exibir_sucesso("Regra atualizada com sucesso!")
         except Exception as e:
             Interface.exibir_erro(f"Erro ao editar regra: {str(e)}")
@@ -266,30 +284,33 @@ class Controlador:
     
     def gerar_relatorio_estudantes(self) -> None:
         """
-        Gera um relatório com todos os estudantes cadastrados.
+        Gera um relatório CSV com todos os estudantes cadastrados.
         """
         try:
-            gerar_relatorios()
+            from utils.exportador_csv import exportar_estudantes_para_csv
+            exportar_estudantes_para_csv()
             Interface.exibir_sucesso("Relatório de estudantes gerado com sucesso!")
         except Exception as e:
             Interface.exibir_erro(f"Erro ao gerar relatório: {str(e)}")
     
     def gerar_relatorio_carreiras(self) -> None:
         """
-        Gera um relatório com todas as regras de carreira cadastradas.
+        Gera um relatório CSV com todas as regras de carreira cadastradas.
         """
         try:
-            gerar_relatorios()
+            from utils.exportador_csv import exportar_regras_para_csv
+            exportar_regras_para_csv()
             Interface.exibir_sucesso("Relatório de carreiras gerado com sucesso!")
         except Exception as e:
             Interface.exibir_erro(f"Erro ao gerar relatório: {str(e)}")
     
     def gerar_relatorio_estatisticas(self) -> None:
         """
-        Gera um relatório com estatísticas do sistema.
+        Gera um relatório CSV com estatísticas do sistema.
         """
         try:
-            gerar_relatorios()
+            from utils.exportador_csv import exportar_estatisticas_para_csv
+            exportar_estatisticas_para_csv()
             Interface.exibir_sucesso("Relatório de estatísticas gerado com sucesso!")
         except Exception as e:
             Interface.exibir_erro(f"Erro ao gerar relatório: {str(e)}")
@@ -328,4 +349,47 @@ class Controlador:
             GeradorGraficos.gerar_grafico_carreiras()
             Interface.exibir_sucesso("Gráfico de carreiras gerado com sucesso!")
         except Exception as e:
-            Interface.exibir_erro(f"Erro ao gerar gráfico: {str(e)}") 
+            Interface.exibir_erro(f"Erro ao gerar gráfico: {str(e)}")
+    
+    def gerar_grafico_desempenho(self) -> None:
+        """
+        Gera gráfico de desempenho por disciplina.
+        """
+        try:
+            from reports.graficos import GeradorGraficos
+            gerador = GeradorGraficos()
+            gerador.gerar_graficos_desempenho()
+            Interface.exibir_sucesso("Gráfico de desempenho gerado com sucesso!")
+        except Exception as e:
+            Interface.exibir_erro(f"Erro ao gerar gráfico: {str(e)}")
+    
+    def gerar_grafico_recomendacoes(self) -> None:
+        """
+        Gera gráfico de recomendações.
+        """
+        try:
+            from reports.graficos import GeradorGraficos
+            gerador = GeradorGraficos()
+            gerador.gerar_grafico_recomendacoes()
+            Interface.exibir_sucesso("Gráfico de recomendações gerado com sucesso!")
+        except Exception as e:
+            Interface.exibir_erro(f"Erro ao gerar gráfico: {str(e)}")
+    
+    def gerar_todos_relatorios_graficos(self) -> None:
+        """
+        Gera todos os relatórios e gráficos do sistema.
+        """
+        try:
+            from utils.exportador_csv import exportar_todos_relatorios_csv
+            from reports.graficos import GeradorGraficos
+            
+            # Gera relatórios CSV
+            exportar_todos_relatorios_csv()
+            
+            # Gera gráficos
+            gerador = GeradorGraficos()
+            gerador.gerar_todos_graficos()
+            
+            Interface.exibir_sucesso("Todos os relatórios e gráficos foram gerados com sucesso!")
+        except Exception as e:
+            Interface.exibir_erro(f"Erro ao gerar relatórios e gráficos: {str(e)}") 

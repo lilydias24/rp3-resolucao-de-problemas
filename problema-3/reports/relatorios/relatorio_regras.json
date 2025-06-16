@@ -238,6 +238,26 @@
     }
   },
   {
+    "id": 647,
+    "carreira": "Pintor",
+    "justificativa": "Tem facilidade com obras artísiticas",
+    "condicoes": {
+      "interesses": [
+        "Artes",
+        "Design"
+      ],
+      "habilidades": [
+        "Criatividade"
+      ],
+      "desempenho": {
+        "Artes": 9.0
+      },
+      "pesos": {
+        "Artes": 5.0
+      }
+    }
+  },
+  {
     "id": 453,
     "carreira": "Psicologia",
     "justificativa": "Carreira para quem tem interesse em comportamento humano",

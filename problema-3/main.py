@@ -27,8 +27,8 @@ def main() -> None:
         # Inicializa o controlador
         controlador = Controlador()
         
-        # Executa o menu principal
-        controlador.executar_menu_principal()
+        # Executa o sistema
+        controlador.executar()
         
     except ConexaoErro as e:
         Interface.exibir_erro(f"Erro de conexão com o banco de dados: {str(e)}")

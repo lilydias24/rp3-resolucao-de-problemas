@@ -26,48 +26,57 @@ class Interface:
         Exibe o menu principal do sistema.
         
         Returns:
-            str: Opção escolhida pelo usuário
+            str: Opção selecionada pelo usuário
         """
         print(cabecalho("Sistema de Recomendação de Carreiras"))
-        print(menu_item("\t 1", "Cadastrar novo estudante"))
-        print(menu_item("\t 2", "Listar estudantes cadastrados"))
-        print(menu_item("\t 3", "Buscar estudante por nome"))
-        print(menu_item("\t 4", "Ver recomendações de carreira"))
-        print(menu_item("\t 5", "Menu do Gestor Acadêmico"))
-        print(menu_item("\t 6", "Sair do sistema"))
-        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+        print(separador())
+        print("         1. Menu do Estudante")
+        print("         2. Menu do Gestor")
+        print("         3. Sair")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
 
     @staticmethod
     def exibir_menu_gestor() -> str:
         """
-        Exibe o menu do gestor acadêmico.
+        Exibe o menu do gestor.
         
         Returns:
-            str: Opção escolhida pelo usuário
+            str: Opção selecionada pelo usuário
         """
         print(cabecalho("Menu do Gestor Acadêmico"))
-        print(menu_item("\t 1", "Adicionar regra de carreira"))
-        print(menu_item("\t 2", "Editar regra de carreira"))
-        print(menu_item("\t 3", "Remover regra de carreira"))
-        print(menu_item("\t 4", "Listar regras de carreira"))
-        print(menu_item("\t 5", "Gerar relatórios"))
-        print(menu_item("\t 6", "Gerar gráficos"))
-        print(menu_item("\t 7", "Voltar ao menu principal"))
-        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+        print(separador())
+        print("         1. Adicionar regra de carreira")
+        print("         2. Editar regra de carreira")
+        print("         3. Remover regra de carreira")
+        print("         4. Listar regras de carreira")
+        print("         5. Relatórios e Gráficos")
+        print("         6. Voltar ao menu principal")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
 
     @staticmethod
     def exibir_menu_relatorios() -> str:
         """
-        Exibe o menu de relatórios.
+        Exibe o menu de relatórios e gráficos.
         
         Returns:
-            str: Opção escolhida pelo usuário
+            str: Opção selecionada pelo usuário
         """
-        print(cabecalho("Menu de Relatórios"))
-        print(menu_item("\t 1", "Gerar relatório de estudantes"))
-        print(menu_item("\t 2", "Gerar relatório de carreiras"))
-        print(menu_item("\t 3", "Voltar ao menu do gestor"))
-        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+        print(cabecalho("Menu de Relatórios e Gráficos"))
+        print(separador())
+        print("         1. Relatório de Estudantes (CSV)")
+        print("         2. Relatório de Carreiras (CSV)")
+        print("         3. Relatório de Estatísticas (CSV)")
+        print("         4. Gráfico de Desempenho por Disciplina")
+        print("         5. Gráfico de Recomendações")
+        print("         6. Gerar Todos os Relatórios e Gráficos")
+        print("         7. Voltar ao menu anterior")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
 
     @staticmethod
     def exibir_menu_graficos() -> str:
@@ -505,4 +514,23 @@ class Interface:
             'interesses': interesses,
             'habilidades': habilidades,
             'desempenho': desempenho
-        } 
+        }
+
+    @staticmethod
+    def exibir_menu_estudante() -> str:
+        """
+        Exibe o menu do estudante.
+        
+        Returns:
+            str: Opção selecionada pelo usuário
+        """
+        print(cabecalho("Menu do Estudante"))
+        print(separador())
+        print("         1. Cadastrar novo estudante")
+        print("         2. Listar estudantes cadastrados")
+        print("         3. Buscar estudante por nome")
+        print("         4. Ver recomendações de carreira")
+        print("         5. Voltar ao menu principal")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip() 

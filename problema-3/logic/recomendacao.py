@@ -42,26 +42,23 @@ def cadastrar_regra(regra: dict) -> int:
     Raises:
         ValidacaoErro: Se os dados forem inválidos
     """
-    # Valida os dados
-    carreira, justificativa, interesses, habilidades, desempenho = validar_regra(regra)
-    
     conn = conectar()
     try:
         with transacao(conn) as cursor:
             # Verifica se já existe uma regra para esta carreira
-            cursor.execute("SELECT id FROM regras_carreira WHERE LOWER(carreira) = ?", (carreira,))
+            cursor.execute("SELECT id FROM regras_carreira WHERE LOWER(carreira) = ?", (regra['carreira'].lower(),))
             if cursor.fetchone():
-                raise ValidacaoErro(f"Já existe uma regra cadastrada para a carreira '{carreira}'")
+                raise ValidacaoErro(f"Já existe uma regra cadastrada para a carreira '{regra['carreira']}'")
             
             # Insere a regra
             cursor.execute(
                 "INSERT INTO regras_carreira (carreira, justificativa) VALUES (?, ?)",
-                (carreira, justificativa)
+                (regra['carreira'], regra['justificativa'])
             )
             regra_id = cursor.lastrowid
             
             # Insere interesses
-            for interesse in interesses:
+            for interesse in regra['condicoes']['interesses']:
                 cursor.execute("SELECT id FROM interesses WHERE interesse = ?", (interesse,))
                 row = cursor.fetchone()
                 if row:
@@ -72,7 +69,7 @@ def cadastrar_regra(regra: dict) -> int:
                     )
             
             # Insere habilidades
-            for habilidade in habilidades:
+            for habilidade in regra['condicoes']['habilidades']:
                 cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
                 row = cursor.fetchone()
                 if row:
@@ -83,14 +80,15 @@ def cadastrar_regra(regra: dict) -> int:
                     )
             
             # Insere desempenho
-            for disciplina, nota in desempenho.items():
+            for disciplina, nota in regra['condicoes']['desempenho'].items():
                 cursor.execute("SELECT id FROM disciplinas WHERE disciplina = ?", (disciplina,))
                 row = cursor.fetchone()
                 if row:
                     disciplina_id = row[0]
+                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
                     cursor.execute(
-                        "INSERT INTO regras_desempenho (regra_id, disciplina_id, nota_min) VALUES (?, ?, ?)",
-                        (regra_id, disciplina_id, nota)
+                        "INSERT INTO regras_desempenho (regra_id, disciplina_id, nota_min, peso) VALUES (?, ?, ?, ?)",
+                        (regra_id, disciplina_id, nota, peso)
                     )
             
             return regra_id
@@ -262,9 +260,6 @@ def editar_regra(regra_id: int, regra: dict):
     Raises:
         ValidacaoErro: Se os dados forem inválidos
     """
-    # Valida os dados
-    carreira, justificativa, interesses, habilidades, desempenho = validar_regra(regra)
-    
     conn = conectar()
     try:
         with transacao(conn) as cursor:
@@ -276,15 +271,15 @@ def editar_regra(regra_id: int, regra: dict):
             # Verifica se já existe outra regra com o mesmo nome
             cursor.execute(
                 "SELECT id FROM regras_carreira WHERE LOWER(carreira) = ? AND id != ?",
-                (carreira, regra_id)
+                (regra['carreira'].lower(), regra_id)
             )
             if cursor.fetchone():
-                raise ValidacaoErro(f"Já existe uma regra cadastrada para a carreira '{carreira}'")
+                raise ValidacaoErro(f"Já existe uma regra cadastrada para a carreira '{regra['carreira']}'")
             
             # Atualiza a regra
             cursor.execute(
                 "UPDATE regras_carreira SET carreira = ?, justificativa = ? WHERE id = ?",
-                (carreira, justificativa, regra_id)
+                (regra['carreira'], regra['justificativa'], regra_id)
             )
             
             # Remove dados antigos
@@ -293,7 +288,7 @@ def editar_regra(regra_id: int, regra: dict):
             cursor.execute("DELETE FROM regras_desempenho WHERE regra_id = ?", (regra_id,))
             
             # Insere novos interesses
-            for interesse in interesses:
+            for interesse in regra['condicoes']['interesses']:
                 cursor.execute("SELECT id FROM interesses WHERE interesse = ?", (interesse,))
                 row = cursor.fetchone()
                 if row:
@@ -304,7 +299,7 @@ def editar_regra(regra_id: int, regra: dict):
                     )
             
             # Insere novas habilidades
-            for habilidade in habilidades:
+            for habilidade in regra['condicoes']['habilidades']:
                 cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
                 row = cursor.fetchone()
                 if row:
@@ -315,14 +310,15 @@ def editar_regra(regra_id: int, regra: dict):
                     )
             
             # Insere novo desempenho
-            for disciplina, nota in desempenho.items():
+            for disciplina, nota in regra['condicoes']['desempenho'].items():
                 cursor.execute("SELECT id FROM disciplinas WHERE disciplina = ?", (disciplina,))
                 row = cursor.fetchone()
                 if row:
                     disciplina_id = row[0]
+                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
                     cursor.execute(
-                        "INSERT INTO regras_desempenho (regra_id, disciplina_id, nota_min) VALUES (?, ?, ?)",
-                        (regra_id, disciplina_id, nota)
+                        "INSERT INTO regras_desempenho (regra_id, disciplina_id, nota_min, peso) VALUES (?, ?, ?, ?)",
+                        (regra_id, disciplina_id, nota, peso)
                     )
     finally:
         conn.close()
@@ -349,7 +345,7 @@ def listar_recomendacoes(estudante_id: int) -> list:
     finally:
         conn.close()
 
-def gerar_recomendacoes(estudante_id: int) -> list:
+def gerar_recomendacoes(estudante_id: int) -> dict:
     """
     Gera recomendações de carreira para um estudante.
     
@@ -357,7 +353,7 @@ def gerar_recomendacoes(estudante_id: int) -> list:
         estudante_id: ID do estudante
         
     Returns:
-        Lista de dicionários com dados das recomendações
+        Dicionário com carreiras recomendadas e próximas
     """
     conn = conectar()
     try:
@@ -427,27 +423,41 @@ def gerar_recomendacoes(estudante_id: int) -> list:
             # Calcula score final (média ponderada)
             score_final = (score_interesses * 0.4 + score_habilidades * 0.3 + score_desempenho * 0.3) * 100
             
+            # Cria a recomendação com explicações
+            recomendacao = {
+                'carreira': carreira,
+                'justificativa': justificativa,
+                'score': score_final,
+                'explicacao': {
+                    'interesses': f"Interesses compatíveis: {', '.join(set(regra_interesses) & set(interesses))}",
+                    'habilidades': f"Habilidades compatíveis: {', '.join(set(regra_habilidades) & set(habilidades))}",
+                    'desempenho': f"Desempenho adequado em: {', '.join(d for d, n in regra_desempenho.items() if d in desempenho and desempenho[d] >= n)}"
+                }
+            }
+            
             if score_final >= 60:  # Só recomenda se o score for >= 60%
-                recomendacoes.append({
-                    'regra_id': regra_id,
-                    'carreira': carreira,
-                    'justificativa': justificativa,
-                    'score': score_final
-                })
+                recomendacoes.append(recomendacao)
         
         # Ordena recomendações por score
         recomendacoes.sort(key=lambda x: x['score'], reverse=True)
+        
+        # Separa em recomendadas (score >= 60) e próximas (score >= 40)
+        recomendadas = [r for r in recomendacoes if r['score'] >= 60]
+        proximas = [r for r in recomendacoes if 40 <= r['score'] < 60]
         
         # Salva recomendações
         with transacao(conn) as cursor:
             cursor.execute("DELETE FROM recomendacoes WHERE estudante_id = ?", (estudante_id,))
             for rec in recomendacoes:
                 cursor.execute(
-                    "INSERT INTO recomendacoes (estudante_id, regra_id, score) VALUES (?, ?, ?)",
-                    (estudante_id, rec['regra_id'], rec['score'])
+                    "INSERT INTO recomendacoes (estudante_id, carreira, score) VALUES (?, ?, ?)",
+                    (estudante_id, rec['carreira'], rec['score'])
                 )
         
-        return recomendacoes
+        return {
+            'recomendadas': recomendadas,
+            'proximas': proximas
+        }
     finally:
         conn.close()
 

@@ -203,3 +203,27 @@ class GestorInterface:
             print(aviso("  Nenhum desempenho necessário"))
         
         print(separador())
+
+    def executar(self) -> None:
+        """
+        Executa o menu do gestor acadêmico.
+        """
+        while True:
+            opcao = Interface.exibir_menu_gestor()
+            
+            if opcao == "1":
+                self.adicionar_regra()
+            elif opcao == "2":
+                self.editar_regra()
+            elif opcao == "3":
+                self.remover_regra()
+            elif opcao == "4":
+                self.listar_regras()
+            elif opcao == "5":
+                self.controlador.executar_menu_relatorios()
+            elif opcao == "6":
+                break
+            else:
+                Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
+            
+            Interface.aguardar_continuar()
