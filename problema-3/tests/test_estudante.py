@@ -1,5 +1,5 @@
 import unittest
-from models import Estudante
+from models.estudante import Estudante
 
 
 class TestEstudante(unittest.TestCase):
