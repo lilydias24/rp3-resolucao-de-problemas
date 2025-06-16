@@ -50,7 +50,11 @@ Usando:
 `│   ├── graficos/`              # Diretório de gráficos gerados
 `│   └── relatorios/`            # Diretório de relatórios gerados
 `└── tests/`  
-`    └── __init__.py`            
+`    ├── __init__.py`
+`    ├── test_estudante.py`       # Testes da lógica de estudantes
+`    ├── test_exemplo.py`         # Testes de exemplo
+`    ├── test_motor.py`           # Testes do motor de inferência
+`    └── test_validacao.py`       # Testes de validação de dados
 
 -> Ferramentas úteis : 
 
@@ -71,6 +75,9 @@ black nomeDaPasta
 poetry add nomeDaDependencia
 poetry install
 poetry new <nome_do_projeto>
+
+# Execução de testes
+python -m pytest tests/
 ```
 
 -> Organização de tarefas : 
