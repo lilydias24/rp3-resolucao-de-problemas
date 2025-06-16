@@ -1,4 +1,3 @@
-from logic.estudante import *
-from logic.logica import *
-from logic.motor import *
-from logic.recomendacao import *
+from logic.estudante import listar_estudantes,buscar_estudante
+from logic.motor import MotorDeInferencia
+
