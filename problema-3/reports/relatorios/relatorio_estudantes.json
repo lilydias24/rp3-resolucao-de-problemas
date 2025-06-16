@@ -1,0 +1,195 @@
+[
+  [
+    363,
+    "Ana",
+    [
+      "Tecnologia",
+      "Matemática"
+    ],
+    [
+      "Programação",
+      "Lógica"
+    ],
+    {
+      "Matemática": 9.5,
+      "Física": 8.5,
+      "Português": 8.0
+    }
+  ],
+  [
+    364,
+    "Bruno",
+    [
+      "Saúde",
+      "Biologia"
+    ],
+    [
+      "Empatia",
+      "Comunicação"
+    ],
+    {
+      "Matemática": 6.0,
+      "Química": 7.5,
+      "Biologia": 9.0
+    }
+  ],
+  [
+    365,
+    "Carla",
+    [
+      "Artes",
+      "Comunicação"
+    ],
+    [
+      "Criatividade",
+      "Desenho"
+    ],
+    {
+      "Artes": 10.0,
+      "História": 7.0,
+      "Português": 8.5
+    }
+  ],
+  [
+    366,
+    "Diego",
+    [
+      "Tecnologia",
+      "Engenharia"
+    ],
+    [
+      "Programação",
+      "Resolução de Problemas"
+    ],
+    {
+      "Matemática": 8.0,
+      "Física": 8.5,
+      "Química": 7.5
+    }
+  ],
+  [
+    367,
+    "Eduarda",
+    [
+      "Saúde",
+      "Química"
+    ],
+    [
+      "Trabalho em Equipe",
+      "Empatia"
+    ],
+    {
+      "Matemática": 7.0,
+      "Química": 9.0,
+      "Biologia": 8.5
+    }
+  ],
+  [
+    368,
+    "Felipe",
+    [
+      "Política",
+      "História"
+    ],
+    [
+      "Comunicação",
+      "Análise Crítica"
+    ],
+    {
+      "História": 9.0,
+      "Português": 7.5,
+      "Geografia": 8.0
+    }
+  ],
+  [
+    369,
+    "Giovana",
+    [
+      "Matemática",
+      "Engenharia"
+    ],
+    [
+      "Resolução de Problemas",
+      "Lógica"
+    ],
+    {
+      "Matemática": 9.0,
+      "Física": 9.5,
+      "Química": 8.0
+    }
+  ],
+  [
+    370,
+    "Henrique",
+    [
+      "Tecnologia"
+    ],
+    [
+      "Programação",
+      "Criatividade"
+    ],
+    {
+      "Matemática": 8.5,
+      "Física": 7.0,
+      "Artes": 7.5
+    }
+  ],
+  [
+    371,
+    "Isabela",
+    [
+      "Artes",
+      "Comunicação"
+    ],
+    [
+      "Comunicação",
+      "Desenho"
+    ],
+    {
+      "Artes": 9.5,
+      "História": 8.5,
+      "Português": 8.0
+    }
+  ],
+  [
+    372,
+    "João",
+    [
+      "Política",
+      "História"
+    ],
+    [
+      "Comunicação",
+      "Análise Crítica"
+    ],
+    {
+      "Matemática": 6.5,
+      "História": 8.5,
+      "Geografia": 8.0
+    }
+  ],
+  [
+    373,
+    "lily",
+    [
+      "Tecnologia"
+    ],
+    [
+      "Programação",
+      "Lógica"
+    ],
+    {
+      "Matemática": 10.0,
+      "Inglês": 7.0,
+      "Física": 7.0,
+      "Química": 8.0,
+      "Biologia": 7.0,
+      "Artes": 6.0,
+      "História": 6.0,
+      "Português": 7.0,
+      "Geografia": 6.0,
+      "Sociologia": 7.0,
+      "Filosofia": 6.0
+    }
+  ]
+]

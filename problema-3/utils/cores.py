@@ -1,6 +1,10 @@
 """
 Módulo para formatação de cores no terminal.
 """
+from colorama import init, Fore, Back, Style
+
+# Inicializa o colorama
+init()
 
 # Cores básicas
 VERMELHO = '\033[91m'
@@ -20,37 +24,37 @@ INVERTIDO = '\033[7m'
 # Reset
 RESET = '\033[0m'
 
-def titulo(texto):
+def titulo(texto: str) -> str:
     """Formata um texto como título."""
-    return f"{NEGRITO}{AZUL}{texto}{RESET}"
+    return f"{Fore.CYAN}{Style.BRIGHT}{texto}{Style.RESET_ALL}"
 
-def sucesso(texto):
+def sucesso(texto: str) -> str:
     """Formata um texto como mensagem de sucesso."""
-    return f"{VERDE}{texto}{RESET}"
+    return f"{Fore.GREEN}{texto}{Style.RESET_ALL}"
 
-def erro(texto):
+def erro(texto: str) -> str:
     """Formata um texto como mensagem de erro."""
-    return f"{VERMELHO}{texto}{RESET}"
+    return f"{Fore.RED}{texto}{Style.RESET_ALL}"
 
-def aviso(texto):
+def aviso(texto: str) -> str:
     """Formata um texto como aviso."""
-    return f"{AMARELO}{texto}{RESET}"
+    return f"{Fore.YELLOW}{texto}{Style.RESET_ALL}"
 
-def destaque(texto):
+def destaque(texto: str) -> str:
     """Formata um texto como destaque."""
-    return f"{NEGRITO}{CIANO}{texto}{RESET}"
+    return f"{Fore.MAGENTA}{Style.BRIGHT}{texto}{Style.RESET_ALL}"
 
-def info(texto):
+def info(texto: str) -> str:
     """Formata um texto como informação."""
-    return f"{MAGENTA}{texto}{RESET}"
+    return f"{Fore.BLUE}{texto}{Style.RESET_ALL}"
 
-def sublinhado(texto):
+def sublinhado(texto: str) -> str:
     """Formata um texto como sublinhado."""
     return f"{SUBLINHADO}{texto}{RESET}"
 
-def negrito(texto):
+def negrito(texto: str) -> str:
     """Formata um texto como negrito."""
-    return f"{NEGRITO}{texto}{RESET}"
+    return f"{Style.BRIGHT}{texto}{Style.RESET_ALL}"
 
 def italico(texto):
     """Formata um texto como itálico."""
@@ -78,14 +82,14 @@ def score(score):
     else:
         return f"{VERMELHO}{score}%{RESET}"
 
-def menu_item(numero, texto):
+def menu_item(numero: str, texto: str) -> str:
     """Formata um item de menu."""
-    return f"{destaque(numero + '.')} {texto}"
+    return f"{Fore.CYAN}{numero}{Style.RESET_ALL}. {texto}"
 
-def separador(char='='):
-    """Cria um separador colorido."""
-    return f"{AZUL}{char * 50}{RESET}"
+def separador() -> str:
+    """Retorna uma linha separadora."""
+    return f"{Fore.CYAN}{'─' * 50}{Style.RESET_ALL}"
 
-def cabecalho(texto):
+def cabecalho(texto: str) -> str:
     """Cria um cabeçalho formatado."""
-    return f"\n{separador()}\n{titulo(texto)}\n{separador()}" 
+    return f"\n{Fore.CYAN}{Style.BRIGHT}{'=' * 50}\n{texto.center(50)}\n{'=' * 50}{Style.RESET_ALL}" 

@@ -9,222 +9,92 @@ Este módulo executa o fluxo principal do sistema:
 - Lista os estudantes registrados
 """
 import os
-from data.conexao import conectar
-from logic.estudante import buscar_estudante, cadastrar_estudante, listar_estudantes, buscar_estudante_completo_por_nome, recomendar_carreiras
-from logic.logica import carreiras_proximas, gerar_fatos_de_interesses
-from logic.motor import MotorDeInferencia
-from logic.recomendacao import salvar_recomendacao, listar_recomendacoes
-from utils.gestor_interface import executar_menu_gestor
+from logic.controlador import Controlador
+from utils.interface import Interface
 from data.transacao import ConexaoErro
-from utils.cores import titulo, sucesso, erro, aviso, destaque, cabecalho, menu_item, info, score, negrito, sublinhado
-
-def exibir_menu():
-    """
-    Exibe o menu principal do sistema.
-    """
-    print(cabecalho("Sistema de Recomendação de Carreiras"))
-    print(menu_item("1", "Cadastrar novo estudante"))
-    print(menu_item("2", "Listar estudantes cadastrados"))
-    print(menu_item("3", "Buscar estudante por nome"))
-    print(menu_item("4", "Ver recomendações de carreira"))
-    print(menu_item("5", "Menu do Gestor Acadêmico"))
-    print(menu_item("6", "Sair"))
-    return input("\n" + destaque("Escolha uma opção: ")).strip()
-
-def exibir_dados_estudante(estudante):
-    """
-    Exibe os dados de um estudante.
-    
-    Args:
-        estudante: Tupla com os dados do estudante (id, nome, interesses, habilidades, desempenho)
-    """
-    id_, nome, interesses, habilidades, desempenho = estudante
-    
-    print(cabecalho(f"Dados do Estudante"))
-    print(destaque("ID:") + f" {id_}")
-    print(destaque("Nome:") + f" {nome}")
-    
-    print("\n" + destaque("Interesses:"))
-    if interesses:
-        for interesse in interesses:
-            print(f"  • {info(interesse)}")
-    else:
-        print(aviso("  Nenhum interesse registrado"))
-    
-    print("\n" + destaque("Habilidades:"))
-    if habilidades:
-        for habilidade in habilidades:
-            print(f"  • {info(habilidade)}")
-    else:
-        print(aviso("  Nenhuma habilidade registrada"))
-    
-    print("\n" + destaque("Desempenho Acadêmico:"))
-    if desempenho:
-        for disciplina, nota in desempenho.items():
-            print(f"  • {disciplina}: {nota(nota)}")
-    else:
-        print(aviso("  Nenhum desempenho registrado"))
-
-def exibir_recomendacoes(estudante, motor):
-    """
-    Exibe as recomendações de carreira para um estudante.
-    
-    Args:
-        estudante: Tupla com os dados do estudante
-        motor: Instância do motor de inferência
-    """
-    id_, nome, interesses, habilidades, desempenho = estudante
-    
-    # Cria um dicionário com os dados do estudante
-    dados_estudante = {
-        'nome': nome,
-        'interesses': interesses,
-        'habilidades': habilidades,
-        'notas': desempenho
-    }
-    
-    # Processa o estudante no motor de inferência
-    recomendadas, proximas = motor.processa_estudante(dados_estudante)
-    
-    print(cabecalho(f"Recomendações de Carreira para {nome}"))
-    
-    print("\n" + destaque("Carreiras Recomendadas:"))
-    if recomendadas:
-        for c in recomendadas:
-            print(f"\n  {destaque('•')} {negrito(c['carreira'])} {score(c['score'])}")
-            print(f"    {sublinhado('Justificativa:')} {c['justificativa']}")
-            print(f"\n    {sublinhado('Explicação:')}")
-            for tipo, explicacao in c['explicacao'].items():
-                print(f"    {destaque('•')} {explicacao}")
-    else:
-        print("\n" + aviso("  Nenhuma carreira recomendada no momento."))
-        print(aviso("  Para ter uma carreira recomendada, você precisa atender TODOS os critérios"))
-        print(aviso("  (interesses, habilidades e desempenho) para pelo menos uma carreira."))
-    
-    print("\n" + destaque("Carreiras Próximas:"))
-    if proximas:
-        proximas.sort(key=lambda x: x['score'], reverse=True)
-        
-        for c in proximas:
-            print(f"\n  {destaque('•')} {negrito(c['carreira'])} {score(c['score'])}")
-            print(f"    {sublinhado('Justificativa:')} {c['justificativa']}")
-            print(f"\n    {sublinhado('Explicação:')}")
-            for tipo, explicacao in c['explicacao'].items():
-                print(f"    {destaque('•')} {explicacao}")
-            
-            print(f"\n    {sublinhado('Sugestões para transformar em carreira recomendada:')}")
-            for tipo, explicacao in c['explicacao'].items():
-                if "Faltam" in explicacao:
-                    print(f"    {destaque('•')} {explicacao.replace('Faltam', 'Adquira')}")
-    else:
-        print(aviso("  Nenhuma carreira próxima no momento."))
-    
-    # Atualiza as recomendações no banco de dados
-    try:
-        salvar_recomendacao(id_, {
-            'recomendadas': recomendadas,
-            'proximas': proximas
-        })
-    except ConexaoErro as e:
-        print(erro(f"\nAviso: Não foi possível salvar as recomendações: {str(e)}"))
+from utils.popular_banco import popular_banco
+from utils.importar_regras import importar_regras_json_para_banco
 
 def main():
     """
     Função principal que inicia o sistema.
     """
-    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), 'data', 'regras.json')
-    motor = MotorDeInferencia()  # Remova o argumento CAMINHO_REGRAS
-    
-    # Inicializa o banco de dados
     try:
-        conectar()
-    except ConexaoErro as e:
-        print(erro(f"\nErro ao inicializar banco de dados: {str(e)}"))
-        return
-    
-    while True:
-        opcao = exibir_menu()
+        # Inicializa o banco de dados
+        caminho_json = os.path.join(os.path.dirname(__file__), 'utils', 'regras.json')
+        try:
+            importar_regras_json_para_banco(caminho_json)
+        except Exception:
+            pass
+        try:
+            popular_banco()
+        except Exception:
+            pass
+
+        # Inicializa o controlador
+        controlador = Controlador()
         
-        if opcao == "1":  
-            estudante = cadastrar_estudante(CAMINHO_REGRAS)
-            recomendadas, proximas = motor.processa_estudante(estudante)
+        while True:
+            opcao = Interface.exibir_menu_principal()
             
-            print("\n" + destaque("Carreiras recomendadas:"))
-            if recomendadas:
-                for c in recomendadas:
-                    print(f"\n  {destaque('•')} {negrito(c['carreira'])} {score(c['score'])}")
-                    print(f"    {sublinhado('Justificativa:')} {c['justificativa']}")
-                    print(f"\n    {sublinhado('Explicação:')}")
-                    for tipo, explicacao in c['explicacao'].items():
-                        print(f"    {destaque('•')} {explicacao}")
-            else:
-                print("\n" + aviso("  Nenhuma carreira recomendada no momento."))
-                print(aviso("  Para ter uma carreira recomendada, você precisa atender TODOS os critérios"))
-                print(aviso("  (interesses, habilidades e desempenho) para pelo menos uma carreira."))
+            if opcao == "1":
+                try:
+                    resultado = controlador.cadastrar_novo_estudante()
+                    Interface.exibir_recomendacoes(resultado)
+                except ConexaoErro as e:
+                    Interface.exibir_erro(f"Erro ao cadastrar estudante: {str(e)}")
             
-            print("\n" + destaque("Carreiras próximas:"))
-            if proximas:
-                proximas.sort(key=lambda x: x['score'], reverse=True)
+            elif opcao == "2":
+                try:
+                    estudantes = controlador.listar_todos_estudantes()
+                    Interface.exibir_lista_estudantes(estudantes)
+                except ConexaoErro as e:
+                    Interface.exibir_erro(f"Erro ao listar estudantes: {str(e)}")
+            
+            elif opcao == "3":
+                nome = Interface.solicitar_nome_estudante()
+                if not nome:
+                    Interface.exibir_erro("Nome não pode estar vazio!")
+                    continue
                 
-                for c in proximas:
-                    print(f"\n  {destaque('•')} {negrito(c['carreira'])} {score(c['score'])}")
-                    print(f"    {sublinhado('Justificativa:')} {c['justificativa']}")
-                    print(f"\n    {sublinhado('Explicação:')}")
-                    for tipo, explicacao in c['explicacao'].items():
-                        print(f"    {destaque('•')} {explicacao}")
-                    
-                    print(f"\n    {sublinhado('Sugestões para transformar em carreira recomendada:')}")
-                    for tipo, explicacao in c['explicacao'].items():
-                        if "Faltam" in explicacao:
-                            print(f"    {destaque('•')} {explicacao.replace('Faltam', 'Adquira')}")
+                try:
+                    estudante = controlador.buscar_estudante(nome)
+                    if estudante:
+                        Interface.exibir_dados_estudante(estudante)
+                    else:
+                        Interface.exibir_aviso(f"Nenhum estudante encontrado com o nome '{nome}'")
+                except ConexaoErro as e:
+                    Interface.exibir_erro(f"Erro ao buscar estudante: {str(e)}")
+            
+            elif opcao == "4":
+                nome = Interface.solicitar_nome_estudante()
+                if not nome:
+                    Interface.exibir_erro("Nome não pode estar vazio!")
+                    continue
+                try:
+                    recomendacoes = controlador.obter_recomendacoes(nome)
+                    Interface.exibir_recomendacoes(recomendacoes, nome)
+                except ConexaoErro as e:
+                    Interface.exibir_erro(f"Erro ao obter recomendações: {str(e)}")
+            
+            elif opcao == "5":
+                try:
+                    controlador.executar_menu_gestor()
+                except Exception as e:
+                    Interface.exibir_erro(f"Erro ao executar menu do gestor: {str(e)}")
+            
+            elif opcao == "6":
+                if Interface.confirmar_saida():
+                    Interface.exibir_sucesso("Encerrando o sistema...")
+                    break
+            
             else:
-                print(aviso("  Nenhuma carreira próxima no momento."))
-        
-        elif opcao == "2":
-            print("\n" + aviso("Funcionalidade ainda não implementada."))
-        
-        elif opcao == "3":
-            nome = input("\n" + destaque("Digite o nome do estudante: ")).strip()
-            if not nome:
-                print(erro("\nNome não pode estar vazio!"))
-                continue
+                Interface.exibir_erro("Opção inválida! Por favor, escolha uma opção válida.")
             
-            try:
-                estudante = buscar_estudante_completo_por_nome(nome)
-                if estudante:
-                    exibir_dados_estudante(estudante)
-                else:
-                    print(aviso(f"\nNenhum estudante encontrado com o nome '{nome}'"))
-            except ConexaoErro as e:
-                print(erro(f"\nErro ao buscar estudante: {str(e)}"))
-        
-        elif opcao == "4":
-            nome = input("\n" + destaque("Digite o nome do estudante: ")).strip()
-            if not nome:
-                print(erro("\nNome não pode estar vazio!"))
-                continue
+            Interface.aguardar_continuar()
             
-            try:
-                estudante = buscar_estudante_completo_por_nome(nome)
-                if estudante:
-                    exibir_recomendacoes(estudante, motor)
-                else:
-                    print(aviso(f"\nNenhum estudante encontrado com o nome '{nome}'"))
-            except ConexaoErro as e:
-                print(erro(f"\nErro ao buscar estudante: {str(e)}"))
-        
-        elif opcao == "5":
-            executar_menu_gestor(CAMINHO_REGRAS)
-        
-        elif opcao == "6":
-            if input("\n" + destaque("Tem certeza que deseja sair? (s/n): ")).lower() == 's':
-                print(sucesso("\nEncerrando o sistema..."))
-                break
-        
-        else:
-            print(erro("\nOpção inválida! Por favor, escolha uma opção válida."))
-        
-        input("\n" + destaque("Pressione Enter para continuar..."))
+    except Exception as e:
+        Interface.exibir_erro(f"Erro fatal no sistema: {str(e)}")
 
 if __name__ == "__main__":
     main()

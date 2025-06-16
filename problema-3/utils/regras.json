@@ -1,0 +1,136 @@
+[
+    {
+        "carreira": "Ciência da Computação",
+        "justificativa": "Carreira ideal para quem gosta de programação e lógica",
+        "condicoes": {
+            "interesses": [
+                "programação",
+                "tecnologia",
+                "matemática",
+                "resolução de problemas"
+            ],
+            "habilidades": [
+                "raciocínio lógico",
+                "criatividade",
+                "trabalho em equipe"
+            ],
+            "desempenho": {
+                "Matemática": 7.0,
+                "Física": 6.5,
+                "Lógica": 8.0
+            },
+            "pesos": {
+                "Matemática": 2,
+                "Física": 1,
+                "Lógica": 2
+            }
+        }
+    },
+    {
+        "carreira": "Medicina",
+        "justificativa": "Carreira para quem tem interesse em saúde e bem-estar",
+        "condicoes": {
+            "interesses": [
+                "biologia",
+                "saúde",
+                "anatomia",
+                "química"
+            ],
+            "habilidades": [
+                "empatia",
+                "atenção aos detalhes",
+                "trabalho sob pressão"
+            ],
+            "desempenho": {
+                "Biologia": 8.0,
+                "Química": 7.5,
+                "Anatomia": 8.0
+            },
+            "pesos": {
+                "Biologia": 2,
+                "Química": 2,
+                "Anatomia": 2
+            }
+        }
+    },
+    {
+        "carreira": "Engenharia Civil",
+        "justificativa": "Carreira para quem gosta de construção e projetos",
+        "condicoes": {
+            "interesses": [
+                "construção",
+                "projetos",
+                "matemática",
+                "física"
+            ],
+            "habilidades": [
+                "cálculo",
+                "desenho técnico",
+                "gestão de projetos"
+            ],
+            "desempenho": {
+                "Matemática": 7.0,
+                "Física": 7.0,
+                "Desenho": 7.5
+            },
+            "pesos": {
+                "Matemática": 2,
+                "Física": 2,
+                "Desenho": 1
+            }
+        }
+    },
+    {
+        "carreira": "Psicologia",
+        "justificativa": "Carreira para quem tem interesse em comportamento humano",
+        "condicoes": {
+            "interesses": [
+                "comportamento humano",
+                "saúde mental",
+                "comunicação"
+            ],
+            "habilidades": [
+                "empatia",
+                "comunicação",
+                "análise"
+            ],
+            "desempenho": {
+                "Português": 7.5,
+                "Sociologia": 7.0,
+                "Filosofia": 7.0
+            },
+            "pesos": {
+                "Português": 2,
+                "Sociologia": 1,
+                "Filosofia": 1
+            }
+        }
+    },
+    {
+        "carreira": "Administração",
+        "justificativa": "Carreira para quem tem interesse em gestão e negócios",
+        "condicoes": {
+            "interesses": [
+                "negócios",
+                "gestão",
+                "economia",
+                "marketing"
+            ],
+            "habilidades": [
+                "liderança",
+                "comunicação",
+                "tomada de decisão"
+            ],
+            "desempenho": {
+                "Matemática": 6.5,
+                "Português": 7.0,
+                "Economia": 7.0
+            },
+            "pesos": {
+                "Matemática": 1,
+                "Português": 2,
+                "Economia": 2
+            }
+        }
+    }
+]

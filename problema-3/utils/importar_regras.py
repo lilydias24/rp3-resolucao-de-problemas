@@ -37,14 +37,14 @@ def importar_regras_json_para_banco(caminho_json):
             cursor.execute("INSERT OR IGNORE INTO interesses (interesse) VALUES (?)", (interesse,))
             cursor.execute("SELECT id FROM interesses WHERE interesse = ?", (interesse,))
             interesse_id = cursor.fetchone()[0]
-            cursor.execute("INSERT INTO interesses_regra (regra_id, interesse_id) VALUES (?, ?)", (regra_id, interesse_id))
+            cursor.execute("INSERT INTO regras_interesses (regra_id, interesse_id) VALUES (?, ?)", (regra_id, interesse_id))
 
         # Habilidades
         for habilidade in habilidades:
             cursor.execute("INSERT OR IGNORE INTO habilidades (habilidade) VALUES (?)", (habilidade,))
             cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
             habilidade_id = cursor.fetchone()[0]
-            cursor.execute("INSERT INTO habilidades_regra (regra_id, habilidade_id) VALUES (?, ?)", (regra_id, habilidade_id))
+            cursor.execute("INSERT INTO regras_habilidades (regra_id, habilidade_id) VALUES (?, ?)", (regra_id, habilidade_id))
 
         # Desempenho (disciplinas, nota mínima e peso)
         for disciplina, nota_min in desempenho.items():
@@ -53,13 +53,12 @@ def importar_regras_json_para_banco(caminho_json):
             disciplina_id = cursor.fetchone()[0]
             peso = pesos.get(disciplina, 1)
             cursor.execute(
-                "INSERT INTO desempenho_regra (regra_id, disciplina_id, nota_min, peso) VALUES (?, ?, ?, ?)",
+                "INSERT INTO regras_desempenho (regra_id, disciplina_id, nota_min, peso) VALUES (?, ?, ?, ?)",
                 (regra_id, disciplina_id, nota_min, peso)
             )
 
     conn.commit()
     conn.close()
-    print("Importação concluída com sucesso!")
 
 # Exemplo de uso:
 caminho_json = os.path.join(os.path.dirname(__file__), 'regras.json')
