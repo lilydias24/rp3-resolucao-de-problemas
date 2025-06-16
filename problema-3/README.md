@@ -13,49 +13,65 @@ Usando:
 - Arquitetura orientada a objetos
 - Justificativas explicáveis por regra + fato
 
--> Estrutura sugerida do sistema : 
+-> Estrutura atual do sistema : 
 
-`/sistema_carreiras/`  
+`/problema-3/`  
 `├── main.py`                     # Menu principal e execução 
 `├── __init__.py`                             
+`├── pyproject.toml`             # Configuração do projeto e dependências
 `├── utils/`  
-`│   └── __init__.py`            
+`│   ├── __init__.py`            
+`│   ├── cores.py`               # Definição de cores para interface
+`│   ├── exportador_csv.py`      # Exportação de relatórios em CSV
+`│   ├── gestor.py`              # Gerenciamento de regras
+`│   ├── gestor_interface.py`    # Interface do gestor acadêmico
+`│   ├── importar_regras.py`     # Importação de regras do JSON
+`│   ├── interface.py`           # Interface do sistema
+`│   ├── popular_banco.py`       # População inicial do banco
+`│   └── regras.json`            # Arquivo de configuração das regras
 `├── data/`  
-`│   └── __init__.py`            
-`│   └── conexao.py`              # Criação e acesso ao banco  
-`│   └── regras.json`             # Arquivo externo com regras configuráveis  
-`│   └── banco.db`                # Arquivo de armazenamento dos dados do estudante com sqlite
-`│   └── estudante_db.py`         # Arquivo de gerenciamento do estudante no banco
-`├── models/`  
-`│   └── __init__.py`            
-`│   ├── estudante.py`            # Classe Estudante  
-`│   └── carreira.py`             # Classe Carreira  
+`│   ├── __init__.py`            
+`│   ├── banco.db`               # Banco de dados SQLite
+`│   ├── conexao.py`             # Conexão com o banco
+`│   ├── criar_banco.py`         # Criação das tabelas
+`│   ├── relatorio_db.py`        # Geração de relatórios
+`│   ├── transacao.py`           # Gerenciamento de transações
+`│   └── validacao.py`           # Validação de dados
 `├── logic/`  
 `│   ├── __init__.py`
-`│   ├── fato.py`                 # Fatos lógicos extraídos do estudante  
-`│   ├── motor.py`                # Motor de inferência  
-`│   ├── regra.py`                # Representação de regra lógica
-`│   └── logica.py`                # Implementação das regras lógicas  
+`│   ├── controlador.py`         # Controlador principal
+`│   ├── estudante.py`           # Lógica de estudantes
+`│   ├── motor.py`               # Motor de inferência
+`│   └── recomendacao.py`        # Lógica de recomendações
 `├── reports/`  
-`│   └── __init__.py`            
-`│   ├── exportador_csv.py`       # Gera CSVs  
-`│   └── graficos.py`             # Gera gráficos  
+`│   ├── __init__.py`            
+`│   ├── gerar_relatorios.py`    # Geração de relatórios
+`│   ├── graficos.py`            # Geração de gráficos
+`│   ├── graficos/`              # Diretório de gráficos gerados
+`│   └── relatorios/`            # Diretório de relatórios gerados
 `└── tests/`  
 `    └── __init__.py`            
-`    └── test_exemplo.py`           # Testes de inferência  
 
+-> Ferramentas úteis : 
 
--> Uteis para o grupo : 
+black -> formata e identa o código com base em boas práticas em Python
+poetry -> gestão de dependências
 
-black -> formata e identa o codigo com base em boas praticas em python
-poetry -> gestão de dependencias
-pip install black -> instala o formatador
-black nomeDoArquivo -> formata o código do arquivo
-black nomeDaPasta -> formata os códigos da pasta
-pip install poetry -> instala o poetry
-poetry add nomeDaDependencia -> adiciona a dependencia 
-poetry install -> instala as dependencias
-poetry new <nome_do_projeto> -> cria uma nova estrutura de projeto com o poetry.
+Comandos úteis:
+```bash
+# Instalação de ferramentas
+pip install black
+pip install poetry
+
+# Formatação de código
+black nomeDoArquivo
+black nomeDaPasta
+
+# Gerenciamento de dependências
+poetry add nomeDaDependencia
+poetry install
+poetry new <nome_do_projeto>
+```
 
 -> Organização de tarefas : 
 

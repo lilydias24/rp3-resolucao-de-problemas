@@ -1,16 +1,13 @@
 """
 Módulo para gerenciamento de transações e tratamento de erros no banco de dados.
 """
+from typing import Dict, List, Tuple, Any, Optional
 import sqlite3
-from typing import Any, Callable, Optional
 from contextlib import contextmanager
+from data.conexao import ConexaoErro
 
 class BancoErro(Exception):
     """Exceção base para erros do banco de dados."""
-    pass
-
-class ConexaoErro(BancoErro):
-    """Erro ao conectar com o banco de dados."""
     pass
 
 class TransacaoErro(BancoErro):
