@@ -6,13 +6,8 @@ import os
 import json
 from typing import List, Tuple, Any
 
-# Adiciona o diretório raiz ao PYTHONPATH
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from reports.graficos import GeradorGraficos
-from data.relatorio_db import RelatorioDB
-from data.conexao import conectar
-from data.transacao import ConexaoErro
+from graficos import GeradorGraficos
+from data import RelatorioDB,conectar,ConexaoErro
 
 def obter_estudantes_silencioso() -> List[Tuple[Any, ...]]:
     """

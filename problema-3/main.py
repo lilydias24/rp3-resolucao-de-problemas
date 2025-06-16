@@ -9,13 +9,9 @@ Este módulo executa o fluxo principal do sistema:
 - Lista os estudantes registrados
 """
 import os
-from data.conexao import conectar
-from logic.estudante import buscar_estudante, cadastrar_estudante, listar_estudantes, buscar_estudante_completo_por_nome, recomendar_carreiras
-from logic.logica import carreiras_proximas, gerar_fatos_de_interesses
-from logic.motor import MotorDeInferencia
-from logic.recomendacao import salvar_recomendacao, listar_recomendacoes
+from data import conectar, ConexaoErro
+from logic import *
 from utils.gestor_interface import executar_menu_gestor
-from data.transacao import ConexaoErro
 from utils.cores import titulo, sucesso, erro, aviso, destaque, cabecalho, menu_item, info, score, negrito, sublinhado
 
 def exibir_menu():

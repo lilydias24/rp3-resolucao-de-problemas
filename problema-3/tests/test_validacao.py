@@ -1,5 +1,5 @@
 import unittest
-from data import *
+from data.validacao import *
 
 
 class TestValidacao(unittest.TestCase):
@@ -16,22 +16,22 @@ class TestValidacao(unittest.TestCase):
         with self.assertRaises(ValidacaoErro):
             sanitizar_nome("")
 
-    def test_sanitizar_nome_invalido_tipo(self):
+    def test_sanitizar_tipo_invalido(self):
         with self.assertRaises(ValidacaoErro):
             sanitizar_nome(123)
 
-    def test_sanitizar_nome_remove_caracteres_especiais(self):
+    def test_sanitizar_caracteres_especiais(self):
         self.assertEqual(sanitizar_nome("Ana!@# dos Santos"), "Ana dos Santos")
 
     # --- validar_interesses ---
     def test_validar_interesses_validos(self):
         self.assertEqual(validar_interesses(["Programação", "  Física  "]), ["Programação", "Física"])
 
-    def test_validar_interesses_invalido_lista_vazia(self):
+    def test_validar_interesses_vazio(self):
         with self.assertRaises(ValidacaoErro):
             validar_interesses([])
 
-    def test_validar_interesses_invalido_nao_lista(self):
+    def test_validar_interesses_invalidos(self):
         with self.assertRaises(ValidacaoErro):
             validar_interesses("não é lista")
 
@@ -39,11 +39,11 @@ class TestValidacao(unittest.TestCase):
     def test_validar_habilidades_validas(self):
         self.assertEqual(validar_habilidades(["Python", " Matemática "]), ["Python", "Matemática"])
 
-    def test_validar_habilidades_invalido_lista_vazia(self):
+    def test_validar_habilidades_vazia(self):
         with self.assertRaises(ValidacaoErro):
             validar_habilidades([])
 
-    def test_validar_habilidades_invalido_nao_lista(self):
+    def test_validar_habilidades_invalida(self):
         with self.assertRaises(ValidacaoErro):
             validar_habilidades("não é lista")
 
