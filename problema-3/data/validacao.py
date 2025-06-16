@@ -149,7 +149,7 @@ def validar_estudante(estudante: Dict[str, Any]) -> Tuple[str, List[str], List[s
         nome = sanitizar_nome(estudante.get('nome', ''))
         interesses = validar_interesses(estudante.get('interesses', []))
         habilidades = validar_habilidades(estudante.get('habilidades', []))
-        desempenho = validar_desempenho(estudante.get('desempenho_escolar', {}))
+        desempenho = validar_desempenho(estudante.get('desempenho', {}))
         
         return nome, interesses, habilidades, desempenho
         

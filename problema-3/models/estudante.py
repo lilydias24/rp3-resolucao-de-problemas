@@ -14,6 +14,7 @@ class Estudante:
         self.nome: str = nome
         self.habilidades: set[str] = set()
         self.historico_desempenho: list[dict[str, float]] = []
+        self.desempenho: dict[str, float] = {}
 
     def adicionar_habilidade(self, habilidade: str) -> None:
         '''
@@ -96,8 +97,8 @@ class Estudante:
             raise TypeError("O desempenho precisa ser um número")
 
         chave = materia_escola.strip()
-        self.desempenho_escolar[chave] = float(desempenho)
-        return self.desempenho_escolar
+        self.desempenho[chave] = float(desempenho)
+        return self.desempenho
 
 
 if __name__ == "__main__":

@@ -38,6 +38,52 @@ class Interface:
         return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
 
     @staticmethod
+    def exibir_menu_gestor() -> str:
+        """
+        Exibe o menu do gestor acadêmico.
+        
+        Returns:
+            str: Opção escolhida pelo usuário
+        """
+        print(cabecalho("Menu do Gestor Acadêmico"))
+        print(menu_item("\t 1", "Adicionar regra de carreira"))
+        print(menu_item("\t 2", "Editar regra de carreira"))
+        print(menu_item("\t 3", "Remover regra de carreira"))
+        print(menu_item("\t 4", "Listar regras de carreira"))
+        print(menu_item("\t 5", "Gerar relatórios"))
+        print(menu_item("\t 6", "Gerar gráficos"))
+        print(menu_item("\t 7", "Voltar ao menu principal"))
+        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
+    def exibir_menu_relatorios() -> str:
+        """
+        Exibe o menu de relatórios.
+        
+        Returns:
+            str: Opção escolhida pelo usuário
+        """
+        print(cabecalho("Menu de Relatórios"))
+        print(menu_item("\t 1", "Gerar relatório de estudantes"))
+        print(menu_item("\t 2", "Gerar relatório de carreiras"))
+        print(menu_item("\t 3", "Voltar ao menu do gestor"))
+        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
+    def exibir_menu_graficos() -> str:
+        """
+        Exibe o menu de gráficos.
+        
+        Returns:
+            str: Opção escolhida pelo usuário
+        """
+        print(cabecalho("Menu de Gráficos"))
+        print(menu_item("\t 1", "Gerar gráfico de estudantes"))
+        print(menu_item("\t 2", "Gerar gráfico de carreiras"))
+        print(menu_item("\t 3", "Voltar ao menu do gestor"))
+        return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
     def exibir_dados_estudante(estudante: Tuple) -> None:
         """
         Exibe os dados de um estudante de forma organizada.
@@ -140,6 +186,49 @@ class Interface:
         for estudante in estudantes:
             Interface.exibir_dados_estudante(estudante)
             print("\n")
+
+    @staticmethod
+    def exibir_lista_regras(regras: List[Dict]) -> None:
+        """
+        Exibe a lista de regras de carreira de forma organizada.
+        
+        Args:
+            regras: Lista de dicionários com dados das regras
+        """
+        if not regras:
+            print(aviso("\nNenhuma regra de carreira cadastrada."))
+            return
+        
+        print(cabecalho("Lista de Regras de Carreira"))
+        print(separador())
+        
+        for regra in regras:
+            print(f"\n{destaque('Carreira:')} {negrito(regra['carreira'])}")
+            print(f"{destaque('Justificativa:')} {regra['justificativa']}")
+            
+            print(f"\n{destaque('Interesses necessários:')}")
+            if regra['condicoes']['interesses']:
+                for interesse in regra['condicoes']['interesses']:
+                    print(f"  • {info(interesse)}")
+            else:
+                print(aviso("  Nenhum interesse necessário"))
+            
+            print(f"\n{destaque('Habilidades necessárias:')}")
+            if regra['condicoes']['habilidades']:
+                for habilidade in regra['condicoes']['habilidades']:
+                    print(f"  • {info(habilidade)}")
+            else:
+                print(aviso("  Nenhuma habilidade necessária"))
+            
+            print(f"\n{destaque('Desempenho necessário:')}")
+            if regra['condicoes']['desempenho']:
+                for disciplina, nota in regra['condicoes']['desempenho'].items():
+                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
+                    print(f"  • {disciplina}: {score(nota)} (peso: {peso})")
+            else:
+                print(aviso("  Nenhum desempenho necessário"))
+            
+            print(separador())
 
     @staticmethod
     def solicitar_nome_estudante() -> str:
@@ -294,49 +383,5 @@ class Interface:
             'nome': nome,
             'interesses': interesses,
             'habilidades': habilidades,
-            'desempenho_escolar': desempenho
-        }
-
-    @staticmethod
-    def exibir_lista_regras(regras: List[Dict]) -> None:
-        """
-        Exibe a lista de regras de carreira de forma organizada.
-        
-        Args:
-            regras: Lista de dicionários com dados das regras
-        """
-        if not regras:
-            print(aviso("\nNenhuma regra de carreira cadastrada."))
-            return
-        
-        print(cabecalho("Lista de Regras de Carreira"))
-        print(separador())
-        
-        for regra in regras:
-            print(f"\n{destaque('Carreira:')} {negrito(regra['carreira'])}")
-            if regra['justificativa']:
-                print(f"{destaque('Justificativa:')} {regra['justificativa']}")
-            
-            print(f"\n{destaque('Interesses:')}")
-            if regra['condicoes']['interesses']:
-                for interesse in regra['condicoes']['interesses']:
-                    print(f"  • {info(interesse)}")
-            else:
-                print(aviso("  Nenhum interesse requerido"))
-            
-            print(f"\n{destaque('Habilidades:')}")
-            if regra['condicoes']['habilidades']:
-                for habilidade in regra['condicoes']['habilidades']:
-                    print(f"  • {info(habilidade)}")
-            else:
-                print(aviso("  Nenhuma habilidade requerida"))
-            
-            print(f"\n{destaque('Desempenho Acadêmico:')}")
-            if regra['condicoes']['desempenho']:
-                for disciplina, nota_min in regra['condicoes']['desempenho'].items():
-                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
-                    print(f"  • {disciplina}: {score(nota_min)} (peso: {peso})")
-            else:
-                print(aviso("  Nenhum desempenho requerido"))
-            
-            print(separador()) 
+            'desempenho': desempenho
+        } 
