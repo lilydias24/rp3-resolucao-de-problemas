@@ -1,14 +1,31 @@
-from utils.LLM import LLM
+from fastapi import FastAPI
+import logging
+from src.config.logging_config import setup_logging
+from src.db import init_db
+from src.routers import router  # Importa o router consolidado
 
-while True:
-    print("Teste do uso da LLM com Groq, Escolha uma opção: ")
-    print("1 - Digitar mensagem para obter resposta da IA")
-    print("0 - Sair")
-    
-    opt = input()
-    if opt == "1":
-        print("Digite o conteúdo da mensagem:")
-        LLM(content = input())
-    if opt == "0":
-        print("Saindo...")
-        break
+# Configuração inicial
+setup_logging()
+init_db()  # Cria tabelas se não existirem
+
+app = FastAPI(
+    title="Sistema de Gerenciamento de Histórias",
+    description="API para geração e gestão de histórias de usuário com LLMs",
+    version="0.1.0"
+)
+
+app.include_router(router)
+
+@app.on_event("startup")
+async def startup():
+    """Evento de inicialização da aplicação"""
+    logging.info("API iniciada com sucesso")
+
+@app.get("/")
+async def root():
+    """Endpoint health check"""
+    return {
+        "message": "API operacional",
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }

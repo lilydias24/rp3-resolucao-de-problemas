@@ -1,3 +1,6 @@
+"""
+Módulo utilitário para interação com a API Groq LLM, incluindo funções para resposta simples e estruturada.
+"""
 import os
 import instructor
 
