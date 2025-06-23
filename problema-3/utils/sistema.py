@@ -3,6 +3,7 @@ Módulo do fluxo principal do sistema.
 
 Contém funções para gerenciar o fluxo de execução do sistema.
 """
+<<<<<<< HEAD
 import json
 import os
 from data.estudante_db import criar_tabela_estudantes, salvar_estudante, listar_estudantes
@@ -15,6 +16,13 @@ from utils.interface import (
     exibir_estudantes
 )
 from utils.gestor_interface import executar_menu_gestor
+=======
+from data.criar_banco import criar_tabelas
+from logic.estudante import *
+from logic.recomendacao import salvar_recomendacao
+from logic.motor import MotorDeInferencia
+from utils.exportador_csv import exportar_tendencias_para_csv
+>>>>>>> eric-branch
 
 def exibir_menu():
     """
@@ -25,6 +33,7 @@ def exibir_menu():
     print("2. Listar estudantes cadastrados")
     print("3. Buscar estudante por nome")
     print("4. Ver recomendações de carreira")
+<<<<<<< HEAD
     print("5. Menu do Gestor Acadêmico")
     print("6. Sair")
     return input("\nEscolha uma opção: ").strip()
@@ -58,17 +67,41 @@ def buscar_estudante():
     else:
         print(f"\nNenhum estudante encontrado com o nome '{nome}'")
 
+=======
+    print("5. Exportar tendências de carreira para CSV")
+    print("6. Sair")
+    return input("\nEscolha uma opção: ").strip()
+
+>>>>>>> eric-branch
 def ver_recomendacoes():
     """
-    Exibe recomendações de carreira para um estudante.
+    Exibe recomendações de carreira para um estudante, buscando pelo ID.
     """
-    nome = input("\nDigite o nome do estudante: ").strip()
-    estudantes = listar_estudantes()
-    estudante = next((est for est in estudantes if est[1].lower() == nome.lower()), None)
-    
-    if not estudante:
+    try:
+        estudantes = listar_estudantes()
+        exibir_estudantes(estudantes)
+        estudante_id = int(input("\nDigite o ID do estudante: ").strip())
+    except ValueError:
+        print("ID inválido.")
+        return
+
+    # Buscar dados completos do estudante pelo ID
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT nome FROM estudantes WHERE id = ?", (estudante_id,))
+    row = cursor.fetchone()
+    if not row:
+        print(f"\nEstudante com ID {estudante_id} não encontrado no banco.")
+        conn.close()
+        return
+    nome = row[0]
+    conn.close()
+
+    dados_estudante = buscar_estudante_completo_por_nome(nome)
+    if not dados_estudante:
         print(f"\nEstudante '{nome}' não encontrado.")
         return
+<<<<<<< HEAD
     
     # converte os dados do estudante pro formato esperado pela lógica
     dados_estudante = {
@@ -118,20 +151,49 @@ def ver_recomendacoes():
                     print(f"  - {explicacao.replace('Faltam', 'Adquira')}")
     else:
         print("Nenhuma carreira próxima no momento.")
+=======
+
+    motor = MotorDeInferencia()
+    recomendadas, proximas = motor.processa_estudante(dados_estudante)
+
+    # Salve as recomendações recomendadas
+    for rec in recomendadas:
+        salvar_recomendacao(estudante_id, rec['carreira'], rec['score'])
+
+    print("\n=== Recomendações de Carreira ===")
+    if recomendadas:
+        print("\nCarreiras recomendadas:")
+        for c in recomendadas:
+            print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")
+            for k, v in c['explicacao'].items():
+                print(f"  {k}: {v}")
+    else:
+        print("\nNenhuma carreira específica recomendada.")
+
+    if proximas:
+        print("\nCarreiras próximas (requerem desenvolvimento adicional):")
+        for c in proximas:
+            print(f"- {c['carreira']} (score: {c['score']}): {c['justificativa']}")
+            for k, v in c['explicacao'].items():
+                print(f"  {k}: {v}")
+>>>>>>> eric-branch
 
 def executar_fluxo():
     """
     Executa o fluxo principal do sistema com menu interativo.
     """
     try:
+<<<<<<< HEAD
         
         criar_tabela_estudantes()
         
+=======
+        criar_tabelas()
+>>>>>>> eric-branch
         while True:
             opcao = exibir_menu()
-            
             if opcao == "1":
-                cadastrar_estudante()
+                cadastrar_estudante() 
             elif opcao == "2":
                 estudantes = listar_estudantes()
                 exibir_estudantes(estudantes)
@@ -140,8 +202,12 @@ def executar_fluxo():
             elif opcao == "4":
                 ver_recomendacoes()
             elif opcao == "5":
+<<<<<<< HEAD
                 CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), '..', 'data', 'regras.json')
                 executar_menu_gestor(CAMINHO_REGRAS)
+=======
+                exportar_tendencias_para_csv('reports/tendencias_carreira.csv')
+>>>>>>> eric-branch
             elif opcao == "6":
                 if input("\nTem certeza que deseja sair? (s/n): ").lower() == 's':
                     print("\nEncerrando o sistema...")
@@ -150,4 +216,4 @@ def executar_fluxo():
                 print("\nOpção inválida! Por favor, escolha uma opção válida.")
     except Exception as e:
         print(f"\nErro no sistema: {str(e)}")
-        print("O sistema será encerrado.") 
+        print("O sistema será encerrado.")
