@@ -1,10 +1,10 @@
-import './App.css'
+
 
 function App() {
 
   return (
     <div>
-      <h1>Fala aí</h1>
+      <h1>Grupo 05 - Marco 4</h1>
     </div>
   )
 }
