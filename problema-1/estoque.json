@@ -1,19 +1,5 @@
 {
     "produtos": {
-        "2": {
-            "nome": "4",
-            "descricao": "5",
-            "valor": 5.0,
-            "quant_estoque": 4,
-            "nivel_min": 6,
-            "entradas": [],
-            "saidas": [
-                {
-                    "quantidade": 2,
-                    "data": "2025-04-04 00:39:27"
-                }
-            ]
-        },
         "7": {
             "nome": "tetse",
             "descricao": "testando",
@@ -23,50 +9,61 @@
             "entradas": [],
             "saidas": []
         },
-        "1": {
-            "nome": "1",
-            "descricao": "1",
-            "valor": 1.0,
-            "quant_estoque": 85,
-            "nivel_min": 1,
-            "entradas": [
-                {
-                    "quantidade": 99,
-                    "data": "2025-04-04 00:43:05"
-                }
-            ],
-            "saidas": [
-                {
-                    "quantidade": 5,
-                    "data": "2025-04-07 21:47:03"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-04-07 21:48:48"
-                },
-                {
-                    "quantidade": 5,
-                    "data": "2025-04-07 21:50:55"
-                }
-            ]
-        },
-        "9": {
-            "nome": "mango",
-            "descricao": "loco",
-            "valor": 5.0,
-            "quant_estoque": 200,
-            "nivel_min": 100,
+        "6": {
+            "nome": "aboobraa",
+            "descricao": "doadmks",
+            "valor": 2.0,
+            "quant_estoque": 50,
+            "nivel_min": 20,
             "entradas": [],
             "saidas": []
         },
-        "10": {
-            "nome": "Produto Alterado",
-            "descricao": "Descrição Teste",
-            "valor": 29.9,
-            "quant_estoque": 10,
-            "nivel_min": 5,
+        "1": {
+            "nome": "notebook",
+            "descricao": "pc",
+            "valor": 3000.0,
+            "quant_estoque": 30,
+            "nivel_min": 1,
+            "entradas": [],
+            "saidas": []
+        },
+        "2": {
+            "nome": "produto",
+            "descricao": "teste",
+            "valor": 200.0,
+            "quant_estoque": 20,
+            "nivel_min": 2,
             "entradas": [],
             "saidas": []
         }
-    }
+    },
+    "movimentacoes": [
+        {
+            "id_movimento": 3,
+            "id_produto": "1",
+            "id_pessoa": 1,
+            "tipo_pessoa": "forencedor",
+            "tipo_movimento": "entrada",
+            "quantidade": 20,
+            "data": "2025-03-27"
+        },
+        {
+            "id_movimento": 4,
+            "id_produto": "2",
+            "id_pessoa": 1,
+            "tipo_pessoa": "fornecedor",
+            "tipo_movimento": "entrada",
+            "quantidade": 2,
+            "data": "2025-03-03"
+        },
+        {
+            "id_movimento": 5,
+            "id_produto": "2",
+            "id_pessoa": 1,
+            "tipo_pessoa": "cliente",
+            "tipo_movimento": "saida",
+            "quantidade": 4,
+            "data": "2025-03-06"
+        }
+    ]
 }

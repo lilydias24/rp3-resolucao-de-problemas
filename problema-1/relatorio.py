@@ -8,10 +8,9 @@ def gerar_relatorio():
     dir = os.path.dirname(os.path.abspath(__file__))  
     add_csv = os.path.join(dir, "relatorio_movimentacoes.csv")
 
-    dados1 = transportar_dados('estoque.json')
-    produtos = dados1.get('produtos', {})
-    dados2 = transportar_dados('movimentacoes.json')
-    movimentacoes = dados2.get('movimentacoes', [])
+    dados = transportar_dados()
+    produtos = dados.get('produtos', {})
+    movimentacoes = dados.get('movimentacoes', [])
 
     if not movimentacoes:
         print(f'\n <<<--- Nenhuma movimentação registrada no sistema. --->>>')
@@ -19,7 +18,7 @@ def gerar_relatorio():
     
     with open(add_csv, mode='w', newline='', encoding='utf-8') as file:
 
-        writer = csv.writer(file, delimiter='|', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         
         writer.writerow([
                     'ID Movimento', 'Tipo de Movimento', 'ID Produto', 'Nome do Produto', 

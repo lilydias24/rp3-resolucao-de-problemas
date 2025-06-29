@@ -4,9 +4,16 @@ Este script executa testes simples para verificar o comportamento das funções.
 """
 
 from src.autenticacao.validacoes import (
-    validar_nome, validar_email, validar_senha, validar_cpf,
-    validar_telefone, validar_data_nascimento, formatar_cpf, formatar_telefone
+    validar_nome,
+    validar_email,
+    validar_senha,
+    validar_cpf,
+    validar_telefone,
+    validar_data_nascimento,
+    formatar_cpf,
+    formatar_telefone,
 )
+
 
 def testar_validar_nome():
     """testa a função validar_nome com diferentes entradas"""
@@ -24,11 +31,12 @@ def testar_validar_nome():
         ("Maria José Oliveira", True),
         ("Ângela", True),  # com acento
     ]
-    
+
     for nome, esperado in casos_teste:
         resultado = validar_nome(nome)
         status = "✓" if resultado == esperado else "✗"
         print(f"{status} validar_nome('{nome}') = {resultado}, esperado: {esperado}")
+
 
 def testar_validar_email():
     """Testa a função validar_email com diferentes entradas"""
@@ -46,11 +54,12 @@ def testar_validar_email():
         ("usuario+teste@dominio.com", True),  # com + (valido)
         ("usuario.teste@dominio.com", True),  # com . (valido)
     ]
-    
+
     for email, esperado in casos_teste:
         resultado = validar_email(email)
         status = "✓" if resultado == esperado else "✗"
         print(f"{status} validar_email('{email}') = {resultado}, esperado: {esperado}")
+
 
 def testar_validar_senha():
     """Testa a função validar_senha com diferentes entradas"""
@@ -65,11 +74,12 @@ def testar_validar_senha():
         ("Senha!123", True),  # com caractere especial
         ("SenhaForteMuito2025", True),  # senha longa
     ]
-    
+
     for senha, esperado in casos_teste:
         resultado = validar_senha(senha)
         status = "✓" if resultado == esperado else "✗"
         print(f"{status} validar_senha('{senha}') = {resultado}, esperado: {esperado}")
+
 
 def testar_validar_cpf():
     """Testa a função validar_cpf com diferentes entradas"""
@@ -83,11 +93,12 @@ def testar_validar_cpf():
         ("", False),  # vazio
         ("ABC.DEF.GHI-JK", False),  # nao numerico
     ]
-    
+
     for cpf, esperado in casos_teste:
         resultado = validar_cpf(cpf)
         status = "✓" if resultado == esperado else "✗"
         print(f"{status} validar_cpf('{cpf}') = {resultado}, esperado: {esperado}")
+
 
 def testar_validar_telefone():
     """Testa a função validar_telefone com diferentes entradas"""
@@ -103,11 +114,14 @@ def testar_validar_telefone():
         ("(11) 98765-432", False),  # incompleto
         ("", False),  # vazio
     ]
-    
+
     for telefone, esperado in casos_teste:
         resultado = validar_telefone(telefone)
         status = "✓" if resultado == esperado else "✗"
-        print(f"{status} validar_telefone('{telefone}') = {resultado}, esperado: {esperado}")
+        print(
+            f"{status} validar_telefone('{telefone}') = {resultado}, esperado: {esperado}"
+        )
+
 
 def testar_validar_data_nascimento():
     """Testa a função validar_data_nascimento com diferentes entradas"""
@@ -119,26 +133,26 @@ def testar_validar_data_nascimento():
         ("01-01-1990", False),  # formato invalido
         ("", False),  # vazio
     ]
-    
+
     for data, esperado in casos_teste:
         resultado = validar_data_nascimento(data)
         status = "✓" if resultado == esperado else "✗"
-        print(f"{status} validar_data_nascimento('{data}') = {resultado}, esperado: {esperado}")
-    
+        print(
+            f"{status} validar_data_nascimento('{data}') = {resultado}, esperado: {esperado}"
+        )
 
     print("\n--- Teste com idade mínima ---")
     hoje = datetime.now()
     ano_atual = hoje.year
-    
-   
+
     data_18_anos = f"01/01/{ano_atual - 18}"
     resultado = validar_data_nascimento(data_18_anos, idade_minima=18)
     print(f"✓ Pessoa com 18 anos: {resultado}")
-    
 
     data_17_anos = f"01/01/{ano_atual - 17}"
     resultado = validar_data_nascimento(data_17_anos, idade_minima=18)
     print(f"✓ Pessoa com 17 anos (idade mínima 18): {resultado}")
+
 
 def testar_formatar_cpf():
     """testa a função formatar_cpf com diferentes entradas"""
@@ -149,11 +163,12 @@ def testar_formatar_cpf():
         ("5299822472", ""),  # incompleto
         ("", ""),  # vazio
     ]
-    
+
     for cpf, esperado in casos_teste:
         resultado = formatar_cpf(cpf)
         status = "✓" if resultado == esperado else "✗"
         print(f"{status} formatar_cpf('{cpf}') = '{resultado}', esperado: '{esperado}'")
+
 
 def testar_formatar_telefone():
     """Testa a função formatar_telefone com diferentes entradas"""
@@ -166,17 +181,20 @@ def testar_formatar_telefone():
         ("987654321", ""),  # incompleto
         ("", ""),  # vazio
     ]
-    
+
     for telefone, esperado in casos_teste:
         resultado = formatar_telefone(telefone)
         status = "✓" if resultado == esperado else "✗"
-        print(f"{status} formatar_telefone('{telefone}') = '{resultado}', esperado: '{esperado}'")
+        print(
+            f"{status} formatar_telefone('{telefone}') = '{resultado}', esperado: '{esperado}'"
+        )
+
 
 if __name__ == "__main__":
     print("=== testes das funções de validação ===")
-    
+
     from datetime import datetime
-    
+
     testar_validar_nome()
     testar_validar_email()
     testar_validar_senha()
@@ -185,5 +203,5 @@ if __name__ == "__main__":
     testar_validar_data_nascimento()
     testar_formatar_cpf()
     testar_formatar_telefone()
-    
-    print("\ntestes concluídos!") 
+
+    print("\ntestes concluídos!")

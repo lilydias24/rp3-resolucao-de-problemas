@@ -1,66 +1,97 @@
+import csv
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List
-import csv
+from typing import List, Dict
 
-# Configuração de caminhos
-CAMINHO_DADOS = Path(__file__).parent.parent.parent / "data" / "pacientes" / "dados.csv"
-CABECALHO = ["Data", "Hora", "Batimentos", "Pressão Sistólica", "Pressão Diastólica", "Glicose", "Obs"]
+dir_base = Path(__file__).parent
+path = dir_base.joinpath("..", "dados", "dados_pacientes.csv").resolve()
 
-def verificar_arquivo() -> None:
-    """Garante que o arquivo existe com cabeçalho correto"""
-    if not CAMINHO_DADOS.exists():
-        CAMINHO_DADOS.parent.mkdir(parents=True, exist_ok=True)
-        with CAMINHO_DADOS.open("w", newline="", encoding="utf-8") as arquivo:
-            csv.writer(arquivo).writerow(CABECALHO)
 
-def classificar_exames(batimentos: str, pressao_sist: str, pressao_diast: str, glicose: str) -> str:
-    """Classifica os exames usando abordagem funcional"""
-    def classificar(valor: str, limites: List[tuple], labels: List[str]) -> str:
-        try:
-            valor_int = int(valor)
-            return next(
-                (f"{labels[i]}" for i, (min_v, max_v) in enumerate(limites) if min_v <= valor_int <= max_v),
-                "Fora da faixa"
-            )
-        except ValueError:
-            return "Valor inválido"
-    
-    classificacoes = [
-        f"Batimentos: {classificar(batimentos, [(60, 100)], ['Normal'])}",
-        f"Pressão: {classificar(pressao_sist, [(0, 119)], ['Normal'])}",
-        f"Glicose: {classificar(glicose, [(70, 99)], ['Normal'])}"
-    ]
-    return "; ".join(classificacoes)
+def verifica_arquivo(path: Path):
+    """Garante que o arquivo existe e tem cabeçalho."""
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # cria arquivo vazio com cabeçalho
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"])
 
-def adicionar_exames() -> None:
-    """Função principal para adicionar exames - deve ser importada pelo main.py"""
-    verificar_arquivo()
-    
-    # Coleta de dados
-    campos = {
-        "Batimentos": "Batimentos cardíacos (bpm): ",
-        "Pressão Sistólica": "Pressão sistólica: ",
-        "Pressão Diastólica": "Pressão diastólica: ",
-        "Glicose": "Nível de glicose (mg/dL): "
-    }
-    
-    valores = {campo: input(mensagem) for campo, mensagem in campos.items()}
-    
-    # Cria registro
+
+def recebe_dados() -> List[Dict[str, str]]:
+    """Lê Batimentos, Pressão e Glicose do usuário, anotando data/hora."""
     agora = datetime.now()
-    registro = {
-        "Data": agora.strftime("%d/%m/%Y"),
-        "Hora": agora.strftime("%H:%M:%S"),
-        **valores,
-        "Obs": classificar_exames(**valores)
-    }
-    
-    # Salva no arquivo
-    with CAMINHO_DADOS.open("a", newline="", encoding="utf-8") as arquivo:
-        csv.DictWriter(arquivo, fieldnames=CABECALHO).writerow(registro)
-    
-    print("Exame adicionado com sucesso!")
+    base = {"Data": agora.strftime("%d/%m/%Y"), "Hora": agora.strftime("%H:%M:%S")}
+    campos = ("Batimentos", "Pressão", "Glicose")
+    entradas = {campo: input(f"Insira {campo}: ") for campo in campos}
+    registro = {**base, **entradas, "Obs": ""}
+    return [registro]
+
+
+def verifica_inteiro(valor: str) -> bool:
+    """Retorna True se valor puder ser convertido para int."""
+    try:
+        int(valor)
+        return True
+    except ValueError:
+        return False
+
+
+def classifica_entrada(valor: Dict[str, str]) -> str:
+    """Classifica batimentos, pressão e glicose e monta string de observações."""
+    bpm = int(valor["Batimentos"])
+    pressao = int(valor["Pressão"])
+    glic = int(valor["Glicose"])
+
+    batimentos = (
+        "Bradicardia" if bpm < 60 else "Normal" if bpm <= 100 else "Taquicardia"
+    )
+
+    pressao_class = (
+        "Hipotensão"
+        if pressao < 90
+        else (
+            "Normal"
+            if pressao <= 120
+            else "Pré-hipertensão" if pressao <= 139 else "Hipertensão"
+        )
+    )
+
+    glicose = (
+        "Hipoglicemia"
+        if glic < 70
+        else "Normal" if glic <= 99 else "Prediabetes" if glic <= 125 else "Diabetes"
+    )
+
+    return "; ".join(
+        [
+            f"Batimentos: {batimentos}",
+            f"Pressão: {pressao_class}",
+            f"Glicose: {glicose}",
+        ]
+    )
+
+
+def save():
+    verifica_arquivo(path)
+    registros = recebe_dados()
+
+    campos_num = ("Batimentos", "Pressão", "Glicose")
+    if not all(verifica_inteiro(rec[c]) for rec in registros for c in campos_num):
+        print("Erro: todos os valores devem ser inteiros.")
+        return
+
+    registros_classificados = [
+        {**rec, "Obs": classifica_entrada(rec)} for rec in registros
+    ]
+
+    with open(path, "w", newline="", encoding="utf-8") as file:
+        head = ["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"]
+        writer = csv.DictWriter(file, fieldnames=head)
+        writer.writeheader()
+        writer.writerows(registros_classificados)
+
+    print("Dados salvos com sucesso!")
+
 
 if __name__ == "__main__":
-    adicionar_exames()
+    save()

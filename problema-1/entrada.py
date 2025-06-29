@@ -4,7 +4,7 @@ from estoque import transportar_dados, salvar_dados
 def registrar_entrada(id_produto, quantidade):
     """Registrar a entrada de um produto no estoque"""
     
-    dados = transportar_dados('estoque.json')
+    dados = transportar_dados()
     produtos = dados.get('produtos', {})
 
     if str(id_produto) not in produtos:
@@ -21,8 +21,7 @@ def registrar_entrada(id_produto, quantidade):
     produto['entradas'].append(entrada)  
     produto['quant_estoque'] += quantidade  # Atualiza o estoque
     
-    salvar_dados('estoque.json', dados) 
+    salvar_dados(dados) 
     
-    print(f"\n \t | Entrada registrada: {quantidade} unidades do produto {id_produto}. |")
-    print(f"\n \t | Novo estoque do produto {id_produto}: {produto['quant_estoque']} | ") 
-
+    print(f"Entrada registrada: {quantidade} unidades do produto {id_produto}.")
+    print(f"Novo estoque do produto {id_produto}: {produto['quant_estoque']}") 
