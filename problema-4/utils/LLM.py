@@ -24,17 +24,17 @@ def LLM(content):
         api_key=os.environ.get("GROQ_API_KEY"),
     )
     
-    resp = client.chat.completions.create(
+    resp = client.chat.completions.create(  
         model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "user",
-                "content": content,
+                "content": "Me gere histórias de usuário sobre" + content,
             }
         ],
     )
     print(resp.choices[0].message.content)
-    # respJSON(content) // If you want to save the response in JSON format, uncomment this line
+    # respJSON(content) # If you want to save the response in JSON format, uncomment this line
 
 def respJSON(content):
     """function to interact with the API of Groq LLM and get a response based on the provided content by the user 
