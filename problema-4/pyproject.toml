@@ -25,6 +25,7 @@ dependencies = [
     # Autenticação e segurança
     "passlib>=1.7.0,<2.0.0",  # Para hash de senhas
     "pydantic-settings (>=2.10.0,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
 ]
 
 [project.optional-dependencies]
