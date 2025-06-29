@@ -1,7 +1,7 @@
 [project]
-name = "problema3"
+name = "sistema-recomendacao-carreiras"
 version = "0.1.0"
-description = "Orientador de carreira para estudantes"
+description = "Sistema de recomendação de carreiras usando paradigma lógico"
 authors = [
     {name = "Emilly Dias", email = "emillydias.aluno@unipampa.edu.br"},
     {name = "Eric Moraes", email = "ericmoraes.aluno@unipampa.edu.br"},
@@ -11,10 +11,65 @@ authors = [
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+]
+keywords = ["carreiras", "recomendação", "educação", "lógica"]
+
 dependencies = [
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "pandas>=2.0.0",
+    "sqlite3",
 ]
 
+[project.urls]
+Repository = "https://gitlab.com/RPIII/grupo-05"
+Documentation = "https://gitlab.com/RPIII/grupo-05/-/wikis/home"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=problema-3 --cov-report=term-missing"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

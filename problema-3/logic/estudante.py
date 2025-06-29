@@ -1,4 +1,5 @@
 from data.conexao import conectar
+from data.transacao import executar_consulta, executar_comando, transacao
 from logic.recomendacao import salvar_recomendacao
 
 def exibir_estudantes(estudantes):
@@ -11,12 +12,22 @@ def exibir_estudantes(estudantes):
 
 def buscar_estudante():
     """
-    Busca um estudante pelo nome.
+    Busca um estudante pelo nome e exibe seus dados completos.
     """
+    from utils.interface import Interface  # Importação movida para dentro da função
+    
     nome = input("\nDigite o nome do estudante: ").strip()
     estudantes = listar_estudantes()
     encontrados = [est for est in estudantes if nome.lower() in est[1].lower()]
-    exibir_estudantes(encontrados)
+    
+    if not encontrados:
+        print("\nNenhum estudante encontrado com esse nome.")
+        return
+    
+    print("\n=== Estudantes Encontrados ===")
+    for estudante in encontrados:
+        Interface.exibir_dados_estudante(estudante)
+        print()  # Linha em branco entre estudantes
 
 def coletar_opcoes(lista, titulo):
     """
@@ -86,57 +97,68 @@ def coletar_dados_estudante():
         'nome': nome,
         'interesses': interesses,
         'habilidades': habilidades,
-        'desempenho_escolar': desempenho
+        'desempenho': desempenho
     }
 
 def salvar_estudante(estudante):
     """
     Salva um estudante e seus relacionamentos nas tabelas intermediárias do banco de dados.
+    
+    Returns:
+        int: ID do estudante cadastrado
     """
     conn = conectar()
-    cursor = conn.cursor()
-    # 1. Salva o estudante (apenas nome)
-    cursor.execute(
-        "INSERT INTO estudantes (nome) VALUES (?)",
-        (estudante['nome'],)
-    )
-    estudante_id = cursor.lastrowid
+    try:
+        with transacao(conn) as cursor:
+            # Verifica se já existe um estudante com o mesmo nome
+            cursor.execute("SELECT id FROM estudantes WHERE LOWER(nome) = ?", (estudante['nome'].lower(),))
+            existing = cursor.fetchone()
+            if existing:
+                raise ValueError(f"Já existe um estudante cadastrado com o nome '{estudante['nome']}'")
 
-    # 2. Salva interesses
-    for interesse in estudante['interesses']:
-        cursor.execute("SELECT id FROM interesses WHERE interesse = ?", (interesse,))
-        row = cursor.fetchone()
-        if row:
-            interesse_id = row[0]
+            # 1. Salva o estudante (apenas nome)
             cursor.execute(
-                "INSERT INTO interesses_estudante (estudante_id, interesse_id) VALUES (?, ?)",
-                (estudante_id, interesse_id)
+                "INSERT INTO estudantes (nome) VALUES (?)",
+                (estudante['nome'],)
             )
+            estudante_id = cursor.lastrowid
 
-    # 3. Salva habilidades
-    for habilidade in estudante['habilidades']:
-        cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
-        row = cursor.fetchone()
-        if row:
-            habilidade_id = row[0]
-            cursor.execute(
-                "INSERT INTO habilidades_estudante (estudante_id, habilidade_id) VALUES (?, ?)",
-                (estudante_id, habilidade_id)
-            )
+            # 2. Salva interesses
+            for interesse in estudante['interesses']:
+                cursor.execute("SELECT id FROM interesses WHERE interesse = ?", (interesse,))
+                row = cursor.fetchone()
+                if row:
+                    interesse_id = row[0]
+                    cursor.execute(
+                        "INSERT INTO estudantes_interesses (estudante_id, interesse_id) VALUES (?, ?)",
+                        (estudante_id, interesse_id)
+                    )
 
-    # 4. Salva desempenho
-    for disciplina, nota in estudante['desempenho_escolar'].items():
-        cursor.execute("SELECT id FROM disciplinas WHERE disciplina = ?", (disciplina,))
-        row = cursor.fetchone()
-        if row:
-            disciplina_id = row[0]
-            cursor.execute(
-                "INSERT INTO desempenho_estudante (estudante_id, disciplina_id, nota) VALUES (?, ?, ?)",
-                (estudante_id, disciplina_id, nota)
-            )
+            # 3. Salva habilidades
+            for habilidade in estudante['habilidades']:
+                cursor.execute("SELECT id FROM habilidades WHERE habilidade = ?", (habilidade,))
+                row = cursor.fetchone()
+                if row:
+                    habilidade_id = row[0]
+                    cursor.execute(
+                        "INSERT INTO estudantes_habilidades (estudante_id, habilidade_id) VALUES (?, ?)",
+                        (estudante_id, habilidade_id)
+                    )
 
-    conn.commit()
-    conn.close()
+            # 4. Salva desempenho
+            for disciplina, nota in estudante['desempenho'].items():
+                cursor.execute("SELECT id FROM disciplinas WHERE disciplina = ?", (disciplina,))
+                row = cursor.fetchone()
+                if row:
+                    disciplina_id = row[0]
+                    cursor.execute(
+                        "INSERT INTO desempenho_estudante (estudante_id, disciplina_id, nota) VALUES (?, ?, ?)",
+                        (estudante_id, disciplina_id, nota)
+                    )
+            
+            return estudante_id
+    finally:
+        conn.close()
 
 def cadastrar_estudante():
     """
@@ -151,60 +173,85 @@ def cadastrar_estudante():
 
 def listar_estudantes():
     """
-    Retorna uma lista de tuplas (id, nome) de todos os estudantes cadastrados, ordenados por ID.
+    Retorna uma lista de tuplas com todos os dados dos estudantes (id, nome, interesses, habilidades, desempenho).
     """
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, nome FROM estudantes ORDER BY id ASC")
-    estudantes = cursor.fetchall()
-    conn.close()
-    return estudantes
+    try:
+        estudantes = []
+        # Busca estudantes básicos
+        rows = executar_consulta(conn, "SELECT id, nome FROM estudantes ORDER BY id ASC")
+        
+        for estudante_id, nome in rows:
+            # Busca interesses
+            interesses_rows = executar_consulta(conn, """
+                SELECT i.interesse FROM estudantes_interesses ie
+                JOIN interesses i ON ie.interesse_id = i.id
+                WHERE ie.estudante_id = ?
+            """, (estudante_id,))
+            interesses = [r[0] for r in interesses_rows]
+            
+            # Busca habilidades
+            habilidades_rows = executar_consulta(conn, """
+                SELECT h.habilidade FROM estudantes_habilidades he
+                JOIN habilidades h ON he.habilidade_id = h.id
+                WHERE he.estudante_id = ?
+            """, (estudante_id,))
+            habilidades = [r[0] for r in habilidades_rows]
+            
+            # Busca desempenho
+            desempenho_rows = executar_consulta(conn, """
+                SELECT d.disciplina, de.nota FROM desempenho_estudante de
+                JOIN disciplinas d ON de.disciplina_id = d.id
+                WHERE de.estudante_id = ?
+            """, (estudante_id,))
+            desempenho = {disciplina: nota for disciplina, nota in desempenho_rows}
+            
+            estudantes.append((estudante_id, nome, interesses, habilidades, desempenho))
+        
+        return estudantes
+    finally:
+        conn.close()
 
 def buscar_estudante_completo_por_nome(nome):
     """
-    Retorna um dicionário com todos os dados do estudante (nome, interesses, habilidades, desempenho)
+    Retorna uma tupla com todos os dados do estudante (id, nome, interesses, habilidades, desempenho)
     a partir das tabelas intermediárias, buscando pelo nome exato.
     """
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, nome FROM estudantes WHERE LOWER(nome) = ?", (nome.lower(),))
-    row = cursor.fetchone()
-    if not row:
+    try:
+        # Buscar estudante
+        rows = executar_consulta(conn, "SELECT id, nome FROM estudantes WHERE LOWER(nome) = ?", (nome.lower(),))
+        if not rows:
+            return None
+        estudante_id, nome = rows[0]
+
+        # Buscar interesses
+        rows = executar_consulta(conn, """
+            SELECT i.interesse FROM estudantes_interesses ie
+            JOIN interesses i ON ie.interesse_id = i.id
+            WHERE ie.estudante_id = ?
+        """, (estudante_id,))
+        interesses = [r[0] for r in rows]
+
+        # Buscar habilidades
+        rows = executar_consulta(conn, """
+            SELECT h.habilidade FROM estudantes_habilidades he
+            JOIN habilidades h ON he.habilidade_id = h.id
+            WHERE he.estudante_id = ?
+        """, (estudante_id,))
+        habilidades = [r[0] for r in rows]
+
+        # Buscar desempenho
+        rows = executar_consulta(conn, """
+            SELECT d.disciplina, de.nota FROM desempenho_estudante de
+            JOIN disciplinas d ON de.disciplina_id = d.id
+            WHERE de.estudante_id = ?
+        """, (estudante_id,))
+        desempenho = {disciplina: nota for disciplina, nota in rows}
+
+        return (estudante_id, nome, interesses, habilidades, desempenho)
+    finally:
         conn.close()
-        return None
-    estudante_id, nome = row
-
-    # Buscar interesses
-    cursor.execute("""
-        SELECT i.interesse FROM interesses_estudante ie
-        JOIN interesses i ON ie.interesse_id = i.id
-        WHERE ie.estudante_id = ?
-    """, (estudante_id,))
-    interesses = [r[0] for r in cursor.fetchall()]
-
-    # Buscar habilidades
-    cursor.execute("""
-        SELECT h.habilidade FROM habilidades_estudante he
-        JOIN habilidades h ON he.habilidade_id = h.id
-        WHERE he.estudante_id = ?
-    """, (estudante_id,))
-    habilidades = [r[0] for r in cursor.fetchall()]
-
-    # Buscar desempenho
-    cursor.execute("""
-        SELECT d.disciplina, de.nota FROM desempenho_estudante de
-        JOIN disciplinas d ON de.disciplina_id = d.id
-        WHERE de.estudante_id = ?
-    """, (estudante_id,))
-    desempenho = {disciplina: nota for disciplina, nota in cursor.fetchall()}
-
-    conn.close()
-    return {
-        'nome': nome,
-        'interesses': interesses,
-        'habilidades': habilidades,
-        'desempenho_escolar': desempenho
-    }
 
 def recomendar_carreiras(estudante_id, interesses, habilidades, desempenho):
     """

@@ -1,77 +1,167 @@
 from logic.estudante import salvar_estudante
 
-def popular_banco_com_estudantes():
+def popular_banco():
     """
-    Popula o banco de dados com 10 estudantes fictícios para testes.
-    Os interesses, habilidades e disciplinas devem já existir no banco.
+    Popula o banco de dados com dados de exemplo.
     """
-    exemplos = [
+    # Dados de exemplo
+    estudantes = [
         {
             'nome': 'Ana',
-            'interesses': ['Matemática', 'Tecnologia'],
-            'habilidades': ['Lógica', 'Programação'],
-            'desempenho_escolar': {'Matemática': 9.5, 'Português': 8.0, 'Física': 8.5}
+            'interesses': ['programação', 'matemática', 'lógica'],
+            'habilidades': ['resolução de problemas', 'análise de dados', 'programação'],
+            'desempenho': {
+                'Matemática': 9.5,
+                'Física': 8.5,
+                'Química': 7.5,
+                'Português': 8.0,
+                'História': 7.0,
+                'Geografia': 7.5,
+                'Inglês': 8.5,
+                'Biologia': 7.0
+            }
         },
         {
             'nome': 'Bruno',
-            'interesses': ['Biologia', 'Saúde'],
-            'habilidades': ['Empatia', 'Comunicação'],
-            'desempenho_escolar': {'Biologia': 9.0, 'Química': 7.5, 'Matemática': 6.0}
+            'interesses': ['design', 'arte', 'criatividade'],
+            'habilidades': ['design gráfico', 'ilustração', 'comunicação visual'],
+            'desempenho': {
+                'Matemática': 7.0,
+                'Física': 6.5,
+                'Química': 6.0,
+                'Português': 8.5,
+                'História': 8.0,
+                'Geografia': 7.5,
+                'Inglês': 8.0,
+                'Biologia': 6.5
+            }
         },
         {
             'nome': 'Carla',
-            'interesses': ['Artes', 'Comunicação'],
-            'habilidades': ['Criatividade', 'Desenho'],
-            'desempenho_escolar': {'Artes': 10.0, 'Português': 8.5, 'História': 7.0}
+            'interesses': ['medicina', 'biologia', 'saúde'],
+            'habilidades': ['análise', 'observação', 'comunicação'],
+            'desempenho': {
+                'Matemática': 8.0,
+                'Física': 7.5,
+                'Química': 9.0,
+                'Português': 8.5,
+                'História': 7.0,
+                'Geografia': 7.0,
+                'Inglês': 8.0,
+                'Biologia': 9.5
+            }
         },
         {
             'nome': 'Diego',
-            'interesses': ['Tecnologia', 'Engenharia'],
-            'habilidades': ['Programação', 'Resolução de Problemas'],
-            'desempenho_escolar': {'Matemática': 8.0, 'Física': 8.5, 'Química': 7.5}
+            'interesses': ['engenharia', 'física', 'matemática'],
+            'habilidades': ['cálculo', 'resolução de problemas', 'análise'],
+            'desempenho_escolar': {
+                'Matemática': 9.0,
+                'Física': 9.5,
+                'Química': 8.5,
+                'Português': 7.5,
+                'História': 6.5,
+                'Geografia': 7.0,
+                'Inglês': 7.5,
+                'Biologia': 7.0
+            }
         },
         {
             'nome': 'Eduarda',
-            'interesses': ['Saúde', 'Química'],
-            'habilidades': ['Empatia', 'Trabalho em Equipe'],
-            'desempenho_escolar': {'Biologia': 8.5, 'Química': 9.0, 'Matemática': 7.0}
+            'interesses': ['direito', 'história', 'comunicação'],
+            'habilidades': ['argumentação', 'pesquisa', 'escrita'],
+            'desempenho_escolar': {
+                'Matemática': 7.0,
+                'Física': 6.5,
+                'Química': 6.0,
+                'Português': 9.5,
+                'História': 9.0,
+                'Geografia': 8.5,
+                'Inglês': 8.0,
+                'Biologia': 7.0
+            }
         },
         {
             'nome': 'Felipe',
-            'interesses': ['História', 'Política'],
-            'habilidades': ['Comunicação', 'Análise Crítica'],
-            'desempenho_escolar': {'História': 9.0, 'Geografia': 8.0, 'Português': 7.5}
+            'interesses': ['marketing', 'comunicação', 'negócios'],
+            'habilidades': ['criatividade', 'persuasão', 'análise de mercado'],
+            'desempenho_escolar': {
+                'Matemática': 7.5,
+                'Física': 6.5,
+                'Química': 6.0,
+                'Português': 8.5,
+                'História': 8.0,
+                'Geografia': 8.5,
+                'Inglês': 8.5,
+                'Biologia': 6.5
+            }
         },
         {
             'nome': 'Giovana',
-            'interesses': ['Matemática', 'Engenharia'],
-            'habilidades': ['Lógica', 'Resolução de Problemas'],
-            'desempenho_escolar': {'Matemática': 9.0, 'Física': 9.5, 'Química': 8.0}
+            'interesses': ['psicologia', 'comportamento', 'comunicação'],
+            'habilidades': ['empatia', 'escuta ativa', 'análise'],
+            'desempenho_escolar': {
+                'Matemática': 7.0,
+                'Física': 6.0,
+                'Química': 6.5,
+                'Português': 9.0,
+                'História': 8.5,
+                'Geografia': 8.0,
+                'Inglês': 8.5,
+                'Biologia': 8.0
+            }
         },
         {
             'nome': 'Henrique',
-            'interesses': ['Tecnologia', 'Jogos'],
-            'habilidades': ['Programação', 'Criatividade'],
-            'desempenho_escolar': {'Matemática': 8.5, 'Artes': 7.5, 'Física': 7.0}
+            'interesses': ['administração', 'negócios', 'economia'],
+            'habilidades': ['liderança', 'planejamento', 'análise financeira'],
+            'desempenho_escolar': {
+                'Matemática': 8.5,
+                'Física': 7.0,
+                'Química': 6.5,
+                'Português': 8.0,
+                'História': 8.0,
+                'Geografia': 8.5,
+                'Inglês': 8.0,
+                'Biologia': 6.5
+            }
         },
         {
             'nome': 'Isabela',
-            'interesses': ['Comunicação', 'Artes'],
-            'habilidades': ['Desenho', 'Comunicação'],
-            'desempenho_escolar': {'Artes': 9.5, 'Português': 8.0, 'História': 8.5}
+            'interesses': ['arquitetura', 'design', 'arte'],
+            'habilidades': ['criatividade', 'desenho', 'planejamento'],
+            'desempenho_escolar': {
+                'Matemática': 8.0,
+                'Física': 7.5,
+                'Química': 6.5,
+                'Português': 8.5,
+                'História': 8.0,
+                'Geografia': 8.5,
+                'Inglês': 8.0,
+                'Biologia': 7.0
+            }
         },
         {
             'nome': 'João',
-            'interesses': ['Política', 'História'],
-            'habilidades': ['Análise Crítica', 'Comunicação'],
-            'desempenho_escolar': {'História': 8.5, 'Geografia': 8.0, 'Matemática': 6.5}
+            'interesses': ['ciência da computação', 'programação', 'matemática'],
+            'habilidades': ['lógica', 'resolução de problemas', 'programação'],
+            'desempenho_escolar': {
+                'Matemática': 9.0,
+                'Física': 8.5,
+                'Química': 7.0,
+                'Português': 7.5,
+                'História': 6.5,
+                'Geografia': 7.0,
+                'Inglês': 7.5,
+                'Biologia': 6.5
+            }
         }
     ]
 
-    for estudante in exemplos:
+    # Cadastra cada estudante
+    for estudante in estudantes:
         try:
             salvar_estudante(estudante)
-            print(f"Estudante {estudante['nome']} cadastrado.")
         except Exception as e:
             print(f"Erro ao cadastrar {estudante['nome']}: {e}")
 

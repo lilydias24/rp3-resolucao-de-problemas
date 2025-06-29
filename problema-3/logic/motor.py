@@ -1,247 +1,181 @@
 """
-Motor de inferência para o sistema de recomendação de carreiras.
+Módulo do motor de inferência do sistema de recomendação de carreiras.
+Responsável por processar os dados dos estudantes e gerar recomendações.
 """
-<<<<<<< HEAD
-from data.conexao import conectar
-=======
-from logic.logica import pode_seguir_carreira, carreiras_proximas, CARREIRAS, regra_interesse, regra_habilidade, regra_desempenho
->>>>>>> origin/development
+from typing import Dict, List, Tuple, Any
+from data.conexao import conectar, ConexaoErro
+from data.transacao import executar_consulta
+from logic.recomendacao import listar_regras
 
 class MotorDeInferencia:
     """
-    Motor de inferência que processa o perfil do estudante e retorna recomendações de carreiras.
-<<<<<<< HEAD
-    Agora busca as regras diretamente do banco de dados.
+    Classe que implementa o motor de inferência para recomendar carreiras.
     """
-
     def __init__(self):
-        pass
-
-    def _buscar_regras_do_banco(self):
         """
-        Busca todas as regras de carreira e seus relacionamentos do banco de dados.
-        Retorna uma lista de dicionários, um para cada carreira.
+        Inicializa o motor de inferência.
         """
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, carreira, justificativa FROM regras_carreira")
-        regras = []
-        for regra_id, carreira, justificativa in cursor.fetchall():
-            # Interesses
-            cursor.execute("""
-                SELECT i.interesse FROM interesses_regra ir
-                JOIN interesses i ON ir.interesse_id = i.id
-                WHERE ir.regra_id = ?
-            """, (regra_id,))
-            interesses = [row[0] for row in cursor.fetchall()]
-            # Habilidades
-            cursor.execute("""
-                SELECT h.habilidade FROM habilidades_regra hr
-                JOIN habilidades h ON hr.habilidade_id = h.id
-                WHERE hr.regra_id = ?
-            """, (regra_id,))
-            habilidades = [row[0] for row in cursor.fetchall()]
-            # Desempenho
-            cursor.execute("""
-                SELECT d.disciplina, dr.nota_min, dr.peso FROM desempenho_regra dr
-                JOIN disciplinas d ON dr.disciplina_id = d.id
-                WHERE dr.regra_id = ?
-            """, (regra_id,))
-            desempenho = {row[0]: {'nota_min': row[1], 'peso': row[2]} for row in cursor.fetchall()}
+        self.conn = conectar()
+        self.regras = self._carregar_regras()
 
-            regras.append({
-                'carreira': carreira,
-                'justificativa': justificativa,
-                'interesses': interesses,
-                'habilidades': habilidades,
-                'desempenho': desempenho
-            })
-        conn.close()
-        return regras
-
-=======
-    Implementa o paradigma lógico através de fatos e regras.
-    """
-    
-    def __init__(self):
-        """Inicializa o motor de inferência."""
-        pass
-    
-    def _explica_regra(self, estudante, carreira, tipo_regra, pontuacao):
+    def _carregar_regras(self) -> List[Dict[str, Any]]:
         """
-        Gera uma explicação sobre como uma regra foi aplicada.
+        Carrega as regras de recomendação do banco de dados.
+        
+        Returns:
+            Lista de regras carregadas
+            
+        Raises:
+            ConexaoErro: Se houver erro ao carregar regras
+        """
+        try:
+            return listar_regras()
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao carregar regras: {str(e)}")
+
+    def _calcular_score(self, estudante: Dict[str, Any], regra: Dict[str, Any]) -> float:
+        """
+        Calcula o score de uma carreira para um estudante baseado em uma regra.
         
         Args:
-            estudante (dict): Perfil do estudante
-            carreira (str): Nome da carreira
-            tipo_regra (str): Tipo da regra (interesse, habilidade, desempenho)
-            pontuacao (float): Pontuação obtida na regra
+            estudante: Dados do estudante
+            regra: Regra de recomendação
             
         Returns:
-            str: Explicação da regra
+            Score calculado (0-100)
         """
-        if tipo_regra == 'interesse':
-            interesses_carreira = CARREIRAS[carreira]['interesses']
-            interesses_estudante = set(estudante['interesses'])
-            interesses_faltantes = [i for i in interesses_carreira if i not in interesses_estudante]
-            return f"Regra de Interesse: Você tem {len(interesses_estudante)} dos {len(interesses_carreira)} interesses necessários. " + \
-                   (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos.")
+        score = 0.0
+        condicoes = regra['condicoes']
         
-        elif tipo_regra == 'habilidade':
-            habilidades_carreira = CARREIRAS[carreira]['habilidades']
-            habilidades_estudante = set(estudante['habilidades'])
-            habilidades_faltantes = [h for h in habilidades_carreira if h not in habilidades_estudante]
-            return f"Regra de Habilidade: Você tem {len(habilidades_estudante)} das {len(habilidades_carreira)} habilidades necessárias. " + \
-                   (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas.")
-        
-        elif tipo_regra == 'desempenho':
-            desempenho_carreira = CARREIRAS[carreira]['desempenho']
-            desempenho_estudante = estudante['desempenho_escolar']
-            materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
-            return f"Regra de Desempenho: Você tem {len(desempenho_carreira) - len(materias_faltantes)} das {len(desempenho_carreira)} notas necessárias. " + \
-                   (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-    
->>>>>>> origin/development
-    def processa_estudante(self, estudante):
+        # Avalia interesses
+        for interesse in condicoes['interesses']:
+            if interesse in estudante['interesses']:
+                score += 20
+                
+        # Avalia habilidades
+        for habilidade in condicoes['habilidades']:
+            if habilidade in estudante['habilidades']:
+                score += 20
+                
+        # Avalia desempenho escolar
+        for disciplina, nota_minima in condicoes['desempenho'].items():
+            if disciplina in estudante['desempenho']:
+                nota_estudante = estudante['desempenho'][disciplina]
+                peso = condicoes['pesos'].get(disciplina, 1.0)
+                if nota_estudante >= nota_minima:
+                    score += 20 * peso
+                
+        return min(score, 100.0)
+
+    def processa_estudante(self, estudante: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
-        Processa o perfil do estudante e retorna as carreiras recomendadas e próximas.
-        """
-<<<<<<< HEAD
-        regras = self._buscar_regras_do_banco()
-        recomendadas = []
-        proximas = []
-
-        for regra in regras:
-            carreira = regra['carreira']
-            justificativa = regra['justificativa']
-            interesses_necessarios = set(regra['interesses'])
-            habilidades_necessarias = set(regra['habilidades'])
-            desempenho_necessario = regra['desempenho']
-
-            interesses_estudante = set(estudante['interesses'])
-            habilidades_estudante = set(estudante['habilidades'])
-            desempenho_estudante = estudante['desempenho_escolar']
-
-            # Interesses
-            interesses_faltantes = list(interesses_necessarios - interesses_estudante)
-            interesses_atendidos = len(interesses_estudante & interesses_necessarios)
-
-            # Habilidades
-            habilidades_faltantes = list(habilidades_necessarias - habilidades_estudante)
-            habilidades_atendidas = len(habilidades_estudante & habilidades_necessarias)
-
-            # Desempenho
-            materias_faltantes = []
-            materias_atendidas = 0
-            for materia, info in desempenho_necessario.items():
-                nota_min = info['nota_min']
-                if materia in desempenho_estudante and desempenho_estudante[materia] >= nota_min:
-                    materias_atendidas += 1
-                else:
-                    materias_faltantes.append(materia)
-
-            explicacao = {
-                'Interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_necessarios)} interesses necessários. " +
-                             (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
-                'Habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_necessarias)} habilidades necessárias. " +
-                              (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
-                'Desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_necessario)} notas necessárias. " +
-                              (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-            }
-
-            # Score simples: soma dos percentuais de cada critério
-            score = 0
-            total_criterios = 3
-            if len(interesses_necessarios) > 0:
-                score += interesses_atendidos / len(interesses_necessarios)
-            else:
-                total_criterios -= 1
-            if len(habilidades_necessarias) > 0:
-                score += habilidades_atendidas / len(habilidades_necessarias)
-            else:
-                total_criterios -= 1
-            if len(desempenho_necessario) > 0:
-                score += materias_atendidas / len(desempenho_necessario)
-            else:
-                total_criterios -= 1
-            score = round((score / total_criterios) * 100, 2) if total_criterios > 0 else 0
-
-            # Critério para recomendar: todos os critérios atendidos
-            if not interesses_faltantes and not habilidades_faltantes and not materias_faltantes:
-                recomendadas.append({
-                    'carreira': carreira,
-                    'score': score,
-                    'explicacao': explicacao,
-                    'justificativa': justificativa
-                })
-            else:
-                proximas.append({
-                    'carreira': carreira,
-                    'score': score,
-                    'explicacao': explicacao,
-                    'justificativa': justificativa
-                })
-
-        # Ordena por score decrescente
-        recomendadas = [c for c in recomendadas if c['score'] > 0]
-        proximas = [c for c in proximas if c['score'] > 0]
-        recomendadas.sort(key=lambda x: x['score'], reverse=True)
-        proximas.sort(key=lambda x: x['score'], reverse=True)
-        return recomendadas, proximas
-=======
-        carreiras_recomendadas = []
-        lista_carreiras_proximas = []
+        Processa os dados de um estudante e gera recomendações de carreira.
         
-        
-        for carreira in CARREIRAS:
-            # verif se o estudante pode seguir a carreira
-            pode_seguir, pontuacao_total = pode_seguir_carreira(estudante, carreira)
+        Args:
+            estudante: Dicionário com dados do estudante
             
-            if pode_seguir:
-                # da as pontuações individuais para a explicação
-                _, pont_int = regra_interesse(estudante, carreira)
-                _, pont_hab = regra_habilidade(estudante, carreira)
-                _, pont_des = regra_desempenho(estudante, carreira)
-                
-                # calcula o que o estudante tem e o que falta
-                interesses_estudante = set(estudante['interesses'])
-                interesses_carreira = set(CARREIRAS[carreira]['interesses'])
-                interesses_faltantes = list(interesses_carreira - interesses_estudante)
-                interesses_atendidos = len(interesses_estudante.intersection(interesses_carreira))
-                
-                habilidades_estudante = set(estudante['habilidades'])
-                habilidades_carreira = set(CARREIRAS[carreira]['habilidades'])
-                habilidades_faltantes = list(habilidades_carreira - habilidades_estudante)
-                habilidades_atendidas = len(habilidades_estudante.intersection(habilidades_carreira))
-                
-                desempenho_carreira = CARREIRAS[carreira]['desempenho']
-                desempenho_estudante = estudante['desempenho_escolar']
-                materias_faltantes = [m for m in desempenho_carreira if m not in desempenho_estudante or desempenho_estudante[m] < 7]
-                materias_atendidas = len([m for m in desempenho_carreira if m in desempenho_estudante and desempenho_estudante[m] >= 7])
-                
-                explicacao = {
-                    'interesse': f"Regra de Interesse: Você tem {interesses_atendidos} dos {len(interesses_carreira)} interesses necessários. " + \
-                               (f"Faltam: {', '.join(interesses_faltantes)}" if interesses_faltantes else "Todos os interesses necessários foram atendidos."),
-                    'habilidade': f"Regra de Habilidade: Você tem {habilidades_atendidas} das {len(habilidades_carreira)} habilidades necessárias. " + \
-                                (f"Faltam: {', '.join(habilidades_faltantes)}" if habilidades_faltantes else "Todas as habilidades necessárias foram atendidas."),
-                    'desempenho': f"Regra de Desempenho: Você tem {materias_atendidas} das {len(desempenho_carreira)} notas necessárias. " + \
-                                 (f"Faltam notas adequadas em: {', '.join(materias_faltantes)}" if materias_faltantes else "Todas as notas necessárias foram atendidas.")
-                }
-                
-                carreiras_recomendadas.append({
-                    'carreira': carreira,
-                    'score': pontuacao_total,
-                    'explicacao': explicacao
-                })
+        Returns:
+            Tupla com (carreiras recomendadas, carreiras próximas)
+            
+        Raises:
+            ConexaoErro: Se houver erro ao processar
+        """
+        try:
+            # Calcula scores para cada carreira
+            scores = {}
+            for regra in self.regras:
+                carreira = regra['carreira']
+                if carreira not in scores:
+                    score = self._calcular_score(estudante, regra)
+                    scores[carreira] = {
+                        'carreira': carreira,
+                        'score': score,
+                        'justificativa': regra['justificativa'],
+                        'explicacao': {
+                            'interesses': f"Interesses compatíveis: {', '.join(set(regra['condicoes']['interesses']) & set(estudante['interesses']))}",
+                            'habilidades': f"Habilidades compatíveis: {', '.join(set(regra['condicoes']['habilidades']) & set(estudante['habilidades']))}",
+                            'desempenho': f"Desempenho adequado em: {', '.join(d for d, n in regra['condicoes']['desempenho'].items() if d in estudante['desempenho'] and estudante['desempenho'][d] >= n)}"
+                        }
+                    }
+            
+            # Converte para lista e ordena por score
+            scores_list = list(scores.values())
+            scores_list.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Separa em recomendadas (score >= 60) e próximas (score >= 40)
+            recomendadas = [s for s in scores_list if s['score'] >= 60]
+            proximas = [s for s in scores_list if 40 <= s['score'] < 60]
+            
+            return recomendadas, proximas
+            
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao processar estudante: {str(e)}")
+
+    def listar_regras(self) -> List[Dict[str, Any]]:
+        """
+        Lista todas as regras de carreira cadastradas.
         
-        # ordena as carreiras recomendadas por score
-        carreiras_recomendadas.sort(key=lambda x: x['score'], reverse=True)
+        Returns:
+            Lista de regras cadastradas
+            
+        Raises:
+            ConexaoErro: Se houver erro ao listar regras
+        """
+        try:
+            return listar_regras()
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao listar regras: {str(e)}")
+
+    def adicionar_regra(self, regra: Dict[str, Any]) -> None:
+        """
+        Adiciona uma nova regra de carreira.
         
-        # da as carreiras próximas
-        lista_carreiras_proximas = carreiras_proximas(estudante)
+        Args:
+            regra: Dicionário com os dados da regra
+            
+        Raises:
+            ConexaoErro: Se houver erro ao adicionar regra
+        """
+        try:
+            from logic.recomendacao import cadastrar_regra
+            carreira = regra['carreira']
+            criterios = regra['condicoes']
+            cadastrar_regra(carreira, criterios)
+            self.regras = self._carregar_regras()  # Recarrega as regras
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao adicionar regra: {str(e)}")
+
+    def atualizar_regra(self, regra_id: int, regra: Dict[str, Any]) -> None:
+        """
+        Atualiza uma regra de carreira existente.
         
-        return {
-            'carreiras_recomendadas': carreiras_recomendadas,
-            'carreiras_proximas': lista_carreiras_proximas
-        }
->>>>>>> origin/development
+        Args:
+            regra_id: ID da regra a ser atualizada
+            regra: Dicionário com os novos dados da regra
+            
+        Raises:
+            ConexaoErro: Se houver erro ao atualizar regra
+        """
+        try:
+            from logic.recomendacao import atualizar_regra
+            atualizar_regra(regra_id, regra)
+            self.regras = self._carregar_regras()  # Recarrega as regras
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao atualizar regra: {str(e)}")
+
+    def remover_regra(self, regra_id: int) -> None:
+        """
+        Remove uma regra de carreira.
+        
+        Args:
+            regra_id: ID da regra a ser removida
+            
+        Raises:
+            ConexaoErro: Se houver erro ao remover regra
+        """
+        try:
+            from logic.recomendacao import remover_regra
+            remover_regra(regra_id)
+            self.regras = self._carregar_regras()  # Recarrega as regras
+        except Exception as e:
+            raise ConexaoErro(f"Erro ao remover regra: {str(e)}")

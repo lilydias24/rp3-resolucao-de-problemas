@@ -1,20 +1,43 @@
 """
-Sistema de recomendação de carreiras usando paradigma lógico.
+Módulo principal do sistema.
 
-Este módulo executa o fluxo principal do sistema:
-- Coleta os interesses de um estudante via terminal
-- Coleta o desempenho acadêmico do estudante
-- Constrói os fatos lógicos a partir dos interesses e desempenho
-- Salva os dados no banco SQLite
-- Lista os estudantes registrados
+Contém a função main() que inicia o sistema.
 """
-from utils.sistema import executar_fluxo
+import sys
+import os
+from typing import Dict, List, Tuple, Any
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-def main():
+from data.conexao import conectar, ConexaoErro
+from data.criar_banco import criar_tabelas
+from logic.controlador import Controlador
+from utils.interface import Interface
+
+def main() -> None:
     """
-    Função principal que inicia o sistema.
+    Função principal do sistema.
     """
-    executar_fluxo()
+    try:
+        # Inicializa o banco
+        criar_tabelas()
+        
+        # Conecta ao banco
+        conectar()
+        
+        # Inicializa o controlador
+        controlador = Controlador()
+        
+        # Executa o sistema
+        controlador.executar()
+        
+    except ConexaoErro as e:
+        Interface.exibir_erro(f"Erro de conexão com o banco de dados: {str(e)}")
+        sys.exit(1)
+    except Exception as e:
+        Interface.exibir_erro(f"Erro inesperado: {str(e)}")
+        sys.exit(1)
+    finally:
+        Interface.exibir_sucesso("\nSistema finalizado com sucesso!")
 
 if __name__ == "__main__":
     main()
