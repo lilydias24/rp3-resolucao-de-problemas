@@ -1,36 +1,36 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from datetime import datetime
 
 class ProductBase(BaseModel):
     """Base schema com campos comuns"""
-    name: str = Field(..., min_length=3, max_length=255, example="Meu Produto")
+    name: str = Field(..., min_length=3, max_length=255, json_schema_extra={"example": "Meu Produto"})
     description: Optional[str] = Field(
         None,
         max_length=2000,
-        example="Um sistema para gerenciar histórias de usuário"
+        json_schema_extra={"example": "Um sistema para gerenciar histórias de usuário"}
     )
     value_proposition: Optional[str] = Field(
         None,
         alias="valueProposition",
         max_length=1000,
-        example="Automatizar a criação de user stories com IA"
+        json_schema_extra={"example": "Automatizar a criação de user stories com IA"}
     )
     platforms: Optional[List[str]] = Field(
         ["web"],
-        example=["web", "mobile"]
+        json_schema_extra={"example": ["web", "mobile"]}
     )
 
 class ProductCreate(ProductBase):
     """Schema para criação de produto (pode adicionar campos específicos)"""
     
-    @validator('name')
+    @field_validator('name')
     def name_must_contain_space(cls, v):
         if ' ' not in v:
             raise ValueError('O nome deve conter espaços')
         return v.title()
     
-    @validator('platforms')
+    @field_validator('platforms')
     def validate_platforms(cls, v):
         valid_platforms = ["web", "mobile", "desktop", "api"]
         for platform in v:
@@ -47,11 +47,9 @@ class ProductUpdate(BaseModel):
 
 class ProductInDB(ProductBase):
     """Schema completo retornado pela API"""
-    product_id: int = Field(..., example=42)
-    created_by: int = Field(..., example=123)
-    created_at: datetime = Field(..., example="2023-11-21T10:00:00Z")
+    product_id: int = Field(..., json_schema_extra={"example": 42})
+    created_by: int = Field(..., json_schema_extra={"example": 123})
+    created_at: datetime = Field(..., json_schema_extra={"example": "2023-11-21T10:00:00Z"})
     updated_at: Optional[datetime]
     
-    class Config:
-        orm_mode = True  # Permite conversão de ORM para schema
-        allow_population_by_field_name = True  # Permite usar alias
+    model_config = ConfigDict(from_attributes=True, validate_by_name=True)

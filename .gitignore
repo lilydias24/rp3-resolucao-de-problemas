@@ -9,3 +9,5 @@ poetry.lock
 =======
 .idea/
 >>>>>>> origin/development
+.coverage
+app.log

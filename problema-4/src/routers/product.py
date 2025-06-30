@@ -73,7 +73,7 @@ def create_product(
 
     # Criação do produto
     new_product = Product(
-        **product_data.dict(exclude_unset=True),  # Pega apenas os campos fornecidos
+        **product_data.model_dump(exclude_unset=True),  # Pega apenas os campos fornecidos
         created_by=current_user.user_id
     )
 
