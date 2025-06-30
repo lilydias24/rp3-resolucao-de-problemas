@@ -163,4 +163,7 @@ def popular_banco():
         try:
             salvar_estudante(estudante)
         except Exception as e:
-            pass  # Ignora erros de duplicação
+            print(f"Erro ao cadastrar {estudante['nome']}: {e}")
+
+# Para rodar, basta chamar:
+# popular_banco_com_estudantes()

@@ -2,14 +2,10 @@
 Módulo de conexão com o banco de dados SQLite.
 """
 import sqlite3
+<<<<<<< HEAD
 import os
-from typing import Optional
-
-class ConexaoErro(Exception):
-    """
-    Exceção personalizada para erros de conexão com o banco de dados.
-    """
-    pass
+=======
+>>>>>>> origin/development
 
 def conectar() -> sqlite3.Connection:
     """
@@ -21,24 +17,10 @@ def conectar() -> sqlite3.Connection:
     Raises:
         ConexaoErro: Se houver erro ao conectar
     """
-    try:
-        caminho_db = os.path.join(os.path.dirname(__file__), 'banco.db')
-        conn = sqlite3.connect(caminho_db)
-        conn.row_factory = sqlite3.Row
-        return conn
-    except sqlite3.Error as e:
-        raise ConexaoErro(f"Erro ao conectar ao banco de dados: {str(e)}")
+<<<<<<< HEAD
+    caminho_db = os.path.join(os.path.dirname(__file__), 'banco.db')
+    return sqlite3.connect(caminho_db)
 
-def fechar_conexao(conn: Optional[sqlite3.Connection]) -> None:
-    """
-    Fecha a conexão com o banco de dados.
-    
-    Args:
-        conn: Conexão a ser fechada
-    """
-    if conn:
-        try:
-            conn.close()
-        except sqlite3.Error:
-            pass  # Ignora erros ao fechar conexão
-
+=======
+    return sqlite3.connect("data/banco.db")
+>>>>>>> origin/development
