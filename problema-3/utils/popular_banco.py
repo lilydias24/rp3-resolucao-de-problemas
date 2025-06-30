@@ -10,7 +10,7 @@ def popular_banco():
             'nome': 'Ana',
             'interesses': ['programação', 'matemática', 'lógica'],
             'habilidades': ['resolução de problemas', 'análise de dados', 'programação'],
-            'desempenho_escolar': {
+            'desempenho': {
                 'Matemática': 9.5,
                 'Física': 8.5,
                 'Química': 7.5,
@@ -25,7 +25,7 @@ def popular_banco():
             'nome': 'Bruno',
             'interesses': ['design', 'arte', 'criatividade'],
             'habilidades': ['design gráfico', 'ilustração', 'comunicação visual'],
-            'desempenho_escolar': {
+            'desempenho': {
                 'Matemática': 7.0,
                 'Física': 6.5,
                 'Química': 6.0,
@@ -40,7 +40,7 @@ def popular_banco():
             'nome': 'Carla',
             'interesses': ['medicina', 'biologia', 'saúde'],
             'habilidades': ['análise', 'observação', 'comunicação'],
-            'desempenho_escolar': {
+            'desempenho': {
                 'Matemática': 8.0,
                 'Física': 7.5,
                 'Química': 9.0,

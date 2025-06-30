@@ -191,5 +191,60 @@
       "Sociologia": 7.0,
       "Filosofia": 6.0
     }
+  ],
+  [
+    374,
+    "kiki",
+    [
+      "Tecnologia"
+    ],
+    [],
+    {
+      "Matemática": 10.0,
+      "Física": 5.0,
+      "Química": 5.0,
+      "Biologia": 5.0,
+      "História": 5.0,
+      "Português": 5.0,
+      "Geografia": 5.0
+    }
+  ],
+  [
+    375,
+    "jo",
+    [
+      "Tecnologia"
+    ],
+    [
+      "Programação"
+    ],
+    {
+      "Matemática": 10.0,
+      "Português": 6.0
+    }
+  ],
+  [
+    376,
+    "liliam",
+    [
+      "Matemática"
+    ],
+    [],
+    {
+      "Matemática": 10.0
+    }
+  ],
+  [
+    377,
+    "fer",
+    [
+      "Matemática"
+    ],
+    [
+      "Programação"
+    ],
+    {
+      "Matemática": 10.0
+    }
   ]
 ]

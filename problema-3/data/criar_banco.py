@@ -3,6 +3,9 @@ Módulo de acesso ao banco de dados para estudantes.
 
 Responsável por criar a tabela, salvar e listar estudantes no banco SQLite.
 """
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.conexao import conectar, ConexaoErro
 

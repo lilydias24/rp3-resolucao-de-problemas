@@ -97,7 +97,7 @@ def coletar_dados_estudante():
         'nome': nome,
         'interesses': interesses,
         'habilidades': habilidades,
-        'desempenho_escolar': desempenho
+        'desempenho': desempenho
     }
 
 def salvar_estudante(estudante):
@@ -146,7 +146,7 @@ def salvar_estudante(estudante):
                     )
 
             # 4. Salva desempenho
-            for disciplina, nota in estudante['desempenho_escolar'].items():
+            for disciplina, nota in estudante['desempenho'].items():
                 cursor.execute("SELECT id FROM disciplinas WHERE disciplina = ?", (disciplina,))
                 row = cursor.fetchone()
                 if row:

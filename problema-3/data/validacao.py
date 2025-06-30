@@ -3,6 +3,7 @@ Módulo de validação e sanitização de dados do estudante.
 """
 import re
 from typing import Dict, List, Any, Tuple
+from data.conexao import conectar
 
 class ValidacaoErro(Exception):
     """Exceção personalizada para erros de validação."""
@@ -60,9 +61,6 @@ def validar_interesses(interesses: List[str]) -> List[str]:
         if interesse and len(interesse) <= 50:
             interesses_validos.append(interesse)
     
-    if not interesses_validos:
-        raise ValidacaoErro("Pelo menos um interesse válido é necessário")
-    
     return interesses_validos
 
 def validar_habilidades(habilidades: List[str]) -> List[str]:
@@ -89,9 +87,6 @@ def validar_habilidades(habilidades: List[str]) -> List[str]:
         habilidade = habilidade.strip()
         if habilidade and len(habilidade) <= 50:
             habilidades_validas.append(habilidade)
-    
-    if not habilidades_validas:
-        raise ValidacaoErro("Pelo menos uma habilidade válida é necessária")
     
     return habilidades_validas
 
@@ -127,9 +122,6 @@ def validar_desempenho(desempenho: Dict[str, float]) -> Dict[str, float]:
         except (ValueError, TypeError):
             continue
     
-    if not desempenho_validado:
-        raise ValidacaoErro("Pelo menos uma nota válida é necessária")
-    
     return desempenho_validado
 
 def validar_estudante(estudante: Dict[str, Any]) -> Tuple[str, List[str], List[str], Dict[str, float]]:
@@ -149,9 +141,48 @@ def validar_estudante(estudante: Dict[str, Any]) -> Tuple[str, List[str], List[s
         nome = sanitizar_nome(estudante.get('nome', ''))
         interesses = validar_interesses(estudante.get('interesses', []))
         habilidades = validar_habilidades(estudante.get('habilidades', []))
-        desempenho = validar_desempenho(estudante.get('desempenho_escolar', {}))
+        desempenho = validar_desempenho(estudante.get('desempenho', {}))
         
         return nome, interesses, habilidades, desempenho
         
     except Exception as e:
-        raise ValidacaoErro(f"Erro ao validar dados do estudante: {str(e)}") 
+        raise ValidacaoErro(f"Erro ao validar dados do estudante: {str(e)}")
+
+def validar_regra(regra: Dict[str, Any]) -> Tuple[str, str, List[str], List[str], Dict[str, float]]:
+    """
+    Valida todos os dados de uma regra de carreira.
+    
+    Args:
+        regra: Dicionário com dados da regra
+        
+    Returns:
+        Tupla com (carreira, justificativa, interesses, habilidades, desempenho) validados
+        
+    Raises:
+        ValidacaoErro: Se algum dado for inválido
+    """
+    try:
+        carreira = sanitizar_nome(regra.get('carreira', ''))
+        justificativa = regra.get('justificativa', '').strip()
+        if not justificativa:
+            raise ValidacaoErro("Justificativa não pode estar vazia")
+            
+        # Interesses são opcionais
+        interesses = []
+        if 'interesses' in regra and regra['interesses']:
+            interesses = validar_interesses(regra['interesses'])
+        
+        # Habilidades são opcionais
+        habilidades = []
+        if 'habilidades' in regra and regra['habilidades']:
+            habilidades = validar_habilidades(regra['habilidades'])
+        
+        # Desempenho é opcional
+        desempenho = {}
+        if 'desempenho' in regra and regra['desempenho']:
+            desempenho = validar_desempenho(regra['desempenho'])
+        
+        return carreira, justificativa, interesses, habilidades, desempenho
+        
+    except Exception as e:
+        raise ValidacaoErro(f"Erro ao validar dados da regra: {str(e)}") 

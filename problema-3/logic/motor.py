@@ -59,8 +59,8 @@ class MotorDeInferencia:
                 
         # Avalia desempenho escolar
         for disciplina, nota_minima in condicoes['desempenho'].items():
-            if disciplina in estudante['desempenho_escolar']:
-                nota_estudante = estudante['desempenho_escolar'][disciplina]
+            if disciplina in estudante['desempenho']:
+                nota_estudante = estudante['desempenho'][disciplina]
                 peso = condicoes['pesos'].get(disciplina, 1.0)
                 if nota_estudante >= nota_minima:
                     score += 20 * peso
@@ -94,7 +94,7 @@ class MotorDeInferencia:
                         'explicacao': {
                             'interesses': f"Interesses compatíveis: {', '.join(set(regra['condicoes']['interesses']) & set(estudante['interesses']))}",
                             'habilidades': f"Habilidades compatíveis: {', '.join(set(regra['condicoes']['habilidades']) & set(estudante['habilidades']))}",
-                            'desempenho': f"Desempenho adequado em: {', '.join(d for d, n in regra['condicoes']['desempenho'].items() if d in estudante['desempenho_escolar'] and estudante['desempenho_escolar'][d] >= n)}"
+                            'desempenho': f"Desempenho adequado em: {', '.join(d for d, n in regra['condicoes']['desempenho'].items() if d in estudante['desempenho'] and estudante['desempenho'][d] >= n)}"
                         }
                     }
             

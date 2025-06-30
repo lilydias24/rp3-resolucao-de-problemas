@@ -7,7 +7,7 @@ from typing import Dict, List, Any
 from data.conexao import ConexaoErro
 from logic.estudante import listar_estudantes
 from logic.recomendacao import listar_regras
-from logic.recomendacao import listar_recomendacoes
+from logic.recomendacao import listar_todas_recomendacoes
 
 class GeradorGraficos:
     """
@@ -22,7 +22,8 @@ class GeradorGraficos:
         plt.style.use('default')
         
         # Cria diretórios para os gráficos
-        self.base_dir = 'reports/graficos'
+        base_dir = os.path.dirname(__file__)
+        self.base_dir = os.path.join(base_dir, 'graficos')
         self.estudantes_dir = os.path.join(self.base_dir, 'estudantes')
         self.disciplinas_dir = os.path.join(self.base_dir, 'disciplinas')
         self.recomendacoes_dir = os.path.join(self.base_dir, 'recomendacoes')
@@ -82,6 +83,9 @@ class GeradorGraficos:
                 carreiras[carreira] = 0
             carreiras[carreira] += 1
         
+        if not carreiras:
+            return
+            
         plt.figure(figsize=(12, 6))
         plt.pie(carreiras.values(), labels=carreiras.keys(), autopct='%1.1f%%')
         plt.title('Distribuição de Recomendações por Carreira')
@@ -101,7 +105,7 @@ class GeradorGraficos:
             # Obtém dados
             estudantes = listar_estudantes()
             regras = listar_regras()
-            recomendacoes = listar_recomendacoes()
+            recomendacoes = listar_todas_recomendacoes()
             
             # Gera gráficos de desempenho por disciplina
             disciplinas = set()

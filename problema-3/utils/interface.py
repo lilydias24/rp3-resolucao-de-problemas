@@ -26,15 +26,70 @@ class Interface:
         Exibe o menu principal do sistema.
         
         Returns:
-            str: Opção escolhida pelo usuário
+            str: Opção selecionada pelo usuário
         """
         print(cabecalho("Sistema de Recomendação de Carreiras"))
-        print(menu_item("\t 1", "Cadastrar novo estudante"))
-        print(menu_item("\t 2", "Listar estudantes cadastrados"))
-        print(menu_item("\t 3", "Buscar estudante por nome"))
-        print(menu_item("\t 4", "Ver recomendações de carreira"))
-        print(menu_item("\t 5", "Menu do Gestor Acadêmico"))
-        print(menu_item("\t 6", "Sair do sistema"))
+        print(separador())
+        print("         1. Menu do Estudante")
+        print("         2. Menu do Gestor")
+        print("         3. Sair")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
+    def exibir_menu_gestor() -> str:
+        """
+        Exibe o menu do gestor.
+        
+        Returns:
+            str: Opção selecionada pelo usuário
+        """
+        print(cabecalho("Menu do Gestor Acadêmico"))
+        print(separador())
+        print("         1. Adicionar regra de carreira")
+        print("         2. Editar regra de carreira")
+        print("         3. Remover regra de carreira")
+        print("         4. Listar regras de carreira")
+        print("         5. Relatórios e Gráficos")
+        print("         6. Voltar ao menu principal")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
+    def exibir_menu_relatorios() -> str:
+        """
+        Exibe o menu de relatórios e gráficos.
+        
+        Returns:
+            str: Opção selecionada pelo usuário
+        """
+        print(cabecalho("Menu de Relatórios e Gráficos"))
+        print(separador())
+        print("         1. Relatório de Estudantes (CSV)")
+        print("         2. Relatório de Carreiras (CSV)")
+        print("         3. Relatório de Estatísticas (CSV)")
+        print("         4. Gráfico de Desempenho por Disciplina")
+        print("         5. Gráfico de Recomendações")
+        print("         6. Gerar Todos os Relatórios e Gráficos")
+        print("         7. Voltar ao menu anterior")
+        print(separador())
+        
+        return input(destaque(">>> Escolha uma opção: ")).strip()
+
+    @staticmethod
+    def exibir_menu_graficos() -> str:
+        """
+        Exibe o menu de gráficos.
+        
+        Returns:
+            str: Opção escolhida pelo usuário
+        """
+        print(cabecalho("Menu de Gráficos"))
+        print(menu_item("\t 1", "Gerar gráfico de estudantes"))
+        print(menu_item("\t 2", "Gerar gráfico de carreiras"))
+        print(menu_item("\t 3", "Voltar ao menu do gestor"))
         return input("\n" + destaque(">>> Escolha uma opção: ")).strip()
 
     @staticmethod
@@ -140,6 +195,50 @@ class Interface:
         for estudante in estudantes:
             Interface.exibir_dados_estudante(estudante)
             print("\n")
+
+    @staticmethod
+    def exibir_lista_regras(regras: List[Dict]) -> None:
+        """
+        Exibe a lista de regras de carreira de forma organizada.
+        
+        Args:
+            regras: Lista de dicionários com dados das regras
+        """
+        if not regras:
+            print(aviso("\nNenhuma regra de carreira cadastrada."))
+            return
+        
+        print(cabecalho("Lista de Regras de Carreira"))
+        print(separador())
+        
+        for regra in regras:
+            print(f"\n{destaque('ID:')} {regra['id']}")
+            print(f"{destaque('Carreira:')} {negrito(regra['carreira'])}")
+            print(f"{destaque('Justificativa:')} {regra['justificativa']}")
+            
+            print(f"\n{destaque('Interesses necessários:')}")
+            if regra['condicoes']['interesses']:
+                for interesse in regra['condicoes']['interesses']:
+                    print(f"  • {info(interesse)}")
+            else:
+                print(aviso("  Nenhum interesse necessário"))
+            
+            print(f"\n{destaque('Habilidades necessárias:')}")
+            if regra['condicoes']['habilidades']:
+                for habilidade in regra['condicoes']['habilidades']:
+                    print(f"  • {info(habilidade)}")
+            else:
+                print(aviso("  Nenhuma habilidade necessária"))
+            
+            print(f"\n{destaque('Desempenho necessário:')}")
+            if regra['condicoes']['desempenho']:
+                for disciplina, nota in regra['condicoes']['desempenho'].items():
+                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
+                    print(f"  • {disciplina}: {score(nota)} (peso: {peso})")
+            else:
+                print(aviso("  Nenhum desempenho necessário"))
+            
+            print(separador())
 
     @staticmethod
     def solicitar_nome_estudante() -> str:
@@ -294,49 +393,144 @@ class Interface:
             'nome': nome,
             'interesses': interesses,
             'habilidades': habilidades,
-            'desempenho_escolar': desempenho
+            'desempenho': desempenho
         }
 
     @staticmethod
-    def exibir_lista_regras(regras: List[Dict]) -> None:
+    def solicitar_id_regra() -> int:
         """
-        Exibe a lista de regras de carreira de forma organizada.
+        Solicita o ID da regra ao usuário.
+        
+        Returns:
+            int: ID da regra selecionada
+        """
+        while True:
+            try:
+                regra_id = int(input("\n" + destaque("Digite o ID da regra: ")).strip())
+                if regra_id > 0:
+                    return regra_id
+                else:
+                    print(erro("ID deve ser um número positivo!"))
+            except ValueError:
+                print(erro("Digite um número válido!"))
+
+    @staticmethod
+    def confirmar_remocao() -> bool:
+        """
+        Solicita confirmação para remover um item.
+        
+        Returns:
+            bool: True se o usuário confirmou a remoção, False caso contrário
+        """
+        return input("\n" + destaque("Tem certeza que deseja remover? (s/n): ")).lower() == 's'
+
+    @staticmethod
+    def editar_regra(regra: Dict) -> Dict:
+        """
+        Solicita dados para edição de uma regra de carreira.
         
         Args:
-            regras: Lista de dicionários com dados das regras
+            regra: Dicionário com os dados atuais da regra
+            
+        Returns:
+            Dicionário com os novos dados da regra
         """
-        if not regras:
-            print(aviso("\nNenhuma regra de carreira cadastrada."))
-            return
+        print(f"\n{destaque('Editar Regra de Carreira')}")
+        print(f"Pressione Enter para manter o valor atual entre parênteses")
         
-        print(cabecalho("Lista de Regras de Carreira"))
+        # Nome da carreira
+        nome_atual = regra.get('carreira', '')
+        nome = input(f"\nNome da carreira ({nome_atual}): ").strip()
+        if not nome:
+            nome = nome_atual
+        
+        # Justificativa
+        justificativa_atual = regra.get('justificativa', '')
+        justificativa = input(f"\nJustificativa ({justificativa_atual}): ").strip()
+        if not justificativa:
+            justificativa = justificativa_atual
+        
+        # Interesses
+        print("\nInteresses atuais:")
+        for interesse in regra.get('interesses', []):
+            print(f"- {interesse}")
+        
+        print("\nDigite os novos interesses (um por linha)")
+        print("Pressione Enter duas vezes para manter os interesses atuais")
+        interesses = []
+        while True:
+            interesse = input("> ").strip()
+            if not interesse:
+                if not interesses:  # Se não digitou nenhum interesse novo
+                    interesses = regra.get('interesses', [])  # Mantém os atuais
+                break
+            interesses.append(interesse)
+        
+        # Habilidades
+        print("\nHabilidades atuais:")
+        for habilidade in regra.get('habilidades', []):
+            print(f"- {habilidade}")
+        
+        print("\nDigite as novas habilidades (uma por linha)")
+        print("Pressione Enter duas vezes para manter as habilidades atuais")
+        habilidades = []
+        while True:
+            habilidade = input("> ").strip()
+            if not habilidade:
+                if not habilidades:  # Se não digitou nenhuma habilidade nova
+                    habilidades = regra.get('habilidades', [])  # Mantém as atuais
+                break
+            habilidades.append(habilidade)
+        
+        # Desempenho
+        print("\nDesempenho atual:")
+        for disciplina, nota in regra.get('desempenho', {}).items():
+            print(f"- {disciplina}: {nota}")
+        
+        print("\nDigite o novo desempenho (disciplina=nota)")
+        print("Pressione Enter duas vezes para manter o desempenho atual")
+        desempenho = {}
+        while True:
+            entrada = input("> ").strip()
+            if not entrada:
+                if not desempenho:  # Se não digitou nenhum desempenho novo
+                    desempenho = regra.get('desempenho', {})  # Mantém o atual
+                break
+            
+            try:
+                disciplina, nota = entrada.split('=')
+                disciplina = disciplina.strip()
+                nota = float(nota.strip())
+                if 0 <= nota <= 10:
+                    desempenho[disciplina] = nota
+                else:
+                    print("Nota deve estar entre 0 e 10")
+            except ValueError:
+                print("Formato inválido. Use: disciplina=nota")
+        
+        return {
+            'carreira': nome,
+            'justificativa': justificativa,
+            'interesses': interesses,
+            'habilidades': habilidades,
+            'desempenho': desempenho
+        }
+
+    @staticmethod
+    def exibir_menu_estudante() -> str:
+        """
+        Exibe o menu do estudante.
+        
+        Returns:
+            str: Opção selecionada pelo usuário
+        """
+        print(cabecalho("Menu do Estudante"))
+        print(separador())
+        print("         1. Cadastrar novo estudante")
+        print("         2. Listar estudantes cadastrados")
+        print("         3. Buscar estudante por nome")
+        print("         4. Ver recomendações de carreira")
+        print("         5. Voltar ao menu principal")
         print(separador())
         
-        for regra in regras:
-            print(f"\n{destaque('Carreira:')} {negrito(regra['carreira'])}")
-            if regra['justificativa']:
-                print(f"{destaque('Justificativa:')} {regra['justificativa']}")
-            
-            print(f"\n{destaque('Interesses:')}")
-            if regra['condicoes']['interesses']:
-                for interesse in regra['condicoes']['interesses']:
-                    print(f"  • {info(interesse)}")
-            else:
-                print(aviso("  Nenhum interesse requerido"))
-            
-            print(f"\n{destaque('Habilidades:')}")
-            if regra['condicoes']['habilidades']:
-                for habilidade in regra['condicoes']['habilidades']:
-                    print(f"  • {info(habilidade)}")
-            else:
-                print(aviso("  Nenhuma habilidade requerida"))
-            
-            print(f"\n{destaque('Desempenho Acadêmico:')}")
-            if regra['condicoes']['desempenho']:
-                for disciplina, nota_min in regra['condicoes']['desempenho'].items():
-                    peso = regra['condicoes']['pesos'].get(disciplina, 1.0)
-                    print(f"  • {disciplina}: {score(nota_min)} (peso: {peso})")
-            else:
-                print(aviso("  Nenhum desempenho requerido"))
-            
-            print(separador()) 
+        return input(destaque(">>> Escolha uma opção: ")).strip() 
