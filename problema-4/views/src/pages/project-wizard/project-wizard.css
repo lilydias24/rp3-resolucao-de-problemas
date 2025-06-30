@@ -1,0 +1,154 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+.wizard-container {
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.wizard-step p {
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.wizard-step h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.epic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.epic-card {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #667eea;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.epic-list-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding-right: 0.5rem;
+}
+
+.epic-card textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  resize: vertical;
+  background-color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+textarea,
+input {
+  background-color: #fff;
+  color: #333;  
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  max-width: 900px;
+  resize: vertical;
+}
+
+textarea:focus,
+input:focus {
+  border-color: #667eea;
+  outline: none;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.button-group button {
+  padding: 0.65rem 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+button.btn-secondary {
+  background-color: #aaa;
+  color: white;
+}
+
+button:not(.btn-secondary) {
+  background-color: #667eea;
+  color: white;
+}
+
+.prompt-customization label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: #444;
+}
+
+.error-message {
+  background-color: #ffe0e0;
+  color: #b00020;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.loading-overlay {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
