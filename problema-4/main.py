@@ -4,10 +4,10 @@ from utils.LLM import generate_epics_with_llm
 from epics import print_epics
 
 product_info = {
-    "nome": "Sistema de Gestão de alugueis de imoveis",
-    "descricao": "Um sistema para facilitar a gestão de alugueis.",
-    "personas": ["locador", "locatário"],
-    "proposta_valor": "Facilitar o processo de aluguel de imoveis."
+    "nome": "Sistema de Gestão de escola",
+    "descricao": "Um sistema para facilitar a gestão da escola.",
+    "personas": ["professor", "aluno", "diretor"],
+    "proposta_valor": "Facilitar gestão escolar."
 }
 
 while True:
