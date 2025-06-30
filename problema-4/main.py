@@ -14,6 +14,7 @@ app = FastAPI(
     version="0.1.0"
 )
 
+# Inclui todas as rotas definidas em src/routers/__init__.py
 app.include_router(router)
 
 @app.on_event("startup")
