@@ -12,21 +12,21 @@ def llm_aspect(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        conteudo = func(*args, **kwargs)
+        content = func(*args, **kwargs)
         client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "user",
-                    "conteudo": "Me gere histórias de usuário sobre " + conteudo + "sem markdown, apenas texto puro.",
+                    "content": content,
                 }
             ],
         )
-        print(resp.choices[0].message.conteudo)
-        return resp.choices[0].message.conteudo
+        print(resp.choices[0].message.content)
+        return resp.choices[0].message.content
     return wrapper
 
 @llm_aspect
-def gerar_historia_usuario(conteudo):
-    return conteudo
+def gerar_historia_usuario(content):
+    return "Me gere histórias de usuário sobre " + content + " sem markdown, apenas texto puro e enumeradas."
