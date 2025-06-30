@@ -5,6 +5,12 @@ from datetime import datetime
 from aspectlib import Aspect
 from sqlalchemy.orm import Session
 from typing import Dict, Any
+import aspectlib
+
+"""
+Aspectos de logging para registrar operações importantes da aplicação.
+Inclui handler customizado para logs em banco e aspecto para log de operações.
+"""
 
 print("DEBUG: Entrou em src/aspects/logging.py")
 print("DEBUG: PYTEST_CURRENT_TEST =", os.environ.get("PYTEST_CURRENT_TEST"))
@@ -12,6 +18,7 @@ print("DEBUG: PYTEST_CURRENT_TEST =", os.environ.get("PYTEST_CURRENT_TEST"))
 if "pytest" in sys.modules or os.environ.get("PYTEST_CURRENT_TEST"):
     print("DEBUG: DatabaseHandler DUMMY ativado para testes")
     class DatabaseHandler(logging.Handler):
+        """Handler dummy para testes (não faz nada)."""
         def __init__(self, db: Session):
             super().__init__()
         def emit(self, record):
@@ -46,6 +53,16 @@ else:
 @Aspect
 def log_operations(*args, **kwargs):
     """Aspecto principal para log de operações"""
-    # ... existing code ...
-    yield
-    # ...código depois...
+    result = yield
+    logger.info(f"Operação executada: {args[0].__class__.__name__ if args else 'função'}")
+    return result
+
+@aspectlib.Aspect
+def handle_errors(cutpoint, *args, **kwargs):
+    try:
+        result = yield
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro interno") from e

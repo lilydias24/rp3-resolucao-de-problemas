@@ -1,0 +1,15 @@
+id,module,name,file,doc,markers,status,message,duration
+tests/test_aspects_authorization.py::test_authorization_allows_admin,tests.test_aspects_authorization,test_authorization_allows_admin,tests\test_aspects_authorization.py,,,passed,,0.016820699907839298
+tests/test_aspects_authorization.py::test_authorization_denies_non_admin,tests.test_aspects_authorization,test_authorization_denies_non_admin,tests\test_aspects_authorization.py,,,passed,,0.00016659987159073353
+tests/test_aspects_authorization.py::test_authorization_denies_no_user,tests.test_aspects_authorization,test_authorization_denies_no_user,tests\test_aspects_authorization.py,,,passed,,0.00011569983325898647
+tests/test_aspects_error_handling.py::test_error_handling_aspect,tests.test_aspects_error_handling,test_error_handling_aspect,tests\test_aspects_error_handling.py,,,passed,,0.0005165999755263329
+tests/test_aspects_logging.py::test_logging_aspect_called,tests.test_aspects_logging,test_logging_aspect_called,tests\test_aspects_logging.py,,,passed,,0.0013892001006752253
+tests/test_auth.py::test_register_user_success,tests.test_auth,test_register_user_success,tests\test_auth.py,Testa o registro bem-sucedido de um novo usuário.,,passed,,0.2613224999513477
+tests/test_auth.py::test_register_user_duplicate_email,tests.test_auth,test_register_user_duplicate_email,tests\test_auth.py,Testa a falha ao registrar um usuário com um e-mail que já existe.,,passed,,0.005933600012212992
+tests/test_auth.py::test_login_success,tests.test_auth,test_login_success,tests\test_auth.py,Testa o login bem-sucedido de um usuário.,,passed,,0.22678539995104074
+tests/test_auth.py::test_login_invalid_password,tests.test_auth,test_login_invalid_password,tests\test_auth.py,Testa a falha de login com uma senha incorreta.,,passed,,0.2362168999388814
+tests/test_auth.py::test_login_nonexistent_user,tests.test_auth,test_login_nonexistent_user,tests\test_auth.py,Testa a falha de login com um usuário que não existe.,,passed,,0.006454900139942765
+tests/test_product.py::test_create_product_success,tests.test_product,test_create_product_success,tests\test_product.py,Testa a criação bem-sucedida de um produto com autenticação.,,passed,,0.4819414000958204
+tests/test_product.py::test_create_product_no_auth,tests.test_product,test_create_product_no_auth,tests\test_product.py,Testa a falha ao tentar criar um produto sem autenticação.,,passed,,0.004424199927598238
+tests/test_product.py::test_create_product_duplicate_name,tests.test_product,test_create_product_duplicate_name,tests\test_product.py,Testa a falha ao criar um produto com um nome que já existe para o mesmo usuário.,,passed,,0.2604938999284059
+tests/test_product.py::test_create_product_invalid_data,tests.test_product,test_create_product_invalid_data,tests\test_product.py,Testa a falha ao criar um produto com dados inválidos (nome sem espaço).,,passed,,0.2551532001234591
