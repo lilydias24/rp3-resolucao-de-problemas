@@ -5,3 +5,4 @@ dataset_saude.csv
 .vscode/
 poetry.lock
 .env
+.idea/

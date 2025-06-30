@@ -4,14 +4,7 @@ Módulo de interface com o usuário.
 Contém funções para interação com o usuário via terminal.
 """
 import json
-import sys
-import os
-
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from models.estudante import Estudante
-from utils.gestor_interface import DISCIPLINAS
 
 def coletar_interesses():
     """
@@ -71,73 +64,126 @@ def coletar_desempenho_academico(estudante):
     print("Digite suas notas (0-10) para cada disciplina.")
     print("Digite 'fim' para sair ou deixar uma nota em branco.")
     
+    disciplinas = [
+        "matematica", "portugues", "fisica", "quimica", "biologia",
+        "historia", "geografia", "ingles", "programacao", "artes"
+    ]
+    
     desempenho = {}
     
-    for disciplina in DISCIPLINAS:
+    for disciplina in disciplinas:
         while True:
             try:
-                nota = input(f"Nota em {disciplina} : ").strip().lower()
-                if nota == 'fim':
+                opcao = input(destaque("Digite o número da habilidade (ou 0 para terminar): ")).strip()
+                if opcao == "0":
                     break
-                
-                nota = float(nota)
-                if 0 <= nota <= 10:
-                    desempenho[disciplina] = nota
-                    break
+                idx = int(opcao) - 1
+                if 0 <= idx < len(HABILIDADES):
+                    habilidade = HABILIDADES[idx]
+                    if habilidade not in habilidades:
+                        habilidades.append(habilidade)
+                        print(sucesso(f"Habilidade '{habilidade}' adicionada!"))
+                    else:
+                        print(aviso(f"Habilidade '{habilidade}' já foi adicionada!"))
                 else:
-                    print("Por favor, digite uma nota entre 0 e 10.")
+                    print(erro("Opção inválida!"))
             except ValueError:
-                print("Por favor, digite um número válido ou 'fim'.")
+                print(erro("Digite um número válido!"))
         
-        if nota == 'fim':
-            break
-    
-    estudante.desempenho_escolar = desempenho
-    print("\n\t Notas: \n")
-    for disciplina, nota in desempenho.items():
-        print(f"-> {disciplina} : {nota}")
-    
-    return estudante
-
-
-def exibir_fatos(fatos):
-    """
-    Exibe os fatos lógicos extraídos do estudante.
-
-    Args:
-        fatos (list[str]): Lista de fatos lógicos.
-    """
-    print("\n\t Fatos lógicos extraídos : \n")
-    for fato in fatos:
-        print(f"- {fato} ")
-
-
-def exibir_estudantes(estudantes):
-    """
-    Exibe a lista de estudantes cadastrados.
-
-    Args:
-        estudantes (list[tuple]): Lista de tuplas com dados dos estudantes.
-    """
-    if not estudantes:
-        print("\nNenhum estudante cadastrado no sistema.")
-        return
-
-    print("\n=== Estudantes Cadastrados ===")
-    for est in estudantes:
-        print(f"\nID: {est[0]}")
-        print(f"Nome: {est[1]}")
+        # Desempenho acadêmico
+        print("\n" + destaque("Digite o desempenho acadêmico do estudante:"))
+        print(separador())
+        print("Digite as notas para cada disciplina (0-10)")
+        print("Deixe em branco para pular uma disciplina")
+        print(separador())
         
+        desempenho = {}
+        for disciplina in DISCIPLINAS:
+            while True:
+                nota = input(destaque(f"{disciplina}: ")).strip()
+                if not nota:
+                    break
+                try:
+                    nota = float(nota)
+                    if 0 <= nota <= 10:
+                        desempenho[disciplina] = nota
+                        break
+                    else:
+                        print(erro("A nota deve estar entre 0 e 10!"))
+                except ValueError:
+                    print(erro("Digite um número válido!"))
         
+        return {
+            'nome': nome,
+            'interesses': interesses,
+            'habilidades': habilidades,
+            'desempenho': desempenho
+        }
+
+    @staticmethod
+    def solicitar_id_regra() -> int:
+        """
+        Solicita o ID da regra ao usuário.
+        
+        Returns:
+            int: ID da regra selecionada
+        """
+        while True:
+            try:
+                regra_id = int(input("\n" + destaque("Digite o ID da regra: ")).strip())
+                if regra_id > 0:
+                    return regra_id
+                else:
+                    print(erro("ID deve ser um número positivo!"))
+            except ValueError:
+                print(erro("Digite um número válido!"))
+
+    @staticmethod
+    def confirmar_remocao() -> bool:
+        """
+        Solicita confirmação para remover um item.
+        
+        Returns:
+            bool: True se o usuário confirmou a remoção, False caso contrário
+        """
+        return input("\n" + destaque("Tem certeza que deseja remover? (s/n): ")).lower() == 's'
+
+    @staticmethod
+    def editar_regra(regra: Dict) -> Dict:
+        """
+        Solicita dados para edição de uma regra de carreira.
+        
+        Args:
+            regra: Dicionário com os dados atuais da regra
+            
+        Returns:
+            Dicionário com os novos dados da regra
+        """
+        print(f"\n{destaque('Editar Regra de Carreira')}")
+        print(f"Pressione Enter para manter o valor atual entre parênteses")
+        
+        # Nome da carreira
+        nome_atual = regra.get('carreira', '')
+        nome = input(f"\nNome da carreira ({nome_atual}): ").strip()
+        if not nome:
+            nome = nome_atual
+        
+        # Justificativa
+        justificativa_atual = regra.get('justificativa', '')
+        justificativa = input(f"\nJustificativa ({justificativa_atual}): ").strip()
+        if not justificativa:
+            justificativa = justificativa_atual
+        
+        # Interesses
         interesses = est[2] if est[2] else []
         print(f"Interesses: {interesses}")
         
-        
+        # Habilidades
         habilidades = est[3] if est[3] else []
         if habilidades:
             print(f"Habilidades: {habilidades}")
         
-        
+        # Desempenho Escolar
         desempenho = est[4] if est[4] else {}
         if desempenho:
             print("Desempenho Acadêmico:")

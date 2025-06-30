@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.administracao.gerenciarConta import (
     criar_conta,
     buscar_conta_por_id,
@@ -12,11 +13,16 @@ from src.administracao.gerenciarConta import (
 )
 
 # Caminho para o arquivo contas.csv
-CAMINHO_CONTAS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dados', 'contas.csv'))
+CAMINHO_CONTAS = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "dados", "contas.csv")
+)
+
 
 def test_criar_conta():
     # Teste de criação de conta válida
-    sucesso, mensagem = criar_conta(CAMINHO_CONTAS, "João", "joao@example.com", "senha1234")
+    sucesso, mensagem = criar_conta(
+        CAMINHO_CONTAS, "João", "joao@example.com", "senha1234"
+    )
     assert sucesso is True
     assert mensagem == "Conta criada com sucesso"
 
@@ -26,7 +32,9 @@ def test_criar_conta():
     assert contas[0]["email"] == "joao@example.com"
 
     # Teste de criação de conta com email já existente
-    sucesso, mensagem = criar_conta(CAMINHO_CONTAS, "Maria", "joao@example.com", "senha5678")
+    sucesso, mensagem = criar_conta(
+        CAMINHO_CONTAS, "Maria", "joao@example.com", "senha5678"
+    )
     assert sucesso is False
     assert mensagem == "Email já está em uso"
 
@@ -44,6 +52,7 @@ def test_buscar_conta_por_id():
     conta = buscar_conta_por_id(CAMINHO_CONTAS, "3")
     assert conta is None
 
+
 def test_editar_conta():
     # Teste de edição de conta existente
     sucesso, mensagem = editar_conta(CAMINHO_CONTAS, "1", "João Silva", None, None)
@@ -58,11 +67,13 @@ def test_editar_conta():
     assert sucesso is False
     assert mensagem == "Conta não encontrada"
 
+
 def test_excluir_conta():
     # Teste de exclusão de conta existente
     sucesso, mensagem = excluir_conta(CAMINHO_CONTAS, "1")
     assert sucesso is True
     assert mensagem == "Conta excluída com sucesso"
+
 
 def test_excluir_conta_inexistente():
     # Teste de exclusão de conta inexistente

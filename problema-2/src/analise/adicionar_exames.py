@@ -20,10 +20,7 @@ def verifica_arquivo(path: Path):
 def recebe_dados() -> List[Dict[str, str]]:
     """Lê Batimentos, Pressão e Glicose do usuário, anotando data/hora."""
     agora = datetime.now()
-    base = {
-        "Data": agora.strftime("%d/%m/%Y"),
-        "Hora": agora.strftime("%H:%M:%S")
-    }
+    base = {"Data": agora.strftime("%d/%m/%Y"), "Hora": agora.strftime("%H:%M:%S")}
     campos = ("Batimentos", "Pressão", "Glicose")
     entradas = {campo: input(f"Insira {campo}: ") for campo in campos}
     registro = {**base, **entradas, "Obs": ""}
@@ -45,52 +42,48 @@ def classifica_entrada(valor: Dict[str, str]) -> str:
     pressao = int(valor["Pressão"])
     glic = int(valor["Glicose"])
 
-
     batimentos = (
-        "Bradicardia" if bpm < 60 else
-        "Normal"   if bpm <= 100 else
-        "Taquicardia"
+        "Bradicardia" if bpm < 60 else "Normal" if bpm <= 100 else "Taquicardia"
     )
 
     pressao_class = (
-        "Hipotensão"         if pressao < 90 else
-        "Normal"             if pressao <= 120 else
-        "Pré-hipertensão"    if pressao <= 139 else
-        "Hipertensão"
+        "Hipotensão"
+        if pressao < 90
+        else (
+            "Normal"
+            if pressao <= 120
+            else "Pré-hipertensão" if pressao <= 139 else "Hipertensão"
+        )
     )
 
-    
     glicose = (
-        "Hipoglicemia" if glic < 70 else
-        "Normal"       if glic <= 99 else
-        "Prediabetes"  if glic <= 125 else
-        "Diabetes"
+        "Hipoglicemia"
+        if glic < 70
+        else "Normal" if glic <= 99 else "Prediabetes" if glic <= 125 else "Diabetes"
     )
 
-    return "; ".join([
-        f"Batimentos: {batimentos}",
-        f"Pressão: {pressao_class}",
-        f"Glicose: {glicose}"
-    ])
+    return "; ".join(
+        [
+            f"Batimentos: {batimentos}",
+            f"Pressão: {pressao_class}",
+            f"Glicose: {glicose}",
+        ]
+    )
 
 
 def save():
     verifica_arquivo(path)
     registros = recebe_dados()
 
-    
     campos_num = ("Batimentos", "Pressão", "Glicose")
     if not all(verifica_inteiro(rec[c]) for rec in registros for c in campos_num):
         print("Erro: todos os valores devem ser inteiros.")
         return
 
-
     registros_classificados = [
-        {**rec, "Obs": classifica_entrada(rec)}
-        for rec in registros
+        {**rec, "Obs": classifica_entrada(rec)} for rec in registros
     ]
 
-    
     with open(path, "w", newline="", encoding="utf-8") as file:
         head = ["Data", "Hora", "Batimentos", "Pressão", "Glicose", "Obs"]
         writer = csv.DictWriter(file, fieldnames=head)

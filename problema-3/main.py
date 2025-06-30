@@ -1,98 +1,43 @@
 """
-Sistema de recomendação de carreiras usando paradigma lógico.
+Módulo principal do sistema.
 
-Este módulo executa o fluxo principal do sistema:
-- Coleta os interesses de um estudante via terminal
-- Coleta o desempenho acadêmico do estudante
-- Constrói os fatos lógicos a partir dos interesses e desempenho
-- Salva os dados no banco SQLite
-- Lista os estudantes registrados
+Contém a função main() que inicia o sistema.
 """
+import sys
 import os
-from logic.motor import MotorDeInferencia, criar_estudante
-from utils.gestor_interface import executar_menu_gestor
+from typing import Dict, List, Tuple, Any
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-def exibir_menu():
-    """
-    Exibe o menu principal do sistema.
-    """
-    print("\n=== Sistema de Recomendação de Carreiras ===")
-    print("1. Cadastrar novo estudante")
-    print("2. Listar estudantes cadastrados")
-    print("3. Buscar estudante por nome")
-    print("4. Ver recomendações de carreira")
-    print("5. Menu do Gestor Acadêmico")
-    print("6. Sair")
-    return input("\nEscolha uma opção: ").strip()
+from data.conexao import conectar, ConexaoErro
+from data.criar_banco import criar_tabelas
+from logic.controlador import Controlador
+from utils.interface import Interface
 
-def main():
+def main() -> None:
     """
-    Função principal que inicia o sistema.
+    Função principal do sistema.
     """
-    CAMINHO_REGRAS = os.path.join(os.path.dirname(__file__), 'data', 'regras.json')
-    
-    while True:
-        opcao = exibir_menu()
+    try:
+        # Inicializa o banco
+        criar_tabelas()
         
-        if opcao == "1":  
-            estudante = criar_estudante(CAMINHO_REGRAS)
-            motor = MotorDeInferencia(CAMINHO_REGRAS)
-            recomendadas, proximas = motor.processa_estudante(estudante)
-            
-            print("\nCarreiras recomendadas:")
-            if recomendadas:
-                for c in recomendadas:
-                    print(f"\n- {c['carreira']} (score: {c['score']}%)")
-                    print(f"  Justificativa: {c['justificativa']}")
-                    print("\n  Explicação:")
-                    for tipo, explicacao in c['explicacao'].items():
-                        print(f"  - {explicacao}")
-            else:
-                print("\nNenhuma carreira recomendada no momento.")
-                print("Para ter uma carreira recomendada, você precisa atender TODOS os critérios")
-                print("(interesses, habilidades e desempenho) para pelo menos uma carreira.")
-            
-            print("\nCarreiras próximas:")
-            if proximas:
-                
-                proximas.sort(key=lambda x: x['score'], reverse=True)
-                
-                for c in proximas:
-                    print(f"\n- {c['carreira']} (score: {c['score']}%)")
-                    print(f"  Justificativa: {c['justificativa']}")
-                    print("\n  Explicação:")
-                    for tipo, explicacao in c['explicacao'].items():
-                        print(f"  - {explicacao}")
-                    
-                   
-                    print("\n  Sugestões para transformar em carreira recomendada:")
-                    for tipo, explicacao in c['explicacao'].items():
-                        if "Faltam" in explicacao:
-                            print(f"  - {explicacao.replace('Faltam', 'Adquira')}")
-            else:
-                print("Nenhuma carreira próxima no momento.")
+        # Conecta ao banco
+        conectar()
         
-        elif opcao == "2": #mock, só deixar o menu preenchido
-            print("\nFuncionalidade ainda não implementada.")
+        # Inicializa o controlador
+        controlador = Controlador()
         
-        elif opcao == "3":  #mock, só deixar o menu preenchido
-            print("\nFuncionalidade ainda não implementada.")
+        # Executa o sistema
+        controlador.executar()
         
-        elif opcao == "4":  #mock, só deixar o menu preenchido
-            print("\nFuncionalidade ainda não implementada.")
-        
-        elif opcao == "5": 
-            executar_menu_gestor(CAMINHO_REGRAS)
-        
-        elif opcao == "6":  
-            if input("\nTem certeza que deseja sair? (s/n): ").lower() == 's':
-                print("\nEncerrando o sistema...")
-                break
-        
-        else:
-            print("\nOpção inválida! Por favor, escolha uma opção válida.")
-        
-        input("\nPressione Enter para continuar...")
+    except ConexaoErro as e:
+        Interface.exibir_erro(f"Erro de conexão com o banco de dados: {str(e)}")
+        sys.exit(1)
+    except Exception as e:
+        Interface.exibir_erro(f"Erro inesperado: {str(e)}")
+        sys.exit(1)
+    finally:
+        Interface.exibir_sucesso("\nSistema finalizado com sucesso!")
 
 if __name__ == "__main__":
     main()
