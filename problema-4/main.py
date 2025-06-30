@@ -1,4 +1,6 @@
-from utils.LLM import LLM
+from aspects.LLM import *
+from utils.epics import Epic
+from utils.epics import print_epics
 
 while True:
     print("Bem vindo PO!, Escolha uma opção: ")
@@ -8,7 +10,7 @@ while True:
     opt = input()
     if opt == "1":
         print("Digite o conteúdo da mensagem:")
-        LLM(content = input())
+        gerar_historia_usuario(conteudo = input())
     if opt == "0":
         print("Saindo...")
         break

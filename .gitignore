@@ -4,8 +4,5 @@ __pycache__/
 dataset_saude.csv
 .vscode/
 poetry.lock
-<<<<<<< HEAD
 .env
-=======
 .idea/
->>>>>>> origin/development
