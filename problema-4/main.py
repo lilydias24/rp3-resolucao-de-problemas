@@ -10,7 +10,7 @@ while True:
     opt = input()
     if opt == "1":
         print("Digite o conteúdo da mensagem:")
-        gerar_historia_usuario(conteudo = input())
+        gerar_historia_usuario(content = input())
     if opt == "0":
         print("Saindo...")
         break
