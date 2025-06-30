@@ -6,7 +6,7 @@ from src.routers import router  # Importa o router consolidado
 
 # Configuração inicial
 setup_logging()
-init_db()  # Cria tabelas se não existirem
+#init_db()  # Cria tabelas se não existirem
 
 app = FastAPI(
     title="Sistema de Gerenciamento de Histórias",

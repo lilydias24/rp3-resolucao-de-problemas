@@ -5,7 +5,7 @@ from aspectlib import weave
 from src.db.models import Product, User
 from src.schemas.product import ProductCreate, ProductInDB  # Atualizado para ProductInDB
 from src.db.session import get_db
-from src.routers.auth import get_current_user 
+from src.routers.auth import get_current_user
 
 # Importações de aspectos
 from src.aspects.logging import log_operations
@@ -45,7 +45,7 @@ router = APIRouter(
         }
     }
 )
-@weave
+
 def create_product(
     product_data: ProductCreate,
     db: Session = Depends(get_db),
@@ -82,3 +82,5 @@ def create_product(
     db.refresh(new_product)
 
     return new_product  # Será automaticamente convertido para ProductInDB
+
+# TODO: Implementar endpoints para épicos, histórias, requisitos, backlog, etc. no futuro.

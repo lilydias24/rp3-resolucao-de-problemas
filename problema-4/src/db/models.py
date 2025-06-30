@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ARRAY, ForeignKey, Boolean, JSON
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, Boolean, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy import CheckConstraint
@@ -34,7 +34,7 @@ class Product(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text)
     value_proposition = Column(Text)
-    platforms = Column(ARRAY(String))   # Ex: ['web', 'mobile']
+    platforms = Column(JSON)   # Ex: ['web', 'mobile']
     created_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True))
