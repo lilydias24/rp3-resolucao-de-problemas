@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './project-wizard.css';
+import './product-creation.css';
 
-const ProjectWizard = () => {
+const ProductCreation = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -132,7 +132,7 @@ const ProjectWizard = () => {
   };
 
   return (
-    <div className="wizard-container">
+    <div className="product-container">
       {error && <div className="error-message">{error}</div>}
       {loading && (
         <div className="loading-overlay">
@@ -141,7 +141,7 @@ const ProjectWizard = () => {
       )}
 
       {step === 1 && (
-        <div className="wizard-step">
+        <div className="product-step">
           <h2>Configurar Geração LLM</h2>
           <p>Deseja utilizar um prompt pré-definido para a LLM, ou prefere personalizá-lo?</p>
           <div className="button-group">
@@ -159,7 +159,7 @@ const ProjectWizard = () => {
       )}
 
       {step === 2 && (
-        <div className="wizard-step">
+        <div className="product-step">
           <h2>Informações do Produto</h2>
           <input
             name="nome"
@@ -208,7 +208,7 @@ const ProjectWizard = () => {
       )}
 
       {step === 3 && emptyFields.length > 0 && (
-        <div className="wizard-step">
+        <div className="product-step">
           <h2>Atenção: Campos Incompletos</h2>
           <div className="warning-message">
             <p>
@@ -241,7 +241,7 @@ const ProjectWizard = () => {
       )}
 
       {step === 4 && (
-        <div className="wizard-step">
+        <div className="product-step">
           <h2>Revisar Épicos</h2>
           <p>Edite os épicos gerados abaixo se desejar fazer ajustes.</p>
 
@@ -271,7 +271,7 @@ const ProjectWizard = () => {
       )}
 
       {step === 5 && (
-        <div className="wizard-step">
+        <div className="product-step">
           <h2>Histórias de Usuário</h2>
           <p>Histórias de usuário geradas! Revise e edite abaixo para ajustar detalhes de negócio.</p>
           <textarea
@@ -290,4 +290,4 @@ const ProjectWizard = () => {
   );
 };
 
-export default ProjectWizard;
+export default ProductCreation;

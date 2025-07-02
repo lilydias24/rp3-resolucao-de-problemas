@@ -9,7 +9,7 @@ body {
   margin: 0;
 }
 
-.wizard-container {
+.product-container {
   background-color: white;
   padding: 2.5rem;
   border-radius: 1rem;
@@ -21,7 +21,7 @@ body {
   overflow: hidden;
 }
 
-.wizard-step {
+.product-step {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -29,13 +29,13 @@ body {
   justify-content: space-between;
 }
 
-.wizard-step p {
+.product-step p {
   color: #333;
   font-size: 1rem;
   font-weight: 500;
 }
 
-.wizard-step h2 {
+.product-step h2 {
   font-size: 1.5rem;
   color: #333;
   align-self: center;
@@ -104,7 +104,7 @@ input:focus {
   outline: none;
 }
 
-div.wizard-container {
+div.product-container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -160,7 +160,7 @@ button:not(.btn-secondary) {
 }
 
 .loading-overlay {
-    position: absolute; /* Posiciona o overlay em relação ao seu pai (.wizard-container) */
+    position: absolute; /* Posiciona o overlay em relação ao seu pai (.product-container) */
     top: 0;
     left: 0;
     width: 100%;

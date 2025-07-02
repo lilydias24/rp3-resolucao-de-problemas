@@ -1,11 +1,9 @@
-# backend/aspects/llm_aspects.py
-
 import os
 from groq import Groq
 from dotenv import load_dotenv
 from functools import wraps
 
-load_dotenv() # Garanta que o .env seja carregado no nível do módulo
+load_dotenv()
 
 def llm_aspect(func):
     """
@@ -84,4 +82,9 @@ def gerar_historia_usuario_prompt(product_info: str, epics_summary: str, user_pr
 def gerar_requisitos_prompt(user_stories: str, product_info: str):
     # Não está sendo usado ainda porque não sei como funcionará para integrar com o banco o que será salvo
     """Retorna o prompt para a LLM para criar requisitos funcionais. A chamada à LLM é feita pelo llm_aspect."""
-    return f"Com base nas seguintes histórias de usuário:\n\n{user_stories}\n\nE no produto com informações: {product_info}\n\n Gere uma lista de requisitos funcionais detalhados, cada um com um ID único, uma descrição clara e sua prioridade (Alta, Média, Baixa). Retorne apenas o texto dos requisitos, sem formatação de código JSON."
+    return (
+        f"Com base nas seguintes histórias de usuário:\n\n{user_stories}\n\nE no produto com informações: "
+        f" {product_info}\n\n Gere uma lista de requisitos funcionais detalhados, cada um com um ID único, uma "
+        f" descrição clara e sua prioridade (Alta, Média, Baixa). Retorne apenas o texto dos requisitos, sem "
+        f" formatação de código JSON."
+    )
