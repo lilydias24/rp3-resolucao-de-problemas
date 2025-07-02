@@ -15,17 +15,31 @@ const ProjectWizard = () => {
     proposta: '',
     canais: ''
   });
+  const [defaultForm, setDefaultForm] = useState({
+    nome: 'Sistema de Geração de Produtos com IA',
+    descricao: 'Uma plataforma inovadora para Product Owners gerenciarem o ciclo de vida do produto, desde a concepção até o backlog detalhado, utilizando inteligência artificial (LLMs) para automatizar a geração de épicos, histórias de usuário e requisitos funcionais.',
+    personas: 'Product Owner, Scrum Master, Desenvolvedor, Stakeholder, QA Tester',
+    proposta: 'Resolve a dor de cabeça inicial dos Product Owners ao acelerar a criação de documentação ágil (épicos, histórias, requisitos) através de IA, garantindo alinhamento e reduzindo o tempo de ramp-up do projeto. Ajuda a padronizar a qualidade das especificações do produto.',
+    canais: 'Web Application (Desktop & Mobile Responsive), REST API'
+  });
   const [epics, setEpics] = useState('');
   const [userStories, setUserStories] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [emptyFields, setEmptyFields] = useState([]);
   const API_BASE_URL = 'http://localhost:8000/llm-project'; // Ajuste conforme seu backend
+
+  const checkEmptyFields = () => {
+    const fields = ['nome', 'descricao', 'personas', 'proposta', 'canais'];
+    const currentEmptyFields = fields.filter(field => !form[field]);
+    return currentEmptyFields;
+  };
 
   const nextStep = () => {
     setError(null);
     setStep((s) => s + 1);
   };
+
   const prevStep = () => {
     setError(null);
     setStep((s) => s - 1);
@@ -35,18 +49,10 @@ const ProjectWizard = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const defaultFormValues = {
-    nome: 'Sistema de Geração de Produtos com IA',
-    descricao: 'Uma plataforma inovadora para Product Owners gerenciarem o ciclo de vida do produto, desde a concepção até o backlog detalhado, utilizando inteligência artificial (LLMs) para automatizar a geração de épicos, histórias de usuário e requisitos funcionais.',
-    personas: 'Product Owner, Scrum Master, Desenvolvedor, Stakeholder, QA Tester',
-    proposta: 'Resolve a dor de cabeça inicial dos Product Owners ao acelerar a criação de documentação ágil (épicos, histórias, requisitos) através de IA, garantindo alinhamento e reduzindo o tempo de ramp-up do projeto. Ajuda a padronizar a qualidade das especificações do produto.',
-    canais: 'Web Application (Desktop & Mobile Responsive), REST API'
-  };
-
   const handlePromptOption = (isDefault) => {
     setUseDefaultPrompt(isDefault);
     if (isDefault) {
-      setForm(defaultFormValues); // Preenche o formulário com os valores padrão
+      setForm(defaultForm); // Preenche o formulário com os valores padrão
     } else {
       setForm({ nome: '', descricao: '', personas: '', proposta: '', canais: '' });
       setCustomPrompt(''); // Limpa também o campo de prompt personalizado
@@ -54,11 +60,24 @@ const ProjectWizard = () => {
     nextStep();
   };
 
+  const handleAdvanceFromProductInfo = () => {
+      const missingFields = checkEmptyFields();
+      setEmptyFields(missingFields); // Armazena os campos vazios
+
+      if (missingFields.length > 0) {
+          // Se houver campos vazios, vá para o step 3 (alerta)
+          setStep(3);
+      } else {
+          handleGenerateEpics();
+          nextStep();
+      }
+  };
+
   const handleGenerateEpics = () => {
     console.log("handleGenerateEpics: Botão clicado!");
     const productInfo = `Nome: ${form.nome}. Descrição: ${form.descricao}. Personas: ${form.personas}. Proposta de Valor: ${form.proposta}. Canais: ${form.canais}.`;
     console.log("handleGenerateEpics: Dados do produto formatados:", productInfo);
-    generateContent('generate-epics', { productInfo }, setEpics);
+    generateContent('generate-epics', { productInfo, userPromptAdjustment: customPrompt }, setEpics);
     console.log("handleGenerateEpics: Chamada para generateContent feita.");
   };
 
@@ -117,7 +136,7 @@ const ProjectWizard = () => {
       {error && <div className="error-message">{error}</div>}
       {loading && (
         <div className="loading-overlay">
-          <p>Carregando...</p>
+          <div className="loading-spinner"></div>
         </div>
       )}
 
@@ -144,14 +163,14 @@ const ProjectWizard = () => {
           <h2>Informações do Produto</h2>
           <input
             name="nome"
-            placeholder="Nome do produto (ex: Plataforma de Gestão de Projetos Ágeis)"
+            placeholder={`Nome do Produto (ex: ${defaultForm.nome})`}
             value={form.nome}
             onChange={handleChange}
             disabled={loading}
           />
           <textarea
             name="descricao"
-            placeholder="Descrição detalhada do produto (ex: Uma plataforma para Product Owners gerenciarem o ciclo de vida do produto do conceito ao backlog, utilizando IA para auxiliar na geração de épicos e histórias de usuário.)"
+            placeholder={`Descrição detalhada do produto (ex: ${defaultForm.descricao})`}
             value={form.descricao}
             onChange={handleChange}
             disabled={loading}
@@ -159,14 +178,14 @@ const ProjectWizard = () => {
           />
           <input
             name="personas"
-            placeholder="Personas envolvidas (ex: Product Owner, Scrum Master, Desenvolvedor, Stakeholder)"
+            placeholder={`Personas envolvidas (ex: ${defaultForm.personas})`}
             value={form.personas}
             onChange={handleChange}
             disabled={loading}
           />
           <textarea
             name="proposta"
-            placeholder="Proposta de valor (problema que o produto resolve: ex: A dificuldade de Product Owners em iniciar projetos, criar épicos e gerar histórias de usuário de forma eficiente e alinhada, resultando em retrabalho e atrasos.)"
+            placeholder={`Proposta de valor (problema que o produto resolve: ex: ${defaultForm.proposta})`}
             value={form.proposta}
             onChange={handleChange}
             disabled={loading}
@@ -174,39 +193,48 @@ const ProjectWizard = () => {
           />
           <input
             name="canais"
-            placeholder="Canais/Plataformas (ex: Web, Mobile App)"
+            placeholder={`Canais/Plataformas (ex: ${defaultForm.canais})`}
             value={form.canais}
             onChange={handleChange}
             disabled={loading}
           />
           <div className="button-group">
             <button onClick={prevStep} disabled={loading}>Voltar</button>
-            <button onClick={nextStep} disabled={loading || !form.nome || !form.descricao}>Avançar</button>
+            <button onClick={handleAdvanceFromProductInfo} disabled={loading}>
+              {loading ? 'Gerando...' : 'Gerar Épicos'}
+            </button>
           </div>
         </div>
       )}
 
-      {step === 3 && (
+      {step === 3 && emptyFields.length > 0 && (
         <div className="wizard-step">
-          <h2>Geração de Épicos</h2>
-          {!useDefaultPrompt && (
-            <div className="prompt-customization">
-              <label htmlFor="customPrompt">Ajuste o prompt para a geração de épicos:</label>
-              <textarea
-                id="customPrompt"
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Ex: Foque mais em funcionalidades de relatórios para o Product Owner."
-                rows="3"
-                disabled={loading}
-              />
-            </div>
-          )}
-          <p>{useDefaultPrompt ? 'Clique para gerar épicos com base nas informações do produto usando o modelo padrão.' : 'Com seu prompt personalizado, a LLM gerará os épicos para o produto.'}</p>
+          <h2>Atenção: Campos Incompletos</h2>
+          <div className="warning-message">
+            <p>
+              <strong>Recomendação:</strong> Para uma geração de conteúdo mais precisa e específica pela Inteligência Artificial, é altamente recomendado preencher todos os campos de informações do produto.
+            </p>
+            <p>Os seguintes campos estão incompletos:</p>
+            <ul>
+              {emptyFields.map((field, index) => (
+                <li key={index}>{
+                    field === 'nome' ? 'Nome do Produto' :
+                    field === 'descricao' ? 'Descrição' :
+                    field === 'personas' ? 'Personas Envolvidas' :
+                    field === 'proposta' ? 'Proposta de Valor' :
+                    field === 'canais' ? 'Canais/Plataformas' :
+                    field
+                }</li>
+              ))}
+            </ul>
+            <p>Você pode voltar para preencher ou prosseguir com os dados atuais.</p>
+          </div>
           <div className="button-group">
-            <button onClick={prevStep} disabled={loading}>Voltar</button>
+            <button onClick={() => setStep(2)} disabled={loading} className="btn-secondary">
+              Voltar para Preencher
+            </button>
             <button onClick={handleGenerateEpics} disabled={loading}>
-              {loading ? 'Gerando Épicos...' : 'Gerar Épicos com LLM'}
+              Prosseguir Mesmo Assim
             </button>
           </div>
         </div>
@@ -234,7 +262,7 @@ const ProjectWizard = () => {
           </div>
 
           <div className="button-group">
-            <button onClick={prevStep} disabled={loading}>Voltar</button>
+            <button onClick={() => setStep(2)} disabled={loading}>Voltar</button>
             <button onClick={handleGenerateUserStories} disabled={loading || !epics}>
               {loading ? 'Gerando Histórias...' : 'Gerar Histórias de Usuário'}
             </button>

@@ -3,8 +3,9 @@ body {
   background: linear-gradient(to right, #667eea, #764ba2);
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: normal;
   margin: 0;
 }
 
@@ -14,14 +15,18 @@ body {
   border-radius: 1rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 900px;
+  max-width: 600px;
   margin: 2rem auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .wizard-step {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-height: 1.5rem;
+  justify-content: space-between;
 }
 
 .wizard-step p {
@@ -33,6 +38,7 @@ body {
 .wizard-step h2 {
   font-size: 1.5rem;
   color: #333;
+  align-self: center;
 }
 
 .epic-list {
@@ -43,6 +49,7 @@ body {
 }
 
 .epic-card {
+  width: 100%;
   background-color: white;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -62,6 +69,7 @@ body {
   gap: 1rem;
   margin: 1rem 0;
   padding-right: 0.5rem;
+  flex-grow: 1;
 }
 
 .epic-card textarea {
@@ -85,6 +93,7 @@ input {
   border: 1px solid #ccc;
   border-radius: 0.5rem;
   font-size: 1rem;
+  width: 100%;
   max-width: 900px;
   resize: vertical;
 }
@@ -95,10 +104,16 @@ input:focus {
   outline: none;
 }
 
+div.wizard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .button-group {
   display: flex;
   gap: 1rem;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .button-group button {
@@ -145,10 +160,64 @@ button:not(.btn-secondary) {
 }
 
 .loading-overlay {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-  text-align: center;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
+    position: absolute; /* Posiciona o overlay em relação ao seu pai (.wizard-container) */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Cobre 100% da largura e altura do pai */
+    background-color: rgba(255, 255, 255, 0.7); /* Menos opaco para ver o fundo */
+    display: flex; /* Para centralizar o conteúdo (texto e spinner) */
+    flex-direction: column; /* Para empilhar texto e spinner */
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; /* Centraliza horizontalmente */
+    z-index: 1000; /* Garante que fique por cima de tudo */
+    border-radius: 1rem; /* Herda o border-radius do container, ou defina igual */
+    /* Remova padding, margin-bottom e text-align, pois o flexbox fará a centralização */
+    /* color: #333; (pode remover, pois o spinner será estilizado separadamente) */
+}
+
+/* Adicione estilos para o círculo rodando (spinner) */
+.loading-spinner {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #667eea; /* Blue/Purple */
+    border-radius: 50%;
+    width: 60px; /* Tamanho do spinner */
+    height: 60px;
+    animation: spin 1s linear infinite; /* Animação de rotação */
+    margin-bottom: 1rem; /* Espaço entre o spinner e o texto "Carregando..." */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Opcional: Estilo para o texto "Carregando..." */
+.loading-overlay p {
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.warning-message {
+    background-color: #fffde7; /* Amarelo muito claro */
+    color: #8b6e00; /* Texto em tom de amarelo escuro */
+    border: 1px solid #ffe082; /* Borda amarela */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem; /* Espaço abaixo do alerta */
+    font-size: 0.95rem;
+}
+
+.warning-message p {
+    margin: 0.5rem 0;
+    color: inherit; /* Garante que o texto herde a cor do .warning-message */
+}
+
+.warning-message p:first-child {
+    margin-top: 0;
+}
+
+.warning-message p:last-child {
+    margin-bottom: 0;
 }
