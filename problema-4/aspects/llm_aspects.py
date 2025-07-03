@@ -80,11 +80,14 @@ def gerar_historia_usuario_prompt(product_info: str, epics_summary: str, user_pr
 
 @llm_aspect
 def gerar_requisitos_prompt(user_stories: str, product_info: str):
-    # Não está sendo usado ainda porque não sei como funcionará para integrar com o banco o que será salvo
-    """Retorna o prompt para a LLM para criar requisitos funcionais. A chamada à LLM é feita pelo llm_aspect."""
+    """Retorna o prompt para a LLM para criar requisitos funcionais em formato JSON. A chamada à LLM é feita pelo llm_aspect."""
     return (
         f"Com base nas seguintes histórias de usuário:\n\n{user_stories}\n\nE no produto com informações: "
-        f" {product_info}\n\n Gere uma lista de requisitos funcionais detalhados, cada um com um ID único, uma "
-        f" descrição clara e sua prioridade (Alta, Média, Baixa). Retorne apenas o texto dos requisitos, sem "
-        f" formatação de código JSON."
+        f" {product_info}\n\n Gere uma lista de requisitos funcionais detalhados. "
+        f"Retorne o resultado estritamente no formato JSON, como um array de objetos, onde cada objeto tem as chaves: "
+        f"'id' (string única, ex: 'RF-001'), 'descricao' (string clara do requisito), e 'prioridade' (string: 'Alta', 'Média', ou 'Baixa').\n"
+        f"Não inclua introduções, encerramentos, ou qualquer texto adicional fora do objeto JSON."
+        f"Exemplo de formato esperado: "
+        f'```json\n[\n  {{"id": "RF-001", "descricao": "O sistema deve permitir login de usuários.", "prioridade": "Alta"}},\n  {{"id": "RF-002", "descricao": "O sistema deve exibir a lista de produtos.", "prioridade": "Média"}}\n]\n```\n'
+        f"Certifique-se de que a saída seja apenas o JSON."
     )

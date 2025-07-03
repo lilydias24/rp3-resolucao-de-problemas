@@ -91,7 +91,7 @@ async def generate_user_stories(request_body: GenerateUserStoriesRequest):
 @router.post("/generate-requirements")
 async def generate_requirements(request_body: GenerateRequirementsRequest):
     """
-    Gera requisitos funcionais usando a LLM com base nas histórias de usuário, usando o aspecto (para texto livre).
+    Gera requisitos funcionais usando a LLM com base nas histórias de usuário, esperando uma saída JSON.
     """
     print("\n--- Requisição POST /llm-project/generate-requirements recebida! ---")
     print(f"Corpo da requisição para requisitos: {request_body.model_dump_json(indent=2)}")
@@ -108,12 +108,23 @@ async def generate_requirements(request_body: GenerateRequirementsRequest):
             product_info=product_info
         )
         print("Aspecto retornou conteúdo para requisitos.")
+
+        # Tentar carregar como JSON
         try:
-            parsed_requirements_obj = json.loads(requirements_content)
-            return parsed_requirements_obj
-        except json.JSONDecodeError:
-            print(f"AVISO: LLM não retornou JSON válido para requisitos. Retornando como texto simples. Conteúdo: {requirements_content[:200]}...")
-            return {"requirements_text": requirements_content, "warning": "A LLM não retornou JSON válido para requisitos. Exibindo como texto simples."}
+            # Remover possíveis blocos de código markdown se a LLM os incluir acidentalmente
+            if requirements_content.strip().startswith('```json') and requirements_content.strip().endswith('```'):
+                requirements_content = requirements_content.strip()[len('```json'):-len('```')].strip()
+
+            parsed_requirements = json.loads(requirements_content)
+            # Retorne o JSON parseado dentro da chave 'content' para consistência com os outros endpoints
+            return {"content": parsed_requirements}
+        except json.JSONDecodeError as json_err:
+            print(f"ERRO CRÍTICO: LLM não retornou JSON válido para requisitos: {json_err}. Conteúdo problemático: {requirements_content[:500]}...")
+            # Em caso de erro na decodificação JSON, retorne uma mensagem clara e o texto bruto se necessário para depuração
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Falha na análise JSON dos requisitos gerados: {json_err}. Tente novamente ou ajuste o prompt. Conteúdo bruto (parcial): {requirements_content[:200]}"
+            )
 
     except RuntimeError as e:
         print(f"Erro RuntimeError no aspecto ao gerar requisitos: {e}")

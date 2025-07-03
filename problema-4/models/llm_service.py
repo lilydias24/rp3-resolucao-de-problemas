@@ -1,6 +1,3 @@
-# backend/models/llm_service.py
-
-# Apenas as classes Pydantic (schemas) permanecem aqui
 from pydantic import BaseModel, Field
 from typing import List
 
