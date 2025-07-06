@@ -1,3 +1,7 @@
+"""
+Aspectos para integração com LLMs (Large Language Models) usando a API Groq.
+Inclui decorator para automatizar chamadas à LLM e utilitários para processar respostas JSON.
+"""
 import os
 import json
 import re
@@ -9,6 +13,13 @@ from utils.epics import Epic
 load_dotenv()
 
 def extract_json_from_response(content):
+    """
+    Extrai e limpa um JSON de uma resposta textual da LLM, removendo blocos de markdown e corrigindo listas incompletas.
+    Args:
+        content (str): Resposta textual da LLM.
+    Returns:
+        str: JSON limpo extraído da resposta.
+    """
     # remove blocos de cod markdown
     content = content.strip()
     if "```" in content:
@@ -40,6 +51,11 @@ def extract_json_from_response(content):
     return content  # fallback
 
 def llm_aspect(func):
+    """
+    Decorator para aplicar chamada à LLM como aspecto transversal.
+    A função decorada deve retornar o prompt a ser enviado à LLM.
+    O resultado é processado e convertido em objetos Epic.
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         prompt = func(*args, **kwargs)
@@ -64,6 +80,13 @@ def llm_aspect(func):
 
 @llm_aspect
 def generate_epics_with_llm(product_info: dict):
+    """
+    Gera um prompt para a LLM criar até 5 épicos para um produto, retornando-os como objetos Epic.
+    Args:
+        product_info (dict): Informações do produto (nome, descrição, personas, proposta de valor).
+    Returns:
+        list[Epic]: Lista de épicos gerados pela LLM.
+    """
     prompt = f"""
     Considere o seguinte produto:
     Nome: {product_info.get('nome', '')}
@@ -82,5 +105,12 @@ def generate_epics_with_llm(product_info: dict):
 
 @llm_aspect
 def gerar_historia_usuario(content):
+    """
+    Gera um prompt para a LLM criar histórias de usuário sobre o conteúdo fornecido.
+    Args:
+        content (str): Tema ou contexto para geração das histórias.
+    Returns:
+        list[Epic]: Lista de histórias de usuário geradas pela LLM.
+    """
     prompt = f"Me gere histórias de usuário sobre {content} sem markdown, apenas texto puro e enumeradas."
     return prompt 

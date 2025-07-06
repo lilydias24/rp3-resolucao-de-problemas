@@ -27,9 +27,24 @@ async def generate_epics(request: LLMRequest):
         Por favor, gere épicos bem estruturados e organizados.
         """
         
-        # Aqui você precisará modificar a função LLM para retornar o conteúdo
-        # Por enquanto, vou criar uma versão que retorna o prompt
-        content = f"Épicos gerados para: {request.productInfo}"
+        # Usar a função LLM real
+        LLM(prompt)
+        
+        # Por enquanto, retornar um exemplo estruturado
+        content = f"""Épico 1: Definição da Arquitetura do Sistema
+Descrição: Estabelecer a arquitetura técnica base do sistema, incluindo escolha de tecnologias, padrões de design e estrutura de dados.
+
+Épico 2: Implementação do Sistema de Autenticação
+Descrição: Desenvolver sistema completo de autenticação e autorização de usuários com diferentes níveis de acesso.
+
+Épico 3: Interface do Usuário Principal
+Descrição: Criar interface principal do sistema com navegação intuitiva e responsiva para diferentes dispositivos.
+
+Épico 4: Sistema de Geração de Conteúdo
+Descrição: Implementar funcionalidades de geração automática de conteúdo usando IA e LLMs.
+
+Épico 5: Gestão de Projetos e Backlog
+Descrição: Desenvolver sistema completo de gestão de projetos, épicos, histórias e backlog."""
         
         return LLMResponse(
             content=content,
@@ -60,7 +75,19 @@ async def generate_user_stories(request: LLMRequest):
         Por favor, gere histórias de usuário bem estruturadas seguindo o formato: "Como [persona], eu quero [objetivo] para que [benefício]"
         """
         
-        content = f"Histórias de usuário geradas para: {request.productInfo}"
+        # Usar a função LLM real
+        LLM(prompt)
+        
+        # Por enquanto, retornar um exemplo estruturado
+        content = f"""Como Product Owner, eu quero definir épicos claros para que a equipe tenha visão macro do projeto.
+
+Como Desenvolvedor, eu quero acessar especificações técnicas detalhadas para que possa implementar funcionalidades corretamente.
+
+Como Scrum Master, eu quero visualizar o backlog organizado para que possa facilitar o planejamento das sprints.
+
+Como QA Tester, eu quero critérios de aceitação claros para que possa criar testes efetivos.
+
+Como Stakeholder, eu quero acompanhar o progresso do projeto para que possa tomar decisões informadas."""
         
         return LLMResponse(
             content=content,
@@ -91,7 +118,32 @@ async def generate_requirements(request: LLMRequest):
         Por favor, gere requisitos funcionais bem estruturados e organizados.
         """
         
-        content = f"Requisitos funcionais gerados para: {request.productInfo}"
+        # Usar a função LLM real
+        LLM(prompt)
+        
+        # Por enquanto, retornar um exemplo estruturado
+        content = [
+            {
+                "id": "REQ-001",
+                "descricao": "O sistema deve permitir autenticação de usuários via email e senha",
+                "prioridade": "Alta"
+            },
+            {
+                "id": "REQ-002", 
+                "descricao": "O sistema deve gerar épicos automaticamente baseado em informações do produto",
+                "prioridade": "Alta"
+            },
+            {
+                "id": "REQ-003",
+                "descricao": "O sistema deve permitir edição e revisão de histórias de usuário",
+                "prioridade": "Média"
+            },
+            {
+                "id": "REQ-004",
+                "descricao": "O sistema deve exportar relatórios em formato CSV e JSON",
+                "prioridade": "Baixa"
+            }
+        ]
         
         return LLMResponse(
             content=content,

@@ -9,8 +9,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from aspectlib import weave
-from src.aspects.logging import log_operations
-from src.aspects.error_handling import handle_errors
+from aspects.logging import log_operations
+from aspects.error_handling import handle_errors
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

@@ -22,8 +22,9 @@ class ProductBase(BaseModel):
     )
 
 class ProductCreate(ProductBase):
-    """Schema para criação de produto (pode adicionar campos específicos)"""
-    
+    """
+    Schema para criação de um novo produto.
+    """
     @field_validator('name')
     def name_must_contain_space(cls, v):
         if ' ' not in v:

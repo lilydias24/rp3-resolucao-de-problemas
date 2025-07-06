@@ -1,3 +1,7 @@
+"""
+Configuração centralizada de logging para a aplicação FastAPI.
+Inclui setup de logging rotativo em arquivo, console e integração com handler customizado para logs no banco de dados.
+"""
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -5,6 +9,13 @@ from ..db.session import SessionLocal
 import os
 
 def setup_logging():
+    """
+    Configura o sistema de logging da aplicação.
+    - Cria diretório de logs se necessário.
+    - Adiciona handlers para arquivo rotativo e console.
+    - Em produção, adiciona handler customizado para salvar logs no banco de dados.
+    - Em ambiente de teste, evita logging em arquivo/banco.
+    """
     print("DEBUG: Chamou setup_logging()")
     print("DEBUG: PYTEST_CURRENT_TEST =", os.environ.get("PYTEST_CURRENT_TEST"))
     if os.environ.get("PYTEST_CURRENT_TEST"):
@@ -31,7 +42,7 @@ def setup_logging():
     
     # Só adiciona o handler customizado se NÃO estiver rodando testes
     if not os.environ.get("PYTEST_CURRENT_TEST"):
-        from ..aspects.logging import DatabaseHandler
+        from aspects.logging import DatabaseHandler
         db_handler = DatabaseHandler(SessionLocal())
         db_handler.setLevel(logging.INFO)
         db_formatter = logging.Formatter(

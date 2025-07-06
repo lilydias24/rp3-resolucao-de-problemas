@@ -8,8 +8,13 @@ from src.db.session import get_db
 from src.routers.auth import get_current_user
 
 # Importações de aspectos
-from src.aspects.logging import log_operations
-from src.aspects.error_handling import handle_errors
+from aspects.logging import log_operations
+from aspects.error_handling import handle_errors
+
+"""
+Define as rotas relacionadas a produtos na API FastAPI.
+Inclui endpoints para criação, listagem e manipulação de produtos.
+"""
 
 router = APIRouter(
     prefix="/products",
@@ -53,11 +58,12 @@ def create_product(
 ):
     """
     Cria um novo produto com os dados fornecidos.
-    
-    - **name**: Nome do produto (deve conter espaços)
-    - **description**: Descrição opcional
-    - **valueProposition**: Proposta de valor (opcional)
-    - **platforms**: Lista de plataformas (padrão: ["web"])
+    Args:
+        product_data (ProductCreate): Dados do produto.
+        db (Session): Sessão do banco de dados.
+        current_user (User): Usuário autenticado.
+    Returns:
+        ProductInDB: Produto criado.
     """
     # Verifica se o produto já existe
     existing_product = db.query(Product).filter(

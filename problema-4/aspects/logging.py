@@ -9,7 +9,7 @@ import aspectlib
 
 """
 Aspectos de logging para registrar operações importantes da aplicação.
-Inclui handler customizado para logs em banco e aspecto para log de operações.
+Inclui handler customizado para logs em banco e aspectos para log de operações e tratamento de erros.
 """
 
 print("DEBUG: Entrou em src/aspects/logging.py")
@@ -34,7 +34,7 @@ else:
     )
     logger = logging.getLogger(__name__)
     class DatabaseHandler(logging.Handler):
-        """Handler customizado para salvar logs no banco"""
+        """Handler customizado para salvar logs no banco de dados."""
         def __init__(self, db: Session):
             super().__init__()
             self.db = db
@@ -52,13 +52,18 @@ else:
 
 @Aspect
 def log_operations(*args, **kwargs):
-    """Aspecto principal para log de operações"""
+    """
+    Aspecto principal para logar operações de funções críticas.
+    """
     result = yield
     logger.info(f"Operação executada: {args[0].__class__.__name__ if args else 'função'}")
     return result
 
 @aspectlib.Aspect
 def handle_errors(cutpoint, *args, **kwargs):
+    """
+    Aspecto para tratamento centralizado de erros, convertendo exceções em HTTPException.
+    """
     try:
         result = yield
         return result

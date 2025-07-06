@@ -1,24 +1,42 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../utils/api';
 import './login-page.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
+        setError('');
+        setLoading(true);
+        
         const formData = new FormData(event.target);
         const email = formData.get("email");
         const password = formData.get("password");
-        console.log("Email:", email);
-        console.log("Senha:", password);
 
-        navigate("/home");
+        try {
+            const data = await api.login(email, password);
+            
+            // Armazena o token no localStorage
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_email', email);
+            navigate("/home");
+        } catch (err) {
+            setError(err.message || 'Erro no login');
+            console.error('Erro no login:', err);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <div className="login-card">
             <h2 className="login-title">Faça o Login</h2>
+
+            {error && <div className="error-message">{error}</div>}
 
             <form className="login-form" onSubmit={handleLogin}>
                 <div className="form-group">
@@ -29,6 +47,8 @@ const LoginPage = () => {
                             id="email"
                             name="email"
                             placeholder="exemplo@dominio.com"
+                            required
+                            disabled={loading}
                         />
                     </div>
                 </div>
@@ -41,15 +61,22 @@ const LoginPage = () => {
                             id="password"
                             name="password"
                             placeholder="••••••••"
+                            required
+                            disabled={loading}
                         />
                     </div>
                 </div>
 
                 <button
                     type="submit"
+                    disabled={loading}
                 >
-                    Entrar
+                    {loading ? 'Entrando...' : 'Entrar'}
                 </button>
+
+                <div className="register-link">
+                    Não tem uma conta? <button type="button" onClick={() => navigate('/register')}>Crie uma conta</button>
+                </div>
             </form>
         </div>
     )

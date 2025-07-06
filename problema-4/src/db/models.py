@@ -4,6 +4,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import CheckConstraint
 from .base import Base
 
+"""
+Define os modelos ORM do sistema para o SQLAlchemy.
+Cada classe representa uma tabela do banco de dados.
+"""
+
 class User(Base):
     """
     Modelo ORM para usuários do sistema.
