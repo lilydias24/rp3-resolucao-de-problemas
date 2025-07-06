@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 from src.config.logging_config import setup_logging
 from src.db import init_db
@@ -25,6 +26,15 @@ app = FastAPI(
     description="API para geração e gestão de histórias de usuário com LLMs",
     version="0.1.0",
     lifespan=lifespan
+)
+
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:5174"],  # Frontend URLs
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Inclui todas as rotas definidas em src/routers/__init__.py

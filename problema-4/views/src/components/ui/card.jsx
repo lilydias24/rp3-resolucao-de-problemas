@@ -1,6 +1,6 @@
 export function Card({ children, className = "" }) {
   return (
-    <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
+    <div className={`min-h-screen flex items-center justify-center bg-blue-600 ${className}`}>
       {children}
     </div>
   );
@@ -11,7 +11,7 @@ export function CardHeader({ children, className = "" }) {
 }
 
 export function CardTitle({ children, className = "" }) {
-  return <h2 className={`text-lg font-bold ${className}`}>{children}</h2>;
+  return <h2 className={`text-lg font-bold bg-blue-400 ${className}`}>{children}</h2>;
 }
 
 export function CardContent({ children, className = "" }) {
@@ -19,5 +19,5 @@ export function CardContent({ children, className = "" }) {
 }
 
 export function CardDescription({ children, className = "" }) {
-  return <p className={`text-gray-500 text-sm ${className}`}>{children}</p>;
+  return <p className={`text-gray-500 text-sm text-center ${className}`}>{children}</p>;
 }
