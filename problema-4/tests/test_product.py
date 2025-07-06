@@ -1,9 +1,19 @@
+"""
+Testes automatizados para as rotas e lógica de produtos da API.
+Inclui testes de autenticação, validação e regras de negócio para criação de produtos.
+"""
 import pytest
 from fastapi.testclient import TestClient
 
 # Helper para obter o token de autenticação
 def get_auth_token(client: TestClient) -> str:
-    """Cria um usuário e faz login para obter um token de acesso."""
+    """
+    Cria um usuário e faz login para obter um token de acesso.
+    Args:
+        client (TestClient): Cliente de teste FastAPI.
+    Returns:
+        str: Token JWT de autenticação.
+    """
     user_data = {
         "email": "product_test_user@example.com",
         "name": "Product Test User",
@@ -18,7 +28,9 @@ def get_auth_token(client: TestClient) -> str:
     return response.json()["access_token"]
 
 def test_create_product_success(client: TestClient):
-    """Testa a criação bem-sucedida de um produto com autenticação."""
+    """
+    Testa a criação bem-sucedida de um produto com autenticação.
+    """
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
     product_data = {
@@ -34,14 +46,18 @@ def test_create_product_success(client: TestClient):
     assert "product_id" in data
 
 def test_create_product_no_auth(client: TestClient):
-    """Testa a falha ao tentar criar um produto sem autenticação."""
+    """
+    Testa a falha ao tentar criar um produto sem autenticação.
+    """
     product_data = {"name": "Produto Sem Auth", "description": "..."}
     response = client.post("/products", json=product_data)
     assert response.status_code == 401
     assert response.json()["detail"] in ["Não autenticado", "Not authenticated", "Credenciais inválidas"]
 
 def test_create_product_duplicate_name(client: TestClient):
-    """Testa a falha ao criar um produto com um nome que já existe para o mesmo usuário."""
+    """
+    Testa a falha ao criar um produto com um nome que já existe para o mesmo usuário.
+    """
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
     product_data = {
@@ -58,9 +74,16 @@ def test_create_product_duplicate_name(client: TestClient):
     assert "Você já tem um produto com este nome" in response2.json()["detail"]
 
 def test_create_product_invalid_data(client: TestClient):
-    """Testa a falha ao criar um produto com dados inválidos (nome sem espaço)."""
+    """
+    Testa a falha ao criar um produto com dados inválidos (nome sem espaço).
+    """
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
     product_data = {"name": "ProdutoInvalido", "description": "..."}
     response = client.post("/products", headers=headers, json=product_data)
     assert response.status_code == 422  # Erro de validação do Pydantic 
+
+def test_create_product(client):
+    """
+    Testa a criação de um novo produto via API.
+    """

@@ -9,7 +9,9 @@ USER_DATA = {
 }
 
 def test_register_user_success(client: TestClient):
-    """Testa o registro bem-sucedido de um novo usuário."""
+    """
+    Testa o registro bem-sucedido de um novo usuário.
+    """
     response = client.post("/auth/register", json=USER_DATA)
     assert response.status_code == 201
     data = response.json()
@@ -17,14 +19,18 @@ def test_register_user_success(client: TestClient):
     assert "user_id" in data
 
 def test_register_user_duplicate_email(client: TestClient):
-    """Testa a falha ao registrar um usuário com um e-mail que já existe."""
+    """
+    Testa a falha ao registrar um usuário com um e-mail que já existe.
+    """
     # A primeira tentativa (no teste anterior) deve ter funcionado
     response = client.post("/auth/register", json=USER_DATA)
     assert response.status_code == 400
     assert "Email já cadastrado" in response.json()["detail"]
 
 def test_login_success(client: TestClient):
-    """Testa o login bem-sucedido de um usuário."""
+    """
+    Testa o login bem-sucedido de um usuário.
+    """
     login_data = {
         "username": USER_DATA["email"],
         "password": USER_DATA["password"]
@@ -36,7 +42,9 @@ def test_login_success(client: TestClient):
     assert data["token_type"] == "bearer"
 
 def test_login_invalid_password(client: TestClient):
-    """Testa a falha de login com uma senha incorreta."""
+    """
+    Testa a falha de login com uma senha incorreta.
+    """
     login_data = {
         "username": USER_DATA["email"],
         "password": "wrongpassword"
@@ -46,7 +54,9 @@ def test_login_invalid_password(client: TestClient):
     assert "Credenciais inválidas" in response.json()["detail"]
 
 def test_login_nonexistent_user(client: TestClient):
-    """Testa a falha de login com um usuário que não existe."""
+    """
+    Testa a falha de login com um usuário que não existe.
+    """
     login_data = {
         "username": "nouser@example.com",
         "password": "anypassword"
