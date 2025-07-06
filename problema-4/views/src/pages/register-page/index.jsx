@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import './register-page.css';
 
+function formatApiError(error) {
+    if (error && Array.isArray(error.detail)) {
+        return error.detail.map(
+            (e) => `${e.loc?.join('.') || ''}: ${e.msg}`
+        ).join('\n');
+    }
+    if (typeof error === 'string') return error;
+    if (error && error.detail) return error.detail;
+    return 'Erro desconhecido';
+}
+
 const RegisterPage = () => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
@@ -35,7 +46,7 @@ const RegisterPage = () => {
             // Redireciona para login após registro bem-sucedido
             navigate("/login");
         } catch (err) {
-            setError(err.message || 'Erro no registro');
+            setError(err);
             console.error('Erro no registro:', err);
         } finally {
             setLoading(false);
@@ -46,7 +57,11 @@ const RegisterPage = () => {
         <div className="register-card">
             <h2 className="register-title">Criar Conta</h2>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && (
+                <div className="error">
+                    {formatApiError(error)}
+                </div>
+            )}
 
             <form className="register-form" onSubmit={handleRegister}>
                 <div className="form-group">

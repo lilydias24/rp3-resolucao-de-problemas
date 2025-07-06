@@ -10,9 +10,12 @@ from aspects.db_session import log_db_session, log_db_query
 import aspectlib
 
 # Configuração do banco de dados PostgreSQL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/problema-4")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/problema4")
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"options": "-c client_encoding=utf8"}
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Aplicar aspecto de log de query em métodos principais do Session

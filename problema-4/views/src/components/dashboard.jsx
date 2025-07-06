@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-//import { Progress } from "./components/ui/progress"
+import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import {
   Package,
@@ -53,90 +53,20 @@ export default function Dashboard({
   useEffect(() => {
     const loadDashboardData = async () => {
       setIsLoading(true)
+      // Troque para o endereço real da sua API
+      const apiBase = "http://localhost:8000/dashboard"
 
-      // Simular delay de API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Dados mockados - em produção viriam da API
-      setMetrics({
-        totalProducts: 12,
-        totalEpics: 45,
-        totalStories: 187,
-        totalRequirements: 324,
-        pendingReviews: 8,
-        completedThisWeek: 23,
-      })
-
-      setRecentProducts([
-        {
-          id: "1",
-          name: "E-commerce Platform",
-          description: "Sistema completo de vendas online",
-          status: "active",
-          epicsCount: 8,
-          storiesCount: 32,
-          requirementsCount: 67,
-          lastActivity: "2 horas atrás",
-          progress: 75,
-        },
-        {
-          id: "2",
-          name: "Mobile Banking App",
-          description: "Aplicativo bancário para dispositivos móveis",
-          status: "active",
-          epicsCount: 6,
-          storiesCount: 24,
-          requirementsCount: 45,
-          lastActivity: "1 dia atrás",
-          progress: 60,
-        },
-        {
-          id: "3",
-          name: "CRM System",
-          description: "Sistema de gestão de relacionamento com cliente",
-          status: "draft",
-          epicsCount: 4,
-          storiesCount: 12,
-          requirementsCount: 18,
-          lastActivity: "3 dias atrás",
-          progress: 30,
-        },
+      const [metricsRes, productsRes, activitiesRes] = await Promise.all([
+        fetch(`${apiBase}/metrics`, { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }),
+        fetch(`${apiBase}/recent-products`, { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }),
+        fetch(`${apiBase}/recent-activities`, { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }),
       ])
 
-      setRecentActivities([
-        {
-          id: "1",
-          type: "story_approved",
-          description: "5 histórias de usuário foram aprovadas",
-          timestamp: "há 30 minutos",
-          productName: "E-commerce Platform",
-        },
-        {
-          id: "2",
-          type: "epic_generated",
-          description: "Novos épicos gerados via IA",
-          timestamp: "há 2 horas",
-          productName: "Mobile Banking App",
-        },
-        {
-          id: "3",
-          type: "requirement_created",
-          description: "12 requisitos funcionais criados",
-          timestamp: "há 4 horas",
-          productName: "E-commerce Platform",
-        },
-        {
-          id: "4",
-          type: "product_created",
-          description: "Novo produto cadastrado",
-          timestamp: "há 1 dia",
-          productName: "CRM System",
-        },
-      ])
-
+      setMetrics(await metricsRes.json())
+      setRecentProducts(await productsRes.json())
+      setRecentActivities(await activitiesRes.json())
       setIsLoading(false)
     }
-
     loadDashboardData()
   }, [])
 

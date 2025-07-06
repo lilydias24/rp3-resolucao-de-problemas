@@ -50,3 +50,20 @@ def setup_logging():
         )
         db_handler.setFormatter(db_formatter)
         logging.getLogger().addHandler(db_handler)
+
+    # Logger específico para queries do banco
+    query_logger = logging.getLogger("db_query")
+    query_logger.setLevel(logging.INFO)
+    query_logger.propagate = False  # Impede propagação para o root logger 
+
+    # Handler só para console (ou arquivo, se preferir)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    query_logger.addHandler(console_handler)
+
+    # Opcional: se quiser logar em arquivo
+    # file_handler = logging.FileHandler("db_queries.log")
+    # file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    # query_logger.addHandler(file_handler)
+
+    # NUNCA adicione handler de banco para o logger 'db_query'!

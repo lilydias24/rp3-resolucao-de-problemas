@@ -32,8 +32,13 @@ export const api = {
       }
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Erro desconhecido' }));
-        throw new Error(errorData.detail || `Erro ${response.status}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = await response.text();
+        }
+        throw errorData;
       }
       
       return await response.json();
@@ -54,8 +59,13 @@ export const api = {
     });
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Erro no login');
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = await response.text();
+      }
+      throw errorData;
     }
     
     return await response.json();

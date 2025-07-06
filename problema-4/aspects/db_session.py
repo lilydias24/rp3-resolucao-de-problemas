@@ -20,16 +20,19 @@ def log_db_session(cutpoint, *args, **kwargs):
         logging.error(f"[DB-SESSION] Erro na sessão: {e}")
         raise
 
+# Crie um logger separado para queries
+query_logger = logging.getLogger("db_query")
+
 @aspectlib.Aspect
 def log_db_query(cutpoint, *args, **kwargs):
     """
     Aspecto para logar execução de queries SQL (execute, commit, rollback).
     """
-    logging.info(f"[DB-QUERY] Executando query: args={args}, kwargs={kwargs}")
+    query_logger.info(f"[DB-QUERY] Executando query: args={args}, kwargs={kwargs}")
     try:
         result = yield
-        logging.info("[DB-QUERY] Query executada com sucesso")
+        query_logger.info("[DB-QUERY] Query executada com sucesso")
         return result
     except Exception as e:
-        logging.error(f"[DB-QUERY] Erro ao executar query: {e}")
+        query_logger.error(f"[DB-QUERY] Erro ao executar query: {e}")
         raise 

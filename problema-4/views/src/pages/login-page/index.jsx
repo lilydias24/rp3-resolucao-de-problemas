@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import './login-page.css';
 
+function formatApiError(error) {
+  if (error && Array.isArray(error.detail)) {
+    return error.detail.map(
+      (e) => `${e.loc?.join('.') || ''}: ${e.msg}`
+    ).join('\n');
+  }
+  if (typeof error === 'string') return error;
+  if (error && typeof error.detail === 'string') return error.detail;
+  return 'Erro desconhecido';
+}
+
 const LoginPage = () => {
     const navigate = useNavigate();
     const [error, setError] = useState('');
@@ -25,7 +36,7 @@ const LoginPage = () => {
             localStorage.setItem('user_email', email);
             navigate("/home");
         } catch (err) {
-            setError(err.message || 'Erro no login');
+            setError(err);
             console.error('Erro no login:', err);
         } finally {
             setLoading(false);
@@ -36,7 +47,11 @@ const LoginPage = () => {
         <div className="login-card">
             <h2 className="login-title">Faça o Login</h2>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && (
+                <div className="error">
+                    {formatApiError(error)}
+                </div>
+            )}
 
             <form className="login-form" onSubmit={handleLogin}>
                 <div className="form-group">
