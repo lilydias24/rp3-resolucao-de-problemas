@@ -43,7 +43,8 @@ def notify_on_event(cutpoint, *args, **kwargs):
     Aspecto que envia uma notificação (print e e-mail) sempre que a função decorada é executada com sucesso.
     """
     result = yield
-    mensagem = f"Notificação: {cutpoint.__name__} executada com sucesso."
+    nome = getattr(cutpoint, '__name__', cutpoint.__class__.__name__)
+    mensagem = f"Notificação: {nome} executada com sucesso."
     # Notificação por print
     print(mensagem)
     # Notificação por e-mail

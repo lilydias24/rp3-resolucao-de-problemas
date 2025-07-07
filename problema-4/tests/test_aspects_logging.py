@@ -10,7 +10,7 @@ from src.db.models import User
 from sqlalchemy.orm import Session
 
 @pytest.fixture
-def fake_user():
+def admin_user():
     """
     Fixture que retorna um usuário admin fake para os testes.
     """
@@ -18,21 +18,7 @@ def fake_user():
     user.role = 'admin'
     return user
 
-@pytest.fixture
-def fake_db():
-    """
-    Fixture que retorna um banco de dados fake para os testes.
-    """
-    class DummyDB(Session):
-        def query(self, *args, **kwargs): return self
-        def filter(self, *args, **kwargs): return self
-        def first(self): return None
-        def add(self, obj): pass
-        def commit(self): pass
-        def refresh(self, obj): pass
-    return DummyDB()
-
-def test_logging_aspect_called(fake_db, fake_user):
+def test_logging_aspect_called(db_session, admin_user):
     """
     Garante que o aspecto de logging é chamado ao criar um produto.
     """
@@ -42,6 +28,8 @@ def test_logging_aspect_called(fake_db, fake_user):
         valueProposition="prop",
         platforms=["web"]
     )
-    with patch("src.aspects.logging.logger.info") as mock_log:
-        create_product(product_data, db=fake_db, current_user=fake_user)
+    db_session.add(admin_user)
+    db_session.commit()
+    with patch("aspects.logging.logger.info") as mock_log:
+        create_product(product_data, db=db_session, current_user=admin_user)
         assert mock_log.called, "O aspecto de logging não foi chamado!"
