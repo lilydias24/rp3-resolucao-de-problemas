@@ -1,6 +1,8 @@
 # Ignora arquivos e pastas desnecessários
 poetry.lock
 .env
+*.env
+.env.*
 
 # Python
 __pycache__/
