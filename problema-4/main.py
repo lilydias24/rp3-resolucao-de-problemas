@@ -1,5 +1,5 @@
 from aspects.LLM import generate_epics_with_llm
-from utils.epics import print_epics
+from src.utils.epics import print_epics
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
