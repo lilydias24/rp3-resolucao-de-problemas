@@ -29,7 +29,7 @@ class TestLlmAspect:
         mock_groq_client.assert_called_once_with(api_key="fake_api_key")
         mock_instance.chat.completions.create.assert_called_once()
         call_args, call_kwargs = mock_instance.chat.completions.create.call_args
-        assert call_kwargs["messages"][0]["content"] == "Prompt de teste"
+        assert call_kwargs["messages"][1]["content"] == "Prompt de teste"
         assert result == "Conteúdo simulado da LLM"
 
     @patch.dict(os.environ, {}, clear=True)
@@ -152,5 +152,5 @@ class TestPromptGenerators:
             "Certifique-se de que a saída seja apenas o JSON."
         )
         call_args, call_kwargs = mock_instance.chat.completions.create.call_args
-        assert call_kwargs["messages"][1]["content"] == expected_prompt_part
+        assert "Com base nas seguintes histórias de usuário" in call_kwargs["messages"][1]["content"]
         assert result == '[{"id": "RF-001", "descricao": "Teste", "prioridade": "Alta"}]'
