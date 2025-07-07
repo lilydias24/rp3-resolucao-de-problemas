@@ -63,8 +63,11 @@ def llm_aspect(func):
     return wrapper
 
 @llm_aspect
-def generate_epics_with_llm(product_info: dict):
-    prompt = f"""
+def generate_epics_with_llm(product_info: dict, custom_prompt: str = None):
+    if custom_prompt and custom_prompt.strip():
+        prompt = custom_prompt
+    else:
+        prompt = f"""
     Considere o seguinte produto:
     Nome: {product_info.get('nome', '')}
     Descrição: {product_info.get('descricao', '')}

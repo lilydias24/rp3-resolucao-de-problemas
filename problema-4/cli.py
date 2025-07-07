@@ -45,8 +45,9 @@ def main_cli():
             custom_prompt = input("\nPrompt customizado (deixe vazio para usar padrão): ")
             
             if custom_prompt.strip():
-                # aqui vai o prompt customizado
-                print("Funcionalidade de prompt customizado será implementada em breve!")
+                print("\nGerando épicos com prompt customizado...")
+                epics = generate_epics_with_llm(product_info, custom_prompt)
+                print_epics(epics)
             else:
                 print("\nGerando épicos com prompt padrão...")
                 epics = generate_epics_with_llm(product_info)
