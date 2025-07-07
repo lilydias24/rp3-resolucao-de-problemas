@@ -2,10 +2,9 @@ import logging
 import os
 import sys
 from datetime import datetime
-from aspectlib import Aspect
 from sqlalchemy.orm import Session
 from typing import Dict, Any
-import aspectlib
+from functools import wraps
 
 """
 Aspectos de logging para registrar operações importantes da aplicação.
@@ -50,24 +49,11 @@ else:
             self.db.add(log_entry)
             self.db.commit()
 
-@Aspect
-def log_operations(*args, **kwargs):
-    """
-    Aspecto principal para logar operações de funções críticas.
-    """
-    result = yield
-    logger.info(f"Operação executada: {args[0].__class__.__name__ if args else 'função'}")
-    return result
-
-@aspectlib.Aspect
-def handle_errors(cutpoint, *args, **kwargs):
-    """
-    Aspecto para tratamento centralizado de erros, convertendo exceções em HTTPException.
-    """
-    try:
-        result = yield
+def logging_aspect(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logging.info(f"[ASPECT] Entrando em {func.__name__} com args={args}, kwargs={kwargs}")
+        result = func(*args, **kwargs)
+        logging.info(f"[ASPECT] Saindo de {func.__name__} com resultado={result}")
         return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erro interno") from e
+    return wrapper

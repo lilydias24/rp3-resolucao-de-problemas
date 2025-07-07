@@ -30,7 +30,8 @@ const LoginPage = () => {
 
         try {
             const data = await api.login(email, password);
-            
+            console.log("Please")
+
             // Armazena o token no localStorage
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_email', email);

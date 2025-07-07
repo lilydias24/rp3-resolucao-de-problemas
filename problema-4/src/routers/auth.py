@@ -9,12 +9,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from aspectlib import weave
-from aspects.logging import log_operations
+from aspects.logging import logging_aspect
 from aspects.error_handling import handle_errors
+from aspects.notification import notification_aspect
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-SECRET_KEY = "supersecretkey"  # Em produção, use variável de ambiente
+SECRET_KEY = "supersecretkey"  # Em produção
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -42,6 +43,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @router.post("/register", response_model=UserInDB, status_code=status.HTTP_201_CREATED)
+@handle_errors
+@logging_aspect
+@notification_aspect
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """
     Registra um novo usuário no sistema.
@@ -66,6 +70,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 @router.post("/login")
+@handle_errors
+@logging_aspect
+@notification_aspect
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Realiza o login do usuário e retorna um token de acesso JWT.
@@ -80,6 +87,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     db.commit()
     return {"access_token": access_token, "token_type": "bearer"}
 
+@handle_errors
+@logging_aspect
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     """
     Recupera o usuário autenticado a partir do token JWT.

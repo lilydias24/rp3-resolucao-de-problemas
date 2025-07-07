@@ -6,9 +6,9 @@ Este projeto é uma API desenvolvida em FastAPI para cadastro de produtos, auten
 
 - Cadastro e autenticação de usuários
 - Cadastro de produtos
-- (Em breve) Gestão de épicos, histórias, backlog, etc.
+- Geração de épicos, histórias e requisitos via LLM
 - Testes automatizados com cobertura e relatórios visuais
-- **Aspectos (AOP):** logging, tratamento de erros e autorização por papel
+- **Aspectos (AOP):** logging, tratamento de erros, autorização por papel e notificação
 
 ---
 
@@ -87,41 +87,52 @@ poetry run pytest --csv=tests/report.csv
 
 ## Utilização de Aspectos (AOP)
 
-Este projeto utiliza **Aspect-Oriented Programming (AOP)** para separar preocupações transversais, como logging, tratamento de erros e autorização, do código de negócio principal.
+Este projeto utiliza **Aspect-Oriented Programming (AOP)** para separar preocupações transversais, como logging, tratamento de erros, autorização e notificação do código de negócio principal.
 
 ### Aspectos implementados
 
-- **Logging (`log_operations`)**: Registra automaticamente operações importantes, facilitando auditoria e debug.
+- **Logging (`logging_aspect`)**: Registra automaticamente operações importantes, facilitando auditoria e debug.
 - **Tratamento de erros (`handle_errors`)**: Garante que exceções sejam capturadas e respostas amigáveis sejam retornadas ao usuário.
 - **Autorização (`require_role`)**: Restringe o acesso a endpoints por papel do usuário (ex: só admin pode criar produto).
+- **Notificação (`notification_aspect`)**: Permite notificar eventos importantes do sistema (ex: criação de produto, login, geração de conteúdo).
 
 ### Como os aspectos são aplicados
 
-Os aspectos são aplicados aos endpoints principais usando o pacote `aspectlib` e o método `weave`. Por exemplo:
+Os aspectos são aplicados diretamente como **decoradores** nas funções de negócio e endpoints principais. Exemplo:
 
 ```python
-from aspectlib import weave
-from src.aspects.logging import log_operations
-from src.aspects.error_handling import handle_errors
-from src.aspects.authorization import require_role
+from aspects.logging import logging_aspect
+from aspects.error_handling import handle_errors
+from aspects.authorization import require_role
+from aspects.notification import notification_aspect
 
-weave(create_product, log_operations)
-weave(create_product, handle_errors)
-weave(create_product, require_role('admin'))  # Só admin pode criar produto
-weave(register, log_operations)
-weave(register, handle_errors)
-weave(login, log_operations)
-weave(login, handle_errors)
+@router.post("/products")
+@require_role('admin')
+@handle_errors
+@logging_aspect
+@notification_aspect
+def create_product(...):
+    ...
 ```
 
-Assim, garantimos que todos os endpoints críticos estejam protegidos por logging, tratamento de erros e autorização, sem poluir o código de negócio.
+- **A ordem dos decoradores importa:**
+  - O de erro deve ser o mais externo.
+  - Depois logging, autorização, notificação, etc.
+
+### Pontos críticos cobertos
+- **Produto:** criação de produto (negócio e endpoint)
+- **Autenticação:** registro, login, recuperação de usuário
+- **LLM:** geração de épicos, histórias e requisitos
+- **Banco de dados:** logging de sessão
+- **Notificação:** eventos de criação, login, geração de conteúdo
 
 ### Benefícios
 
-- **Manutenção facilitada**: Alterações em logging, tratamento de erros ou regras de autorização são feitas em um só lugar.
+- **Manutenção facilitada**: Alterações em logging, tratamento de erros, regras de autorização ou notificação são feitas em um só lugar.
 - **Código mais limpo**: O código de negócio fica livre de repetições e preocupações transversais.
 - **Auditoria e rastreabilidade**: Todas as operações importantes são registradas automaticamente.
 - **Segurança**: Restrições de acesso centralizadas e testadas.
+- **Notificações**: Eventos importantes podem ser facilmente notificados/logados.
 
 ---
 
@@ -132,6 +143,7 @@ O projeto inclui testes automatizados para garantir o funcionamento dos aspectos
 - **Logging:** Garante que operações importantes são registradas.
 - **Tratamento de erros:** Garante que exceções são capturadas e retornam respostas amigáveis.
 - **Autorização:** Garante que apenas usuários com o papel correto podem acessar determinados endpoints.
+- **Notificação:** Garante que eventos importantes são notificados.
 
 Exemplo de teste de autorização:
 ```python
@@ -164,18 +176,41 @@ def test_authorization_denies_non_admin():
 problema-4/
 ├── main.py
 ├── src/
-│   └── ... (código da aplicação)
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── product.py
+│   │   ├── auth.py
+│   │   ├── llm.py
+│   │   └── dashboard.py
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── product.py
+│   │   ├── user.py
+│   │   └── llm.py
+│   ├── db/
+│   │   ├── __init__.py
+│   │   ├── session.py
+│   │   ├── models.py
+│   │   └── base.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── LLM.py
+│   │   ├── epics.py
+│   │   └── LLM_interactive.py
+│   └── config/
+│       └── ...
 ├── aspects/
+│   ├── __init__.py
 │   ├── logging.py
 │   ├── error_handling.py
-│   └── authorization.py
+│   ├── authorization.py
+│   ├── notification.py
+│   ├── db_session.py
+│   └── (LLM.py, llm_aspects.py)  # Se forem aspectos, senão mova para utils
 ├── tests/
-│   └── ... (testes automatizados, inclusive de aspectos)
-├── report.html
-├── htmlcov/
-│   └── index.html
-├── pyproject.toml
-└── README.md
+│   └── ...
+├── README.md
+└── ...
 ```
 
 ---

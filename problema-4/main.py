@@ -1,20 +1,16 @@
 from aspects.LLM import generate_epics_with_llm
-from utils.epics import print_epics
-
+from src.utils.epics import print_epics
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from src.config.logging_config import setup_logging
 from src.db import init_db
 from src.routers import router 
-from src.routers.product import create_product
+from src.routers.product import business_create_product
 from src.routers.auth import register, login
-from aspectlib import weave
-from aspects.logging import log_operations
-from aspects.error_handling import handle_errors
+#from aspectlib import weave
 from contextlib import asynccontextmanager
-from aspects.authorization import require_role
-from aspects.notification import notify_on_event
+import uvicorn
 
 """
 Ponto de entrada da API FastAPI para o sistema de gerenciamento de histórias de usuário com LLMs.
@@ -50,17 +46,6 @@ app.add_middleware(
 
 # Inclui todas as rotas definidas em src/routers/__init__.py
 app.include_router(router)
-
-# weave dos aspectos (após todos os imports)
-weave(create_product, log_operations)
-weave(create_product, handle_errors)
-weave(register, log_operations)
-weave(register, handle_errors)
-weave(login, log_operations)
-weave(login, handle_errors)
-# Exemplo: só admin pode criar produto
-weave(create_product, require_role('admin'))
-weave(create_product, notify_on_event)
 
 @app.get("/")
 async def root():
@@ -134,3 +119,6 @@ async def root():
 
 # if __name__ == "__main__":
 #     main()
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

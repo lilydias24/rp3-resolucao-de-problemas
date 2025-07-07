@@ -4,7 +4,7 @@ import re
 from groq import Groq
 from dotenv import load_dotenv
 from functools import wraps
-from utils.epics import Epic
+from src.utils.epics import Epic
 
 load_dotenv()
 

@@ -1,3 +1,8 @@
+"""
+Schemas Pydantic para a entidade Product (Produto).
+- ProductCreate: dados necessários para criar um produto.
+- ProductInDB: dados retornados do banco de dados para um produto.
+"""
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from datetime import datetime
@@ -22,9 +27,7 @@ class ProductBase(BaseModel):
     )
 
 class ProductCreate(ProductBase):
-    """
-    Schema para criação de um novo produto.
-    """
+    """Dados necessários para criar um produto."""
     @field_validator('name')
     def name_must_contain_space(cls, v):
         if ' ' not in v:
@@ -47,7 +50,7 @@ class ProductUpdate(BaseModel):
     platforms: Optional[List[str]]
 
 class ProductInDB(ProductBase):
-    """Schema completo retornado pela API"""
+    """Representação de um produto armazenado no banco de dados."""
     product_id: int = Field(..., json_schema_extra={"example": 42})
     created_by: int = Field(..., json_schema_extra={"example": 123})
     created_at: datetime = Field(..., json_schema_extra={"example": "2023-11-21T10:00:00Z"})
