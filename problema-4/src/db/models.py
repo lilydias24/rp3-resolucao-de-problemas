@@ -12,7 +12,7 @@ Cada classe representa uma tabela do banco de dados.
 class User(Base):
     """
     Modelo ORM para usuários do sistema.
-    Campos principais: user_id, email, password_hash, name, is_active, created_at, last_login.
+    Campos principais: user_id, email, password_hash, name, is_active, created_at, last_login, role.
     Relacionamentos: products (produtos criados pelo usuário).
     """
     __tablename__ = 'users'
@@ -22,6 +22,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     name = Column(String(100), nullable=False)
     is_active = Column(Boolean, default=True)
+    role = Column(String(50), default='user')
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     last_login = Column(TIMESTAMP(timezone=True))
     

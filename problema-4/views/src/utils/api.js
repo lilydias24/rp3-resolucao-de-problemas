@@ -58,8 +58,9 @@ export const api = {
       },
       body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
     });
+
     
-    if (!response.ok) {
+    if (!response.ok) {      
       let errorData;
       try {
         errorData = await response.json();

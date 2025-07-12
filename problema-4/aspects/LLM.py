@@ -68,19 +68,19 @@ def generate_epics_with_llm(product_info: dict, custom_prompt: str = None):
         prompt = custom_prompt
     else:
         prompt = f"""
-    Considere o seguinte produto:
-    Nome: {product_info.get('nome', '')}
-    Descrição: {product_info.get('descricao', '')}
-    Personas: {', '.join(product_info.get('personas', []))}
-    Proposta de valor: {product_info.get('proposta_valor', '')}
+                Considere o seguinte produto:
+                Nome: {product_info.get('nome', '')}
+                Descrição: {product_info.get('descricao', '')}
+                Personas: {', '.join(product_info.get('personas', []))}
+                Proposta de valor: {product_info.get('proposta_valor', '')}
 
-    Gere no máximo 5 épicos (título e descrição) para esse produto, em formato JSON.
-    Exemplo de resposta:
-    [
-      {{"title": "Título do épico", "description": "Descrição do épico"}},
-      ...
-    ]
-    """
+                Gere no máximo 5 épicos (título e descrição) para esse produto, em formato JSON.
+                Exemplo de resposta:
+                [
+                {{"title": "Título do épico", "description": "Descrição do épico"}},
+                ...
+                ]
+            """
     return prompt
 
 @llm_aspect

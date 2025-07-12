@@ -52,8 +52,8 @@ else:
 def logging_aspect(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        logging.info(f"[ASPECT] Entrando em {func.__name__} com args={args}, kwargs={kwargs}")
+        logger.info(f"[ASPECT] Entrando em {func.__name__} com args={args}, kwargs={kwargs}")
         result = func(*args, **kwargs)
-        logging.info(f"[ASPECT] Saindo de {func.__name__} com resultado={result}")
+        logger.info(f"[ASPECT] Saindo de {func.__name__} com resultado={result}")
         return result
     return wrapper

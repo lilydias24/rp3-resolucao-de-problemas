@@ -8,6 +8,7 @@ from src.routers.auth import get_current_user
 from aspects.logging import logging_aspect
 from aspects.error_handling import handle_errors
 from aspects.notification import notification_aspect
+from aspects.authorization import require_admin
 from src.schemas.epic import EpicCreate, EpicInDB
 from src.schemas.story import UserStoryCreate, UserStoryInDB
 from src.schemas.requirement import RequirementCreate, RequirementInDB
@@ -30,6 +31,7 @@ router = APIRouter(
 @handle_errors
 @logging_aspect
 @notification_aspect
+# @require_admin  
 def business_create_product(product_data: ProductCreate, db: Session, current_user: User):
     """
     Função de negócio para criar um novo produto.

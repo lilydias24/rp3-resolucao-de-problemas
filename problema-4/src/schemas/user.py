@@ -7,9 +7,12 @@ class UserBase(BaseModel):
     email: EmailStr = Field(..., example="user@email.com")
     name: str = Field(..., min_length=2, max_length=100, example="João da Silva")
 
-class UserCreate(UserBase):
+class UserCreate(BaseModel):
     """Schema para criação de usuário (inclui senha)."""
     password: str = Field(..., min_length=6, example="senha123")
+    email: str
+    name: str
+    # role: str = "user"  # Valor padrão
 
 class UserLogin(BaseModel):
     """Schema para login de usuário."""

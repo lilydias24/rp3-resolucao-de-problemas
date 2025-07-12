@@ -12,7 +12,8 @@ SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost:5432/problema4_t
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Cria as tabelas no banco de dados de teste
+# Remove todas as tabelas e recria com a nova estrutura
+Base.metadata.drop_all(bind=engine)  # Adicionar esta linha
 Base.metadata.create_all(bind=engine)
 
 def override_get_db():
