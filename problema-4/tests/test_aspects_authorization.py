@@ -50,4 +50,4 @@ def test_authorization_denies_no_user(db_session, product_data):
     with pytest.raises(HTTPException) as excinfo:
         create_product(product_data, db=db_session, current_user=None)
     assert excinfo.value.status_code == 403
-    assert "usuário não autenticado" in str(excinfo.value.detail).lower() 
+    assert "acesso negado" in str(excinfo.value.detail).lower() 
