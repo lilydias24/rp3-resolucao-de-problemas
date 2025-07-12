@@ -22,3 +22,14 @@ def print_epics(epics):
         print(f"{i}. {epic.title}")
         print(f"   {epic.description}\n")
     print("-"*40)
+
+def print_user_stories(user_stories):
+    """
+    Exibe uma história de usuário formatada no terminal.
+    """
+    for i, user_story in enumerate(user_stories, 1):
+        print(f"\nHistória de usuário: {user_story.title}\n" + "-"*40)
+        print(f"Descrição: {user_story.description}\n")
+        print("-"*40)
+
+

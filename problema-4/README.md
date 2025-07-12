@@ -12,6 +12,43 @@ Este projeto é uma API desenvolvida em FastAPI para cadastro de produtos, auten
 
 ---
 
+## Histórias de Usuários 
+
+---
+**Descrição**
+
+Você deve desenvolver um sistema que ajude Product Owners (POs) na criação, refinamento e exportação histórias de usuário e requisitos a partir de Large Language Models (LLMs).
+
+**Histórias de Usuário**
+
+✅1. Como Product Owner, quero cadastrar um novo produto com algumas informações básicas para iniciar o processo de geração de histórias de usuário e requisitos. Exemplos de informações: <br>
+    -> Nome. <br>
+    -> Descrição. <br>
+    -> Personas envolvidas. <br>
+    -> Proposta de valor (problema que o produto resolve). <br>
+    -> Canais/Plataformas (web, mobile, etc.). <br>
+
+✅2. Como Product Owner, quero que o sistema gere automaticamente uma hierarquia de Épicos para o projeto.
+🔚3. Como Product Owner, quero poder revisar e sugerir melhorias para os épicos gerados, garantindo que esteja alinhada com as necessidades do produto.
+✅4. Como Product Owner, quero que o sistema gere, através de Large Language Models (LLMs), um conjunto de histórias de usuário para o produto cadastrado, permitindo uma base inicial de trabalho. O sistema deve: <br>
+    -> Utilizar um prompt pré-definido para guiar a geração, mas permitir que o PO ajuste o prompt conforme necessário. <br>
+    -> Garantir que as histórias geradas sejam relevantes para o produto e suas personas. <br>
+
+🔚5. Como Product Owner, quero poder revisar e sugerir melhorias para as histórias de usuário para ajustar detalhes de negócio.
+🔚6. Como Product Owner, quero gerar requisitos funcionais correspondentes às histórias aprovadas com suas respectivas prioridades, para garantir que o desenvolvimento esteja alinhado com as necessidades do produto.
+❌7. Como Product Owner, quero rastrear o histórico de revisões de cada épico/história/requisito para manter a rastreabilidade de decisões.
+⚠️8. Como Product Owner, quero gerar um backlog de produto a partir das histórias e requisitos aprovados, para organizar o trabalho da equipe de desenvolvimento.
+⚠️9. Como Product Owner, quero poder revisar e sugerir melhorias para os backlogs gerados, garantindo que estejam alinhados com as necessidades do produto.
+
+
+**Regras de Negócio**
+
+1. Todas as interações com LLMs devem ser registradas por mecanismo de logging detalhado, incluindo data, hora, usuário, prompt utilizado e resumo da resposta gerada.
+2. Todas as ações devem ser autenticadas.
+3. Cada grupo deve propor no mínimo mais um aspecto transversal para o projeto. <br>
+**Obs :** A lista acima não é exaustiva e pode ser expandida conforme necessário.
+
+
 ## Pré-requisitos
 
 - Python 3.12+

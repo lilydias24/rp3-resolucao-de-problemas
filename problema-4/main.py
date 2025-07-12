@@ -1,5 +1,5 @@
-from aspects.LLM import generate_epics_with_llm
-from src.utils.epics import print_epics
+from aspects.LLM import generate_epics_with_llm, generate_user_stories_with_llm
+from src.utils.epics import print_epics, print_user_stories
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -84,12 +84,12 @@ def pedir_product_info():
 def main():
     """Função principal do modo CLI"""
     while True:
-        print("\n" + "="*50)
-        print("Bem vindo PO! Escolha uma opção:")
-        print("1 - Gerar épicos para um produto (usando LLM)")
-        print("2 - Gerar épicos com prompt customizado")
-        print("0 - Sair")
-        print("="*50)
+        print("\n" + "="*80)
+        print("\t Bem vindo PO! Escolha uma opção: \n")
+        print("\t 1 - Gerar épicos para um produto (usando LLM)")
+        print("\t 2 - Gerar épicos com prompt customizado")
+        print("\t 0 - Sair")
+        print("="*80)
         
         opt = input("Opção: ")
         
@@ -98,6 +98,29 @@ def main():
             print("\nGerando épicos...")
             epics = generate_epics_with_llm(product_info)
             print_epics(epics)
+
+
+            print("\n\t Deseja exibir histórias de usuário geradas ? (S/N)")
+            if input().strip().lower() == 's':
+
+                print("\t 1 - Gerar épicos para um produto (usando LLM)")
+                print("\t 2 - Gerar épicos com prompt customizado")
+                
+                opt = input("Opção: ")
+                if opt == "1":
+                    print("\nGerando histórias de usuário...")
+                    user_stories = generate_user_stories_with_llm(epics)
+                    print_user_stories(user_stories) 
+                elif opt == "2":
+                    custom_prompt = input("\nPrompt customizado (deixe vazio para usar padrão): ")
+                    if custom_prompt.strip():
+                        print("Funcionalidade de prompt customizado vai ser implementada em breve")
+                    else:
+                        print("\nGerando histórias de usuário com prompt padrão...")
+                        user_stories = generate_user_stories_with_llm(epics)
+                        print_user_stories(user_stories)
+            else:
+                print("\nHistórias de usuário não serão exibidas.")
             
         elif opt == "2":
             product_info = pedir_product_info()

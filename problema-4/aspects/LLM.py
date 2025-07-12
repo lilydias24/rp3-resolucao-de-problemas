@@ -84,6 +84,18 @@ def generate_epics_with_llm(product_info: dict, custom_prompt: str = None):
     return prompt
 
 @llm_aspect
-def gerar_historia_usuario(content):
-    prompt = f"Me gere histórias de usuário sobre {content} sem markdown, apenas texto puro e enumeradas."
-    return prompt 
+def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
+    if custom_prompt and custom_prompt.strip():
+        prompt = custom_prompt
+    else:
+        prompt = f"""
+                    Considerando os seguintes épicos:
+                    {epics} Gere histórias de usuário para cada um deles, em formato JSON.
+                    Exiba apenas o título e a descrição de cada história de usuário.
+                    Exemplo de resposta:
+                    [
+                    {{"title": "Título da história de usuário", "description": "Descrição da história de usuário"}},
+                    ...
+                    ]
+                """
+    return prompt
