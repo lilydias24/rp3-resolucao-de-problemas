@@ -103,8 +103,8 @@ def main():
             print("\n\t Deseja exibir histórias de usuário geradas ? (S/N)")
             if input().strip().lower() == 's':
 
-                print("\t 1 - Gerar épicos para um produto (usando LLM)")
-                print("\t 2 - Gerar épicos com prompt customizado")
+                print("\t 1 - Gerar histórias de usuário para um produto (usando LLM)")
+                print("\t 2 - Gerar histórias de usuário com prompt customizado")
                 
                 opt = input("Opção: ")
                 if opt == "1":
