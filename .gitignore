@@ -21,6 +21,7 @@ logs/
 .coverage
 htmlcov/
 .pytest_cache/
+test.db
 
 # IDE/editor
 .vscode/

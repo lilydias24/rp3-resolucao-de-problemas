@@ -9,6 +9,7 @@ from aspects.logging import logging_aspect
 from aspects.error_handling import handle_errors
 from aspects.notification import notification_aspect
 from aspects.authorization import require_admin
+from aspects.revision_tracking import track_revisions, get_revision_history
 from src.schemas.epic import EpicCreate, EpicInDB
 from src.schemas.story import UserStoryCreate, UserStoryInDB
 from src.schemas.requirement import RequirementCreate, RequirementInDB
@@ -126,6 +127,55 @@ def list_epics(product_id: int, db: Session = Depends(get_db), current_user: Use
     """
     return db.query(Epic).filter(Epic.product_id == product_id).all()
 
+@router.put("/epics/{epic_id}", response_model=EpicInDB)
+@handle_errors
+@track_revisions("epic")
+@logging_aspect
+@notification_aspect
+def update_epic(epic_id: int, epic: EpicCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Atualiza um épico existente.
+    """
+    db_epic = db.query(Epic).filter(Epic.epic_id == epic_id).first()
+    if not db_epic:
+        raise HTTPException(status_code=404, detail="Épico não encontrado")
+    for key, value in epic.dict(exclude_unset=True).items():
+        setattr(db_epic, key, value)
+    db.commit()
+    db.refresh(db_epic)
+    return db_epic
+
+# --- REVISION HISTORY ---
+@router.get("/epics/{epic_id}/revisions")
+@handle_errors
+@logging_aspect
+def get_epic_revisions(epic_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Obtém o histórico de revisões de um épico.
+    """
+    revisions = get_revision_history(db, "epic", epic_id)
+    return revisions
+
+@router.get("/stories/{story_id}/revisions")
+@handle_errors
+@logging_aspect
+def get_story_revisions(story_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Obtém o histórico de revisões de uma história de usuário.
+    """
+    revisions = get_revision_history(db, "user_story", story_id)
+    return revisions
+
+@router.get("/requirements/{requirement_id}/revisions")
+@handle_errors
+@logging_aspect
+def get_requirement_revisions(requirement_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Obtém o histórico de revisões de um requisito.
+    """
+    revisions = get_revision_history(db, "requirement", requirement_id)
+    return revisions
+
 # --- USER STORIES ---
 @router.post("/{epic_id}/stories", response_model=UserStoryInDB)
 @handle_errors
@@ -164,6 +214,7 @@ def get_story(story_id: int, db: Session = Depends(get_db), current_user: User =
 
 @router.put("/stories/{story_id}", response_model=UserStoryInDB)
 @handle_errors
+@track_revisions("user_story")
 @logging_aspect
 @notification_aspect
 def update_story(story_id: int, story: UserStoryCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -232,6 +283,7 @@ def get_requirement(requirement_id: int, db: Session = Depends(get_db), current_
 
 @router.put("/requirements/{requirement_id}", response_model=RequirementInDB)
 @handle_errors
+@track_revisions("requirement")
 @logging_aspect
 @notification_aspect
 def update_requirement(requirement_id: int, req: RequirementCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
