@@ -15,7 +15,7 @@ from aspects.notification import notification_aspect
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-SECRET_KEY = "supersecretkey"  # Em produção
+SECRET_KEY = "supersecretkey" 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -53,21 +53,27 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     - **name**: Nome do usuário
     - **password**: Senha do usuário
     """
-    existing = db.query(User).filter(User.email == user.email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Email já cadastrado")
-    hashed_password = get_password_hash(user.password)
-    db_user = User(
-        email=user.email,
-        name=user.name,
-        password_hash=hashed_password,
-        is_active=True,
-        created_at=datetime.now(timezone.utc)
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    print("DEBUG: Recebido para registro:", user)
+    try:
+        existing = db.query(User).filter(User.email == user.email).first()
+        print("DEBUG: Usuário existente?", existing)
+        if existing:
+            raise HTTPException(status_code=400, detail="Email já cadastrado")
+        hashed_password = get_password_hash(user.password)
+        db_user = User(
+            email=user.email,
+            name=user.name,
+            password_hash=hashed_password,
+            is_active=True,
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        print("ERRO AO REGISTRAR USUÁRIO:", e)
+        raise
 
 @router.post("/login")
 @handle_errors
