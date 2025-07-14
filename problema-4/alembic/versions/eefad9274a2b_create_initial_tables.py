@@ -39,6 +39,7 @@ def upgrade() -> None:
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('value_proposition', sa.Text(), nullable=True),
     sa.Column('platforms', sa.JSON(), nullable=True),
+    sa.Column('personas', sa.ARRAY(sa.String()), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.TIMESTAMP(timezone=True), nullable=True),
@@ -220,4 +221,5 @@ def downgrade() -> None:
     op.drop_table('products')
     op.drop_index('ix_users_user_id', 'users')
     op.drop_table('users')
+    op.drop_column('products', 'personas')
     # ### end Alembic commands ###
