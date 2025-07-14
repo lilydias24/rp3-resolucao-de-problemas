@@ -8,7 +8,6 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from aspectlib import weave
 from aspects.logging import logging_aspect
 from aspects.error_handling import handle_errors
 from aspects.notification import notification_aspect
@@ -45,7 +44,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 @router.post("/register", response_model=UserInDB, status_code=status.HTTP_201_CREATED)
 @handle_errors
 @logging_aspect
-@notification_aspect
 def register(user: UserCreate, db: Session = Depends(get_db)):
     """
     Registra um novo usuário no sistema.
@@ -53,21 +51,27 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     - **name**: Nome do usuário
     - **password**: Senha do usuário
     """
-    existing = db.query(User).filter(User.email == user.email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Email já cadastrado")
-    hashed_password = get_password_hash(user.password)
-    db_user = User(
-        email=user.email,
-        name=user.name,
-        password_hash=hashed_password,
-        is_active=True,
-        created_at=datetime.now(timezone.utc)
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    try:
+        existing = db.query(User).filter(User.email == user.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email já cadastrado")
+        hashed_password = get_password_hash(user.password)
+        db_user = User(
+            email=user.email,
+            name=user.name,
+            password_hash=hashed_password,
+            is_active=True,
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        import traceback
+        print("Erro no registro:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {e}")
 
 @router.post("/login")
 @handle_errors
@@ -79,13 +83,19 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     - **email**: Email do usuário
     - **password**: Senha do usuário
     """
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Credenciais inválidas")
-    access_token = create_access_token(data={"sub": str(user.user_id)})
-    user.last_login = datetime.now(timezone.utc)
-    db.commit()
-    return {"access_token": access_token, "token_type": "bearer"}
+    try:
+        user = db.query(User).filter(User.email == form_data.username).first()
+        if not user or not verify_password(form_data.password, user.password_hash):
+            raise HTTPException(status_code=401, detail="Credenciais inválidas")
+        access_token = create_access_token(data={"sub": str(user.user_id)})
+        user.last_login = datetime.now(timezone.utc)
+        db.commit()
+        return {"access_token": access_token, "token_type": "bearer"}
+    except Exception as e:
+        import traceback
+        print("Erro no login:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro interno: {e}")
 
 @handle_errors
 @logging_aspect
@@ -100,7 +110,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
     except JWTError:

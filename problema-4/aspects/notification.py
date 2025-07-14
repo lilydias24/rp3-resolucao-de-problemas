@@ -5,19 +5,33 @@ Pode ser expandido para enviar e-mail, mensagem, log, etc.
 
 import logging
 from functools import wraps
+import asyncio
 
 def notification_aspect(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def sync_wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-            # Adicionar lógica de notificação, ex: enviar e-mail
             logging.info(f"[ASPECT] Notificação enviada para {func.__name__}")
             return result
         except Exception as e:
             logging.error(f"[NOTIFICATION] Falha ao enviar notificação: {e}")
             raise
-    return wrapper
+
+    @wraps(func)
+    async def async_wrapper(*args, **kwargs):
+        try:
+            result = await func(*args, **kwargs)
+            logging.info(f"[ASPECT] Notificação enviada para {func.__name__}")
+            return result
+        except Exception as e:
+            logging.error(f"[NOTIFICATION] Falha ao enviar notificação: {e}")
+            raise
+
+    if asyncio.iscoroutinefunction(func):
+        return async_wrapper
+    else:
+        return sync_wrapper
 
 def notify_on_event(func):
     """

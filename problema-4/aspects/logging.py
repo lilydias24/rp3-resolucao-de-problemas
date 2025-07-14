@@ -16,7 +16,7 @@ print("DEBUG: PYTEST_CURRENT_TEST =", os.environ.get("PYTEST_CURRENT_TEST"))
 
 if "pytest" in sys.modules or os.environ.get("PYTEST_CURRENT_TEST"):
     print("DEBUG: DatabaseHandler DUMMY ativado para testes")
-    class DatabaseHandler(logging.Handler):
+    class DummyDatabaseHandler(logging.Handler):
         """Handler dummy para testes (não faz nada)."""
         def __init__(self, db: Session):
             super().__init__()
@@ -51,9 +51,9 @@ else:
 
 def logging_aspect(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         logger.info(f"[ASPECT] Entrando em {func.__name__} com args={args}, kwargs={kwargs}")
-        result = func(*args, **kwargs)
+        result = await func(*args, **kwargs)
         logger.info(f"[ASPECT] Saindo de {func.__name__} com resultado={result}")
         return result
     return wrapper

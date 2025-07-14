@@ -29,6 +29,71 @@ router = APIRouter(
     }
 )
 
+@router.get("/", response_model=List[ProductInDB])
+@handle_errors
+@logging_aspect
+def list_products(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Lista todos os produtos do usuário autenticado.
+    """
+    return db.query(Product).filter(Product.created_by == current_user.user_id).all()
+
+@router.get("/{product_id}", response_model=ProductInDB)
+@handle_errors
+@logging_aspect
+def get_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Busca um produto específico pelo ID.
+    """
+    product = db.query(Product).filter(
+        Product.product_id == product_id,
+        Product.created_by == current_user.user_id
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return product
+
+@router.put("/{product_id}", response_model=ProductInDB)
+@handle_errors
+@logging_aspect
+@notification_aspect
+def update_product(product_id: int, product_data: ProductCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Atualiza um produto existente.
+    """
+    product = db.query(Product).filter(
+        Product.product_id == product_id,
+        Product.created_by == current_user.user_id
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    for key, value in product_data.model_dump(exclude_unset=True).items():
+        setattr(product, key, value)
+    
+    db.commit()
+    db.refresh(product)
+    return product
+
+@router.delete("/{product_id}", status_code=204)
+@handle_errors
+@logging_aspect
+@notification_aspect
+def delete_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Remove um produto.
+    """
+    product = db.query(Product).filter(
+        Product.product_id == product_id,
+        Product.created_by == current_user.user_id
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    
+    db.delete(product)
+    db.commit()
+    return None
+
 @handle_errors
 @logging_aspect
 @notification_aspect

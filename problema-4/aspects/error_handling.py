@@ -3,9 +3,9 @@ from functools import wraps
 
 def handle_errors(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         try:
-            return func(*args, **kwargs)
+            return await func(*args, **kwargs)
         except HTTPException:
             raise
         except Exception as e:

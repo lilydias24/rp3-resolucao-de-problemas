@@ -7,7 +7,6 @@ from src.routers import router
 from contextlib import asynccontextmanager
 import uvicorn
 import sys
-import typer
 
 """
 Ponto de entrada da API FastAPI para o sistema de gerenciamento de histórias de usuário com LLMs.
@@ -26,11 +25,12 @@ async def lifespan(app):
     yield
 
 app = FastAPI(
-    title="Sistema de Gerenciamento de Histórias",
-    description="API para geração e gestão de histórias de usuário com LLMs",
-    version="0.1.0",
-    lifespan=lifespan
-)
+       title="Sistema de Gerenciamento de Histórias",
+       description="API para geração e gestão de histórias de usuário com LLMs",
+       version="0.1.0",
+       lifespan=lifespan,
+       debug=True  # <-- adicione este parâmetro
+   )
 
 # Configurar CORS
 app.add_middleware(
@@ -66,4 +66,4 @@ if __name__ == "__main__":
         print("Iniciando API FastAPI...")
         print("Para usar o CLI, execute: python main.py cli")
         print("Para acessar a documentação: http://localhost:8000/docs")
-        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False, log_level="debug")

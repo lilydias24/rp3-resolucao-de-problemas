@@ -1,23 +1,23 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
     """Schema base para usuário, com email e nome."""
-    email: EmailStr = Field(..., example="user@email.com")
-    name: str = Field(..., min_length=2, max_length=100, example="João da Silva")
+    email: EmailStr
+    name: str
 
 class UserCreate(BaseModel):
     """Schema para criação de usuário (inclui senha)."""
-    password: str = Field(..., min_length=6, example="senha123")
-    email: str
+    password: str
+    email: EmailStr
     name: str
     # role: str = "user"  # Valor padrão
 
 class UserLogin(BaseModel):
     """Schema para login de usuário."""
-    email: EmailStr = Field(..., example="user@email.com")
-    password: str = Field(..., min_length=6, example="senha123")
+    email: EmailStr
+    password: str
 
 class UserInDB(UserBase):
     """Schema completo de usuário retornado pela API e usado internamente."""

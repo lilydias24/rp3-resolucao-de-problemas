@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, status
 from src.schemas.llm import LLMRequest, LLMResponse
 from src.utils.LLM import LLM
@@ -32,24 +33,15 @@ async def generate_epics(request: LLMRequest):
         Por favor, gere épicos bem estruturados e organizados.
         """
         
-        # Usar a função LLM real
-        LLM(prompt)
-        
-        # Por enquanto, retornar um exemplo estruturado
-        content = f"""Épico 1: Definição da Arquitetura do Sistema
-Descrição: Estabelecer a arquitetura técnica base do sistema, incluindo escolha de tecnologias, padrões de design e estrutura de dados.
-
-Épico 2: Implementação do Sistema de Autenticação
-Descrição: Desenvolver sistema completo de autenticação e autorização de usuários com diferentes níveis de acesso.
-
-Épico 3: Interface do Usuário Principal
-Descrição: Criar interface principal do sistema com navegação intuitiva e responsiva para diferentes dispositivos.
-
-Épico 4: Sistema de Geração de Conteúdo
-Descrição: Implementar funcionalidades de geração automática de conteúdo usando IA e LLMs.
-
-Épico 5: Gestão de Projetos e Backlog
-Descrição: Desenvolver sistema completo de gestão de projetos, épicos, histórias e backlog."""
+        # Usar o aspecto LLM para gerar épicos
+        from aspects.llm_aspects import gerar_epicos_prompt
+        try:
+            logging.info(f"Chamando gerar_epicos_prompt com product_info: {request.productInfo}")
+            content = gerar_epicos_prompt(product_info=request.productInfo)
+            logging.info(f"Conteúdo gerado: {content[:200]}...")
+        except Exception as e:
+            logging.error(f"Erro ao chamar gerar_epicos_prompt: {str(e)}")
+            raise
         
         return LLMResponse(
             content=content,
@@ -83,19 +75,15 @@ async def generate_user_stories(request: LLMRequest):
         Por favor, gere histórias de usuário bem estruturadas seguindo o formato: "Como [persona], eu quero [objetivo] para que [benefício]"
         """
         
-        # Usar a função LLM real
-        LLM(prompt)
-        
-        # Por enquanto, retornar um exemplo estruturado
-        content = f"""Como Product Owner, eu quero definir épicos claros para que a equipe tenha visão macro do projeto.
-
-Como Desenvolvedor, eu quero acessar especificações técnicas detalhadas para que possa implementar funcionalidades corretamente.
-
-Como Scrum Master, eu quero visualizar o backlog organizado para que possa facilitar o planejamento das sprints.
-
-Como QA Tester, eu quero critérios de aceitação claros para que possa criar testes efetivos.
-
-Como Stakeholder, eu quero acompanhar o progresso do projeto para que possa tomar decisões informadas."""
+        # Usar o aspecto LLM para gerar histórias de usuário
+        from aspects.llm_aspects import gerar_historia_usuario_prompt
+        if not request.epicsSummary:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resumo dos épicos é necessário para gerar histórias de usuário.")
+        content = gerar_historia_usuario_prompt(
+            product_info=request.productInfo,
+            epics_summary=request.epicsSummary,
+            user_prompt_adjustment=request.userPromptAdjustment or ""
+        )
         
         return LLMResponse(
             content=content,
@@ -132,29 +120,11 @@ async def generate_requirements(request: LLMRequest):
         # Usar a função LLM real
         LLM(prompt)
         
-        # Por enquanto, retornar um exemplo estruturado
-        content = [
-            {
-                "id": "REQ-001",
-                "descricao": "O sistema deve permitir autenticação de usuários via email e senha",
-                "prioridade": "Alta"
-            },
-            {
-                "id": "REQ-002", 
-                "descricao": "O sistema deve gerar épicos automaticamente baseado em informações do produto",
-                "prioridade": "Alta"
-            },
-            {
-                "id": "REQ-003",
-                "descricao": "O sistema deve permitir edição e revisão de histórias de usuário",
-                "prioridade": "Média"
-            },
-            {
-                "id": "REQ-004",
-                "descricao": "O sistema deve exportar relatórios em formato CSV e JSON",
-                "prioridade": "Baixa"
-            }
-        ]
+        # Usar o aspecto LLM para gerar requisitos
+        from aspects.llm_aspects import gerar_requisitos_prompt
+        if not request.userStories:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Histórias de usuário são necessárias para gerar requisitos.")
+        content = gerar_requisitos_prompt(user_stories=request.userStories, product_info=request.productInfo)
         
         return LLMResponse(
             content=content,

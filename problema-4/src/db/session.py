@@ -8,16 +8,15 @@ from sqlalchemy.orm import Session
 import os
 from aspects.db_session import log_db_session, log_db_query
 
-# Configuração do banco de dados PostgreSQL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/problema4")
+# Configuração do banco de dados SQLite (mais rápido para testes)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./db.sqlite3")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"options": "-c client_encoding=utf8"}
+    connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@log_db_session
 def get_db():
     """
     Dependência do FastAPI para fornecer uma sessão do banco de dados.

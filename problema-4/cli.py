@@ -819,8 +819,8 @@ def llm_menu():
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
             
             data = {
-                "prompt": product_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "productInfo": product_info,
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
             
             resp = requests.post(f"{API_URL}/llm-project/generate-epics", json=data, headers=auth_headers())
@@ -838,8 +838,8 @@ def llm_menu():
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
             
             data = {
-                "prompt": epics_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "productInfo": epics_info,
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
             
             resp = requests.post(f"{API_URL}/llm-project/generate-user-stories", json=data, headers=auth_headers())
@@ -857,8 +857,8 @@ def llm_menu():
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
             
             data = {
-                "prompt": stories_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "productInfo": stories_info,
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
             
             resp = requests.post(f"{API_URL}/llm-project/generate-requirements", json=data, headers=auth_headers())
