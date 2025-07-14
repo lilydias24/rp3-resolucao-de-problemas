@@ -48,6 +48,7 @@ def register():
     resp = requests.post(f"{API_URL}/auth/register", json=data)
     if resp.status_code == 201:
         print_success("Usuário registrado com sucesso!")
+        menu()
     else:
         print_error(f"Erro: {resp.json().get('detail', resp.text)}")
 
@@ -63,6 +64,7 @@ def login():
         token = resp.json()["access_token"]
         save_token(token)
         print_success("Login realizado com sucesso!")
+        menu()
     else:
         print_error(f"Erro: {resp.json().get('detail', resp.text)}")
 
