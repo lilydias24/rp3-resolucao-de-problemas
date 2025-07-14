@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
+import { api } from '../../utils/api';
 
 import './product-creation.css';
 
 const ProductCreation = () => {
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:8000/llm-project';
 
   // Nomes dos Steps ao invés de apenas números
   const STEP_NAMES = {
@@ -93,23 +93,22 @@ const ProductCreation = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log(`generateContent: Enviando requisição para ${API_BASE_URL}/${endpoint}`);
-      const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      console.log("generateContent: Resposta do fetch recebida:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: response.statusText }));
-        console.error(`generateContent: Resposta de erro da API: Status ${response.status}`, errorData);
-        throw new Error(`Erro ${response.status}: ${errorData.error || response.statusText}`);
+      let data;
+      
+      switch (endpoint) {
+        case 'generate-epics':
+          data = await api.generateEpics(payload);
+          break;
+        case 'generate-user-stories':
+          data = await api.generateUserStories(payload);
+          break;
+        case 'generate-requirements':
+          data = await api.generateRequirements(payload);
+          break;
+        default:
+          throw new Error(`Endpoint desconhecido: ${endpoint}`);
       }
-
-      const data = await response.json();
+      
       console.log("generateContent: Dados da resposta JSON recebidos:", data);
       setStateCallback(data.content);
       console.log("generateContent: Estado atualizado e avançando passo.");
