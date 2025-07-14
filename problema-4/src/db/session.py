@@ -17,7 +17,6 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@log_db_session
 def get_db():
     """
     Dependência do FastAPI para fornecer uma sessão do banco de dados.
@@ -25,8 +24,12 @@ def get_db():
     Yields:
         db (Session): Sessão do banco de dados.
     """
+    import logging
+    logger = logging.getLogger("db.session")
+    logger.info("Abrindo sessão do banco de dados")
     db = SessionLocal()
     try:
         yield db
     finally:
+        logger.info("Fechando sessão do banco de dados")
         db.close()

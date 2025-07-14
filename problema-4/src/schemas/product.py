@@ -45,9 +45,11 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     """Schema para atualização de produto (campos opcionais)"""
     name: Optional[str] = Field(None, min_length=3, max_length=255)
-    description: Optional[str]
-    value_proposition: Optional[str]
-    platforms: Optional[List[str]]
+    description: Optional[str] = None
+    value_proposition: Optional[str] = Field(None, alias="valueProposition")
+    platforms: Optional[List[str]] = None
+
+    model_config = ConfigDict(from_attributes=True, validate_by_name=True)
 
 class ProductInDB(ProductBase):
     """Representação de um produto armazenado no banco de dados."""

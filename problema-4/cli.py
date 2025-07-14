@@ -2,7 +2,8 @@ import typer
 import requests
 import sys
 import os
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict
 from src.utils.colors import (
     print_header, print_success, print_error, print_warning, print_info,
     print_menu_title, print_menu_option, print_separator, print_highlight,
@@ -42,7 +43,7 @@ def register():
     print_header("REGISTRO DE USUÁRIO")
     email = typer.prompt("Email")
     name = typer.prompt("Nome")
-    password = typer.prompt("Senha", hide_input=True)
+    password = typer.prompt("Senha", hide_input=False)
     data = {"email": email, "name": name, "password": password}
     resp = requests.post(f"{API_URL}/auth/register", json=data)
     if resp.status_code == 201:

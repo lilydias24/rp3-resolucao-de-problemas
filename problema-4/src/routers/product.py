@@ -14,6 +14,7 @@ from src.schemas.epic import EpicCreate, EpicInDB
 from src.schemas.story import UserStoryCreate, UserStoryInDB
 from src.schemas.requirement import RequirementCreate, RequirementInDB
 from src.schemas.backlog import BacklogCreate, BacklogInDB, BacklogItemCreate, BacklogItemInDB
+from src.schemas.product import ProductUpdate
 
 """
 Define as rotas relacionadas a produtos na API FastAPI.
@@ -103,6 +104,35 @@ def create_product(
     Recebe os dados do produto e retorna o produto criado.
     """
     return business_create_product(product_data, db, current_user)
+
+@router.get("/{product_id}", response_model=ProductInDB)
+@handle_errors
+@logging_aspect
+def get_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Busca um produto pelo seu ID.
+    """
+    product = db.query(Product).filter(Product.product_id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return product
+
+@router.put("/{product_id}", response_model=ProductInDB)
+@handle_errors
+@logging_aspect
+@notification_aspect
+def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Atualiza um produto existente.
+    """
+    db_product = db.query(Product).filter(Product.product_id == product_id).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    for key, value in product.dict(exclude_unset=True).items():
+        setattr(db_product, key, value)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
 
 @router.post("/{product_id}/epics", response_model=EpicInDB)
 @handle_errors
@@ -450,4 +480,17 @@ def delete_backlog_item(item_id: int, db: Session = Depends(get_db), current_use
     db.commit()
     return None
 
-# TODO: Implementar endpoints para épicos, histórias, requisitos, backlog, etc. no futuro.
+@router.delete("/{product_id}", status_code=204)
+@handle_errors
+@logging_aspect
+@notification_aspect
+def delete_product(product_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Remove um produto pelo seu ID.
+    """
+    db_product = db.query(Product).filter(Product.product_id == product_id).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    db.delete(db_product)
+    db.commit()
+    return None
