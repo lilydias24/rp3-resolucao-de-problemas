@@ -1,20 +1,13 @@
-from aspects.LLM import generate_epics_with_llm
-from src.utils.epics import print_epics
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from src.config.logging_config import setup_logging
 from src.db import init_db
 from src.routers import router 
-from src.routers.product import create_product
-from src.routers.auth import register, login
-from aspectlib import weave
-from aspects.logging import log_operations
-from aspects.error_handling import handle_errors
 from contextlib import asynccontextmanager
-from aspects.authorization import require_role
-from aspects.notification import notify_on_event
+import uvicorn
+import sys
+import typer
 
 """
 Ponto de entrada da API FastAPI para o sistema de gerenciamento de histórias de usuário com LLMs.
@@ -51,17 +44,6 @@ app.add_middleware(
 # Inclui todas as rotas definidas em src/routers/__init__.py
 app.include_router(router)
 
-# weave dos aspectos (após todos os imports)
-weave(create_product, log_operations)
-weave(create_product, handle_errors)
-weave(register, log_operations)
-weave(register, handle_errors)
-weave(login, log_operations)
-weave(login, handle_errors)
-# Exemplo: só admin pode criar produto
-weave(create_product, require_role('admin'))
-weave(create_product, notify_on_event)
-
 @app.get("/")
 async def root():
     """
@@ -74,63 +56,14 @@ async def root():
         "redoc": "/redoc"
     }
 
-# CLI
-# def pedir_product_info():
-#     """Coleta informações do produto via CLI"""
-#     print("\n" + "="*50)
-#     print("GERADOR DE ÉPICOS - MODO CLI")
-#     print("="*50)
-    
-#     nome = input("Nome do produto: ")
-#     descricao = input("Descrição do produto: ")
-#     personas = input("Personas (separe por vírgula): ").split(",")
-#     personas = [p.strip() for p in personas]
-#     proposta_valor = input("Proposta de valor: ")
-#     canais = input("Canais/Plataformas (opcional): ")
-    
-#     return {
-#         "nome": nome,
-#         "descricao": descricao,
-#         "personas": personas,
-#         "proposta_valor": proposta_valor,
-#         "canais": canais
-#     }
-
-# def main():
-#     """Função principal do modo CLI"""
-#     while True:
-#         print("\n" + "="*50)
-#         print("Bem vindo PO! Escolha uma opção:")
-#         print("1 - Gerar épicos para um produto (usando LLM)")
-#         print("2 - Gerar épicos com prompt customizado")
-#         print("0 - Sair")
-#         print("="*50)
-        
-#         opt = input("Opção: ")
-        
-#         if opt == "1":
-#             product_info = pedir_product_info()
-#             print("\nGerando épicos...")
-#             epics = generate_epics_with_llm(product_info)
-#             print_epics(epics)
-            
-#         elif opt == "2":
-#             product_info = pedir_product_info()
-#             custom_prompt = input("\nPrompt customizado (deixe vazio para usar padrão): ")
-            
-#             if custom_prompt.strip():
-#                 # aqui vai o prompt customizado, quando eu fizer
-#                 print("Funcionalidade de prompt customizado vai ser implementada em breve")
-#             else:
-#                 print("\nGerando épicos com prompt padrão...")
-#                 epics = generate_epics_with_llm(product_info)
-#                 print_epics(epics)
-                
-#         elif opt == "0":
-#             print("Saindo...")
-#             break
-#         else:
-#             print("Opção inválida!")
-
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "cli":
+        # Executar CLI
+        from cli import app as cli_app
+        cli_app()
+    else:
+        # Executar API
+        print("Iniciando API FastAPI...")
+        print("Para usar o CLI, execute: python main.py cli")
+        print("Para acessar a documentação: http://localhost:8000/docs")
+        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

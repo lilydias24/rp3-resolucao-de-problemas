@@ -1,20 +1,28 @@
-import aspectlib
-from fastapi import HTTPException
+from functools import wraps
+from fastapi import HTTPException, status
 
 def require_role(role):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Try to get user from kwargs first, then from args
+            user = kwargs.get('current_user')
+            if user is None and len(args) > 2:
+                user = args[2]
+            
+            # Check if user exists and has the required role
+            if user is None:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Usuário não autenticado")
+            
+            if getattr(user, 'role', None) != role:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado - papel insuficiente")
+            
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def require_admin(func):
     """
-    Cria um aspecto de autorização que restringe o acesso ao endpoint para usuários com o papel especificado.
-    Exemplo: weave(endpoint, require_role('admin'))
+    Decorator que requer papel de admin para executar a função.
     """
-    @aspectlib.Aspect
-    def aspect(cutpoint, *args, **kwargs):
-        """
-        Aspecto que verifica se o usuário autenticado possui o papel exigido.
-        Lança HTTP 403 se não autorizado.
-        """
-        user = kwargs.get('current_user')
-        if not user or getattr(user, 'role', None) != role:
-            raise HTTPException(status_code=403, detail="Acesso negado")
-        result = yield
-        return result
-    return aspect 
+    return require_role('admin')(func) 

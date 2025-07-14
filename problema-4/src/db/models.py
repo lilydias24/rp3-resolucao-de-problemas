@@ -12,7 +12,7 @@ Cada classe representa uma tabela do banco de dados.
 class User(Base):
     """
     Modelo ORM para usuários do sistema.
-    Campos principais: user_id, email, password_hash, name, is_active, created_at, last_login.
+    Campos principais: user_id, email, password_hash, name, is_active, created_at, last_login, role.
     Relacionamentos: products (produtos criados pelo usuário).
     """
     __tablename__ = 'users'
@@ -22,6 +22,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     name = Column(String(100), nullable=False)
     is_active = Column(Boolean, default=True)
+    role = Column(String(50), default='user')
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     last_login = Column(TIMESTAMP(timezone=True))
     
@@ -77,7 +78,7 @@ class Epic(Base):
     product_id = Column(Integer, ForeignKey('products.product_id'), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text)
-    status = Column(String(50), server_default='draft')  # Validação via AOP/SQLAlchemy
+    status = Column(String(50), server_default='draft')  # draft, in_review, approved, rejected, needs_revision, implemented
     created_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True))
@@ -114,7 +115,7 @@ class UserStory(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "status IN ('draft', 'reviewed', 'approved', 'rejected', 'implemented')",
+            "status IN ('draft', 'in_review', 'approved', 'rejected', 'needs_revision', 'implemented')",
             name='check_status'
         ),
         CheckConstraint(
@@ -238,3 +239,42 @@ class SystemLog(Base):
     details = Column(Text)
     level = Column(String(20))  # INFO, WARNING, ERROR
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+class ReviewComment(Base):
+    """
+    Modelo ORM para comentários de revisão em entidades.
+    Campos principais: comment_id, entity_type, entity_id, comment, is_suggestion, created_by, created_at.
+    """
+    __tablename__ = 'review_comments'
+    
+    comment_id = Column(Integer, primary_key=True)
+    entity_type = Column(String(50), nullable=False)  # 'epic', 'user_story', 'requirement'
+    entity_id = Column(Integer, nullable=False)
+    comment = Column(Text, nullable=False)
+    is_suggestion = Column(Boolean, default=False)
+    suggested_changes = Column(Text)
+    created_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True))
+    
+    # Relacionamento com usuário
+    user = relationship("User")
+
+class ReviewStatusHistory(Base):
+    """
+    Modelo ORM para histórico de mudanças de status de revisão.
+    Campos principais: history_id, entity_type, entity_id, old_status, new_status, changed_by, reason, changed_at.
+    """
+    __tablename__ = 'review_status_history'
+    
+    history_id = Column(Integer, primary_key=True)
+    entity_type = Column(String(50), nullable=False)  # 'epic', 'user_story', 'requirement'
+    entity_id = Column(Integer, nullable=False)
+    old_status = Column(String(50))
+    new_status = Column(String(50), nullable=False)
+    changed_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    reason = Column(Text)
+    changed_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    
+    # Relacionamento com usuário
+    user = relationship("User")

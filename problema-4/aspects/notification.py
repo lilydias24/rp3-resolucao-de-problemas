@@ -3,52 +3,54 @@ Aspecto para envio de notificações automáticas em eventos importantes do sist
 Pode ser expandido para enviar e-mail, mensagem, log, etc.
 """
 
-import aspectlib
 import logging
-import smtplib
-from email.mime.text import MIMEText
-from email.utils import formataddr
+from functools import wraps
 
-# Configurações de e-mail (ajuste conforme necessário)
-EMAIL_FROM = "notificador@exemplo.com"
-EMAIL_TO = "destinatario@exemplo.com"
-EMAIL_SUBJECT = "Notificação do Sistema"
-SMTP_SERVER = "localhost"  # ou "smtp.gmail.com" etc.
-SMTP_PORT = 25  # 587 para TLS, 465 para SSL
-SMTP_USER = None  # Se necessário
-SMTP_PASS = None  # Se necessário
+def notification_aspect(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            # Adicionar lógica de notificação, ex: enviar e-mail
+            logging.info(f"[ASPECT] Notificação enviada para {func.__name__}")
+            return result
+        except Exception as e:
+            logging.error(f"[NOTIFICATION] Falha ao enviar notificação: {e}")
+            raise
+    return wrapper
 
+def notify_on_event(func):
+    """
+    Aspecto para notificação de eventos que dispara print, log e e-mail.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            print(f"[NOTIFICATION] Executando {func.__name__}")
+            logging.info(f"[NOTIFICATION] Iniciando execução de {func.__name__}")
+            send_email_notification(f"Função {func.__name__} foi executada")
+            
+            result = func(*args, **kwargs)
+            
+            print(f"[NOTIFICATION] {func.__name__} executada com sucesso")
+            logging.info(f"[NOTIFICATION] {func.__name__} executada com sucesso")
+            send_email_notification(f"Função {func.__name__} executada com sucesso")
+            
+            return result
+        except Exception as e:
+            error_msg = f"Erro na execução de {func.__name__}: {e}"
+            print(f"[NOTIFICATION] {error_msg}")
+            logging.error(f"[NOTIFICATION] {error_msg}")
+            send_email_notification(error_msg)
+            raise
+    return wrapper
 
-def send_email_notification(message: str):
+def send_email_notification(message):
     """
-    Envia uma notificação por e-mail com o texto fornecido.
+    Função para envio de notificações por e-mail.
+    Em uma implementação real, aqui seria feita a integração com serviço de e-mail.
     """
-    try:
-        msg = MIMEText(message)
-        msg['Subject'] = EMAIL_SUBJECT
-        msg['From'] = formataddr(("Sistema de Notificação", EMAIL_FROM))
-        msg['To'] = EMAIL_TO
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            if SMTP_USER and SMTP_PASS:
-                server.starttls()
-                server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(EMAIL_FROM, [EMAIL_TO], msg.as_string())
-        logging.info(f"[NOTIFICATION] E-mail enviado para {EMAIL_TO}")
-    except Exception as e:
-        logging.error(f"[NOTIFICATION] Falha ao enviar e-mail: {e}")
-
-@aspectlib.Aspect
-def notify_on_event(cutpoint, *args, **kwargs):
-    """
-    Aspecto que envia uma notificação (print e e-mail) sempre que a função decorada é executada com sucesso.
-    """
-    result = yield
-    nome = getattr(cutpoint, '__name__', cutpoint.__class__.__name__)
-    mensagem = f"Notificação: {nome} executada com sucesso."
-    # Notificação por print
-    print(mensagem)
-    # Notificação por e-mail
-    send_email_notification(mensagem)
-    # Notificação por log
-    logging.info(f"[NOTIFICATION] {mensagem}")
-    return result
+    # Simulação de envio de e-mail
+    logging.info(f"[EMAIL] Notificação enviada: {message}")
+    # Adicionar integração real com serviço de e-mail
+    # Exemplo: smtp.send_message(...)

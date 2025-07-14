@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 from src.schemas.llm import LLMRequest, LLMResponse
 from src.utils.LLM import LLM
-import logging
+from aspects.logging import logging_aspect
+from aspects.error_handling import handle_errors
+from aspects.notification import notification_aspect
 
 router = APIRouter(
     prefix="/llm-project",
@@ -12,6 +14,9 @@ router = APIRouter(
 )
 
 @router.post("/generate-epics", response_model=LLMResponse)
+@handle_errors
+@logging_aspect
+@notification_aspect
 async def generate_epics(request: LLMRequest):
     """
     Gera épicos baseados nas informações do produto
@@ -59,6 +64,9 @@ Descrição: Desenvolver sistema completo de gestão de projetos, épicos, hist�
         )
 
 @router.post("/generate-user-stories", response_model=LLMResponse)
+@handle_errors
+@logging_aspect
+@notification_aspect
 async def generate_user_stories(request: LLMRequest):
     """
     Gera histórias de usuário baseadas nos épicos
@@ -102,6 +110,9 @@ Como Stakeholder, eu quero acompanhar o progresso do projeto para que possa toma
         )
 
 @router.post("/generate-requirements", response_model=LLMResponse)
+@handle_errors
+@logging_aspect
+@notification_aspect
 async def generate_requirements(request: LLMRequest):
     """
     Gera requisitos funcionais baseados nas histórias de usuário

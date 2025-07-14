@@ -19,10 +19,7 @@ def LLM(content):
     
     Parameters:
         content: The content that will be used with LLM to generate responses.
-    """
-    
-
-        
+    """ 
     client = Groq(
         api_key=os.environ.get("GROQ_API_KEY"),
     )

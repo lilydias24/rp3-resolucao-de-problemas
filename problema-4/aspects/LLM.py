@@ -4,7 +4,7 @@ import re
 from groq import Groq
 from dotenv import load_dotenv
 from functools import wraps
-from src.utils import *
+from src.utils.epics import Epic
 
 load_dotenv()
 
@@ -68,22 +68,34 @@ def generate_epics_with_llm(product_info: dict, custom_prompt: str = None):
         prompt = custom_prompt
     else:
         prompt = f"""
-    Considere o seguinte produto:
-    Nome: {product_info.get('nome', '')}
-    Descrição: {product_info.get('descricao', '')}
-    Personas: {', '.join(product_info.get('personas', []))}
-    Proposta de valor: {product_info.get('proposta_valor', '')}
+                Considere o seguinte produto:
+                Nome: {product_info.get('nome', '')}
+                Descrição: {product_info.get('descricao', '')}
+                Personas: {', '.join(product_info.get('personas', []))}
+                Proposta de valor: {product_info.get('proposta_valor', '')}
 
-    Gere no máximo 5 épicos (título e descrição) para esse produto, em formato JSON.
-    Exemplo de resposta:
-    [
-      {{"title": "Título do épico", "description": "Descrição do épico"}},
-      ...
-    ]
-    """
+                Gere no máximo 5 épicos (título e descrição) para esse produto, em formato JSON.
+                Exemplo de resposta:
+                [
+                {{"title": "Título do épico", "description": "Descrição do épico"}},
+                ...
+                ]
+            """
     return prompt
 
 @llm_aspect
-def gerar_historia_usuario(content):
-    prompt = f"Me gere histórias de usuário sobre {content} sem markdown, apenas texto puro e enumeradas."
-    return prompt 
+def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
+    if custom_prompt and custom_prompt.strip():
+        prompt = custom_prompt
+    else:
+        prompt = f"""
+                    Considerando os seguintes épicos:
+                    {epics} Gere histórias de usuário para cada um deles, em formato JSON.
+                    Exiba apenas o título e a descrição de cada história de usuário.
+                    Exemplo de resposta:
+                    [
+                    {{"title": "Título da história de usuário", "description": "Descrição da história de usuário"}},
+                    ...
+                    ]
+                """
+    return prompt

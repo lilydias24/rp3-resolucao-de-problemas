@@ -50,6 +50,7 @@ export const api = {
   
   // Métodos específicos
   async login(email, password) {
+    console.log(`${API_BASE_URL}/auth/login`)
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -57,8 +58,9 @@ export const api = {
       },
       body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
     });
+
     
-    if (!response.ok) {
+    if (!response.ok) {      
       let errorData;
       try {
         errorData = await response.json();
