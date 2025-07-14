@@ -3,6 +3,7 @@ poetry.lock
 .env
 *.env
 .env.*
+.token
 
 # Python
 __pycache__/

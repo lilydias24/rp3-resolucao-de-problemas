@@ -51,6 +51,7 @@ pytest-cov = "^5.0.0"
 pytest-html = "^4.1.1"
 pytest-csv = "^3.0.0"
 uvicorn = "^0.35.0"
+alembic = "^1.16.4"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
