@@ -43,13 +43,13 @@ class Product(Base):
     value_proposition = Column(Text)
     platforms = Column(JSON)   # Ex: ['web', 'mobile']
     personas = Column(ARRAY(String), nullable=True)
-    personas_rel = relationship("Persona", back_populates="product")
     created_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True))
     
     owner = relationship("User", back_populates="products")
     epics = relationship("Epic", back_populates="product")
+    personas = relationship("Persona", back_populates="product")
 
 class Persona(Base):
     """
@@ -65,7 +65,7 @@ class Persona(Base):
     description = Column(Text)
     characteristics = Column(JSON)  # Para PostgreSQL (ou use Text em outros DBs)
     
-    product = relationship("Product", back_populates="personas_rel")
+    product = relationship("Product", back_populates="personas")
     stories = relationship("UserStory", back_populates="persona")
 
 class Epic(Base):

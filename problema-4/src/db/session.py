@@ -9,7 +9,7 @@ import os
 from aspects.db_session import log_db_session, log_db_query
 
 # Configuração do banco de dados PostgreSQL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/problema4")
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:masterkey@localhost:5432/problema4")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
