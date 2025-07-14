@@ -9,7 +9,7 @@ from src.utils.epics import Epic
 load_dotenv()
 
 def extract_json_from_response(content):
-    # remove blocos de cod markdown
+    # Remove blocos de código markdown
     content = content.strip()
     if "```" in content:
         matches = re.findall(r"```(?:json)?\s*([\s\S]*?)```", content)
@@ -17,27 +17,26 @@ def extract_json_from_response(content):
             content = "\n".join(matches).strip()
         else:
             content = content.replace("```json", "").replace("```", "").strip()
-    # acha o primeiro [ e o ultimo ]
+    
     start = content.find("[")
     end = content.rfind("]")
     if start != -1 and end != -1:
         json_str = content[start:end+1]
-        # tenta corrigir o json cortado removendo o ultimo item que ta incompleto
         try:
             json.loads(json_str)
             return json_str
-        except Exception:
-            # remove o ultimo item e tenta de novo
-            last_comma = json_str[:end].rfind("},")
+        except json.JSONDecodeError:
+            # Tenta corrigir JSON incompleto
+            last_comma = json_str.rfind("},")
             if last_comma != -1:
-                json_str = json_str[:last_comma+1] + "]"
+                corrected_json = json_str[:last_comma+1] + "]"
                 try:
-                    json.loads(json_str)
-                    return json_str
-                except Exception:
-                    pass
-        return json_str
-    return content  # fallback
+                    json.loads(corrected_json)
+                    return corrected_json
+                except json.JSONDecodeError:
+                    pass # Se ainda falhar, retorna o original
+        return json_str # Retorna o JSON extraído mesmo que inválido
+    return content  # Fallback
 
 def llm_aspect(func):
     @wraps(func)
@@ -47,7 +46,7 @@ def llm_aspect(func):
         resp = client.chat.completions.create(
             model="llama3-8b-8192",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
+            max_tokens=2048,
             temperature=0.2
         )
         content = resp.choices[0].message.content.strip()
