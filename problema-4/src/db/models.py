@@ -49,7 +49,7 @@ class Product(Base):
     
     owner = relationship("User", back_populates="products")
     epics = relationship("Epic", back_populates="product")
-    personas = relationship("Persona", back_populates="product")
+    personas_rel = relationship("Persona", back_populates="product")
 
 class Persona(Base):
     """
@@ -65,7 +65,7 @@ class Persona(Base):
     description = Column(Text)
     characteristics = Column(JSON)  # Para PostgreSQL (ou use Text em outros DBs)
     
-    product = relationship("Product", back_populates="personas")
+    product = relationship("Product", back_populates="personas_rel")
     stories = relationship("UserStory", back_populates="persona")
 
 class Epic(Base):
