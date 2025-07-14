@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
+<<<<<<< HEAD
+=======
+import { api } from '../../utils/api';
+>>>>>>> eric-branch
 
 import './product-creation.css';
 
 const ProductCreation = () => {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const API_BASE_URL = 'http://localhost:8000/llm-project';
+=======
+>>>>>>> eric-branch
 
   // Nomes dos Steps ao invés de apenas números
   const STEP_NAMES = {
@@ -93,6 +100,7 @@ const ProductCreation = () => {
     setLoading(true);
     setError(null);
     try {
+<<<<<<< HEAD
       console.log(`generateContent: Enviando requisição para ${API_BASE_URL}/${endpoint}`);
       const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
         method: 'POST',
@@ -110,6 +118,24 @@ const ProductCreation = () => {
       }
 
       const data = await response.json();
+=======
+      let data;
+      
+      switch (endpoint) {
+        case 'generate-epics':
+          data = await api.generateEpics(payload);
+          break;
+        case 'generate-user-stories':
+          data = await api.generateUserStories(payload);
+          break;
+        case 'generate-requirements':
+          data = await api.generateRequirements(payload);
+          break;
+        default:
+          throw new Error(`Endpoint desconhecido: ${endpoint}`);
+      }
+      
+>>>>>>> eric-branch
       console.log("generateContent: Dados da resposta JSON recebidos:", data);
       setStateCallback(data.content);
       console.log("generateContent: Estado atualizado e avançando passo.");
