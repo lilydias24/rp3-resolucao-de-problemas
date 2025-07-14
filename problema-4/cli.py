@@ -86,7 +86,13 @@ def produtos_menu():
             else:
                 print_error("Erro ao listar produtos.")
         elif opt == "2":
-            name = typer.prompt("Nome do produto (deve conter espaço)")
+            # Validação: nome deve conter espaço
+            while True:
+                name = typer.prompt("Nome do produto (deve conter espaço)")
+                if " " not in name.strip():
+                    print_error("O nome do produto deve conter pelo menos um espaço (ex: 'Meu Produto'). Tente novamente.")
+                    continue
+                break
             description = typer.prompt("Descrição do produto")
             personas = typer.prompt("Personas envolvidas (separe por vírgula)")
             personas = [p.strip() for p in personas.split(",") if p.strip()]
@@ -100,7 +106,9 @@ def produtos_menu():
                 "value_proposition": value_proposition,
                 "platforms": platforms
             }
+            print_info(f"DEBUG: Dados enviados para API: {data}")  # debug print
             resp = requests.post(f"{API_URL}/products/", json=data, headers=auth_headers())
+            print_info(f"DEBUG: Status code: {resp.status_code}, Resposta: {resp.text}")  # debug print
             if resp.status_code == 201:
                 print_success(f"Produto cadastrado: {resp.json()['name']} (ID: {resp.json()['product_id']})")
             else:
