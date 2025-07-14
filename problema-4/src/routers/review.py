@@ -5,7 +5,7 @@ Inclui endpoints para comentários, ações de revisão e gerenciamento de statu
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from src.db.models import ReviewComment, ReviewStatusHistory, Epic, UserStory, Requirement, User
+from src.db.models import ReviewComment, ReviewStatusHistory, Epic, UserStory, Requirement, User, Backlog
 from src.schemas.review import (
     ReviewCommentCreate, ReviewCommentInDB, ReviewActionRequest, 
     ReviewStatusUpdate, EntityReviewInfo, ReviewSummary, ReviewStatus, ReviewAction
@@ -334,7 +334,8 @@ def _get_entity(db: Session, entity_type: str, entity_id: int):
     entity_map = {
         "epic": Epic,
         "user_story": UserStory,
-        "requirement": Requirement
+        "requirement": Requirement,
+        "backlog": Backlog,
     }
     
     model_class = entity_map.get(entity_type)

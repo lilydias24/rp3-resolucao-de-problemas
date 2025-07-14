@@ -3,6 +3,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy import CheckConstraint
 from .base import Base
+from sqlalchemy.dialects.postgresql import ARRAY
 
 """
 Define os modelos ORM do sistema para o SQLAlchemy.
@@ -41,6 +42,7 @@ class Product(Base):
     description = Column(Text)
     value_proposition = Column(Text)
     platforms = Column(JSON)   # Ex: ['web', 'mobile']
+    personas = Column(ARRAY(String), nullable=True)
     created_by = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True))
