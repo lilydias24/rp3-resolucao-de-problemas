@@ -9,7 +9,7 @@ from src.utils.epics import Epic
 load_dotenv()
 
 def extract_json_from_response(content):
-    # remove blocos de cod markdown
+    # Remove blocos de código markdown
     content = content.strip()
     if "```" in content:
         matches = re.findall(r"```(?:json)?\s*([\s\S]*?)```", content)
@@ -17,27 +17,26 @@ def extract_json_from_response(content):
             content = "\n".join(matches).strip()
         else:
             content = content.replace("```json", "").replace("```", "").strip()
-    # acha o primeiro [ e o ultimo ]
+    
     start = content.find("[")
     end = content.rfind("]")
     if start != -1 and end != -1:
         json_str = content[start:end+1]
-        # tenta corrigir o json cortado removendo o ultimo item que ta incompleto
         try:
             json.loads(json_str)
             return json_str
-        except Exception:
-            # remove o ultimo item e tenta de novo
-            last_comma = json_str[:end].rfind("},")
+        except json.JSONDecodeError:
+            # Tenta corrigir JSON incompleto
+            last_comma = json_str.rfind("},")
             if last_comma != -1:
-                json_str = json_str[:last_comma+1] + "]"
+                corrected_json = json_str[:last_comma+1] + "]"
                 try:
-                    json.loads(json_str)
-                    return json_str
-                except Exception:
-                    pass
-        return json_str
-    return content  # fallback
+                    json.loads(corrected_json)
+                    return corrected_json
+                except json.JSONDecodeError:
+                    pass # Se ainda falhar, retorna o original
+        return json_str # Retorna o JSON extraído mesmo que inválido
+    return content  # Fallback
 
 def llm_aspect(func):
     @wraps(func)
@@ -47,58 +46,79 @@ def llm_aspect(func):
         resp = client.chat.completions.create(
             model="llama3-8b-8192",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
+            max_tokens=2048,
             temperature=0.2
         )
         content = resp.choices[0].message.content.strip()
         json_str = extract_json_from_response(content)
         try:
             epics_json = json.loads(json_str)
-            epics = [Epic(e['title'], e['description']) for e in epics_json]
+            epics = [Epic(e.get('title', ''), e.get('description', '')) for e in epics_json]
             return epics
-        except Exception as e:
-            print("Erro ao processar resposta da LLM:", e)
+        except (json.JSONDecodeError, TypeError) as e:
+            print(f"Erro ao processar resposta da LLM: {e}")
             print("Resposta recebida:", content)
-            return []
+            # Tenta fazer um parsing mais simples se o JSON falhar
+            titles = re.findall(r'"title":\s*"([^"]+)"', content)
+            descriptions = re.findall(r'"description":\s*"([^"]+)"', content)
+            epics = [Epic(title, desc) for title, desc in zip(titles, descriptions)]
+            return epics if epics else [Epic("Erro de Geração", content)]
+
     return wrapper
 
 @llm_aspect
-def generate_epics_with_llm(product_info: dict, custom_prompt: str = None):
-    if custom_prompt and custom_prompt.strip():
-        prompt = custom_prompt
-    else:
-        prompt = f"""
-                Considere o seguinte produto:
-                Nome: {product_info.get('nome', '')}
-                Descrição: {product_info.get('descricao', '')}
-                Personas: {', '.join(product_info.get('personas', []))}
-                Proposta de valor: {product_info.get('proposta_valor', '')}
+def generate_epics_with_llm(product_info: dict):
+    prompt = f"""
+        Considere o seguinte produto:
+        Nome: {product_info.get('nome', '')}
+        Descrição: {product_info.get('descricao', '')}
+        Personas: {', '.join(product_info.get('personas', []))}
+        Proposta de valor: {product_info.get('proposta_valor', '')}
 
-                Gere no máximo 5 épicos (título e descrição) para esse produto, em formato JSON.
-                Exemplo de resposta:
-                [
-                {{"title": "Título do épico", "description": "Descrição do épico"}},
-                ...
-                ]
-            """
+        Gere 5 épicos (título e descrição) para esse produto, em formato JSON.
+        Exemplo de resposta:
+        [
+            {{"title": "Título do épico 1", "description": "Descrição do épico 1"}},
+            {{"title": "Título do épico 2", "description": "Descrição do épico 2"}}
+        ]
+    """
     return prompt
 
 @llm_aspect
 def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
-    if custom_prompt and custom_prompt.strip():
-        prompt = custom_prompt
-    else:
-        prompt = f"""
-                    Considerando os seguintes épicos:
-                    {epics} Gere histórias de usuário para cada um deles, em formato JSON.
-                    Exiba apenas o título e a descrição de cada história de usuário.
-                    Exemplo de resposta:
-                    [
-                    {{"title": "Título da história de usuário", "description": "Descrição da história de usuário"}},
-                    ...
-                    ]
-                """
+    prompt = f"""
+        Considerando os seguintes épicos:
+        {epics}
+        
+        Gere 2 histórias de usuário para cada épico, em formato JSON.
+        Exiba apenas o título e a descrição de cada história.
+        {custom_prompt or ''}
+        
+        Exemplo de resposta:
+        [
+            {{"title": "Como [persona], quero [ação], para que [benefício]", "description": "Detalhes da história."}},
+            ...
+        ]
+    """
     return prompt
+
+@llm_aspect
+def generate_requirements_with_llm(story_title: str, story_description: str):
+    prompt = f"""
+        Baseado na seguinte história de usuário:
+        Título: {story_title}
+        Descrição: {story_description}
+        
+        Gere 3 requisitos funcionais detalhados em formato JSON.
+        
+        Exemplo de resposta:
+        [
+            {{"title": "Requisito 1", "description": "O sistema deve..."}},
+            ...
+        ]
+    """
+    return prompt
+
 
 def log_llm_interaction(db, user_id, product_id, prompt, response, model_used, tokens_used=None, entity_type=None, entity_id=None):
     from src.db.models import LLMInteraction
