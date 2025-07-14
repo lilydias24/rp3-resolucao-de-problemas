@@ -1,8 +1,33 @@
 # Ignora arquivos e pastas desnecessários
-__pycache__/
-.pytest_cache/
-dataset_saude.csv
-.vscode/
 poetry.lock
 .env
+*.env
+.env.*
+.token
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Alembic
+alembic/__pycache__/
+alembic/versions/__pycache__/
+
+# Logs
+*.log
+logs/
+
+# Test/coverage
+.coverage
+htmlcov/
+.pytest_cache/
+test.db
+
+# IDE/editor
+.vscode/
 .idea/
+.DS_Store
+
+# Node (caso rode npm na raiz)
+node_modules/

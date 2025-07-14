@@ -206,6 +206,16 @@ def get_requirement_revisions(requirement_id: int, db: Session = Depends(get_db)
     revisions = get_revision_history(db, "requirement", requirement_id)
     return revisions
 
+@router.get("/backlogs/{backlog_id}/revisions")
+@handle_errors
+@logging_aspect
+def get_backlog_revisions(backlog_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Obtém o histórico de revisões de um backlog.
+    """
+    revisions = get_revision_history(db, "backlog", backlog_id)
+    return revisions
+
 # --- USER STORIES ---
 @router.post("/{epic_id}/stories", response_model=UserStoryInDB)
 @handle_errors
@@ -382,6 +392,7 @@ def get_backlog(backlog_id: int, db: Session = Depends(get_db), current_user: Us
 
 @router.put("/backlogs/{backlog_id}", response_model=BacklogInDB)
 @handle_errors
+@track_revisions("backlog")
 @logging_aspect
 @notification_aspect
 def update_backlog(backlog_id: int, backlog: BacklogCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

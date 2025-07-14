@@ -1,0 +1,212 @@
+[
+    {
+        "carreira": "Engenharia de Software",
+        "condicoes": {
+            "interesses": [
+                "Tecnologia"
+            ],
+            "habilidades": [
+                "Programação",
+                "Lógica"
+            ],
+            "desempenho": {
+                "Matemática": 8,
+                "Física": 7
+            },
+            "pesos": {
+                "Matemática": 2,
+                "Física": 1
+            }
+        },
+        "justificativa": "Você tem interesse em Tecnologia, habilidades em Programação e Lógica, e bom desempenho em Matemática e Física."
+    },
+    {
+        "carreira": "Jornalismo Científico",
+        "condicoes": {
+            "interesses": [
+                "Ciências",
+                "Comunicação"
+            ],
+            "habilidades": [
+                "Redação",
+                "Comunicação"
+            ],
+            "desempenho": {
+                "Português": 8,
+                "Biologia": 7
+            },
+            "pesos": {
+                "Português": 2,
+                "Biologia": 1
+            }
+        },
+        "justificativa": "Você tem interesse em Ciências e Comunicação, boa escrita e vai bem em Português e Biologia."
+    },
+    {
+        "carreira": "Medicina",
+        "condicoes": {
+            "interesses": [
+                "Saúde",
+                "Ciências"
+            ],
+            "habilidades": [
+                "Atenção aos detalhes",
+                "Empatia"
+            ],
+            "desempenho": {
+                "Biologia": 8,
+                "Química": 8,
+                "Português": 7
+            },
+            "pesos": {
+                "Biologia": 2,
+                "Química": 2,
+                "Português": 1
+            }
+        },
+        "justificativa": "Você tem interesse em Saúde, empatia, Atenção aos detalhes e ótimo desempenho em Biologia, Química e Português."
+    },
+    {
+        "carreira": "Direito",
+        "condicoes": {
+            "interesses": [
+                "Humanas",
+                "Justiça"
+            ],
+            "habilidades": [
+                "Argumentação",
+                "Leitura"
+            ],
+            "desempenho": {
+                "Português": 8,
+                "História": 7
+            },
+            "pesos": {
+                "Português": 2,
+                "História": 2
+            }
+        },
+        "justificativa": "Você tem interesse em Humanas e Justiça, habilidades de Argumentação e Leitura, e bom desempenho em Português e História."
+    },
+    {
+        "carreira": "Engenharia Civil",
+        "condicoes": {
+            "interesses": [
+                "Construção",
+                "Tecnologia"
+            ],
+            "habilidades": [
+                "Raciocínio lógico",
+                "Desenho técnico"
+            ],
+            "desempenho": {
+                "Matemática": 8,
+                "Física": 8
+            },
+            "pesos": {
+                "Matemática": 2,
+                "Física": 2
+            }
+        },
+        "justificativa": "Você tem interesse em Construção e Tecnologia, Raciocínio lógico, Desenho técnico e ótimo desempenho em Matemática e Física."
+    },
+    {
+        "carreira": "Design Gráfico",
+        "condicoes": {
+            "interesses": [
+                "Arte",
+                "Comunicação visual"
+            ],
+            "habilidades": [
+                "Criatividade",
+                "Edição de imagens"
+            ],
+            "desempenho": {
+                "Artes": 8,
+                "Português": 7
+            },
+            "pesos": {
+                "Artes": 2,
+                "Português": 1
+            }
+        },
+        "justificativa": "Você tem interesse em Arte e Comunicação visual, Criatividade, habilidades em Edição de imagens e bom desempenho em Artes e Português."
+    },
+    {
+        "carreira": "Administração",
+        "condicoes": {
+            "interesses": [
+                "Negócios",
+                "Gestão"
+            ],
+            "habilidades": [
+                "Liderança",
+                "Organização"
+            ],
+            "desempenho": {
+                "Matemática": 7,
+                "Português": 7
+            },
+            "pesos": {
+                "Matemática": 1,
+                "Português": 1
+            }
+        },
+        "justificativa": "Você tem interesse em Negócios e Gestão, habilidades de Liderança e Organização, e bom desempenho em Matemática e Português."
+    },
+    {
+        "carreira": "Ciência de dados",
+        "condicoes": {
+            "interesses": [
+                "Lógica"
+            ],
+            "habilidades": [
+                "Matemática"
+            ],
+            "desempenho": {
+                "Artes": 6.0,
+                "Matemática": 8.0,
+                "História": 6.0,
+                "português": 6.0,
+                "biologia": 6.0,
+                "química": 6.0,
+                "física": 6.0
+            },
+            "pesos": {
+                "artes": 0.0,
+                "matemática": 10.0,
+                "história": 0.0,
+                "português": 0.0,
+                "biologia": 0.0,
+                "química": 10.0,
+                "física": 0.0
+            }
+        },
+        "justificativa": "Você tem interesse em lógica e habilidades necessárias, além de desempenho em matemática."
+    },
+    {
+        "carreira": "Desenvolvedor Front-end",
+        "condicoes": {
+            "interesses": [
+                "Tecnologia",
+                "Arte"
+            ],
+            "habilidades": [
+                "Programação",
+                "Lógica",
+                "Raciocínio lógico",
+                "Desenho técnico",
+                "Criatividade"
+            ],
+            "desempenho": {
+                "Matemática": 7.0,
+                "Artes": 7.0
+            },
+            "pesos": {
+                "Matemática": 3.0,
+                "Artes": 2.0
+            }
+        },
+        "justificativa": "Voce tem interesses e habilidades necessárias"
+    }
+]

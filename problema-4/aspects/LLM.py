@@ -99,3 +99,20 @@ def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
                     ]
                 """
     return prompt
+
+def log_llm_interaction(db, user_id, product_id, prompt, response, model_used, tokens_used=None, entity_type=None, entity_id=None):
+    from src.db.models import LLMInteraction
+    from datetime import datetime
+    interaction = LLMInteraction(
+        user_id=user_id,
+        product_id=product_id,
+        prompt=prompt,
+        response=response,
+        model_used=model_used,
+        tokens_used=tokens_used,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        created_at=datetime.now()
+    )
+    db.add(interaction)
+    db.commit()
