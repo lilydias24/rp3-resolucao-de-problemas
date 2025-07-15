@@ -115,7 +115,7 @@ async def generate_user_stories(request: GenerateUserStoriesRequest, db: Session
                 as_a=as_a,
                 i_want=i_want,
                 so_that=so_that,
-                description=story_util.description,
+                acceptance_criteria=[story_util.description] if hasattr(story_util, 'description') and story_util.description else None,
             )
             new_story = UserStory(
                 **story_create.model_dump(),
@@ -124,7 +124,18 @@ async def generate_user_stories(request: GenerateUserStoriesRequest, db: Session
             db.add(new_story)
             db.commit()
             db.refresh(new_story)
-            persisted_stories.append(new_story.__dict__)
+            persisted_stories.append({
+                "story_id": new_story.story_id,
+                "epic_id": new_story.epic_id,
+                "as_a": new_story.as_a,
+                "i_want": new_story.i_want,
+                "so_that": new_story.so_that,
+                "acceptance_criteria": new_story.acceptance_criteria,
+                "priority": new_story.priority,
+                "status": new_story.status,
+                "created_by": new_story.created_by,
+                "created_at": new_story.created_at
+            })
 
         return LLMResponse(
             content=persisted_stories,
@@ -150,7 +161,11 @@ async def generate_requirements(request: GenerateRequirementsRequest, db: Sessio
         if not story:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="História de usuário não encontrada")
 
-        requirements_generated = generate_requirements_with_llm(story_title=story.title, story_description=story.description)
+        # Construir título e descrição da história a partir dos campos disponíveis
+        story_title = f"Como {story.as_a}, quero {story.i_want}, para que {story.so_that}"
+        story_description = story.acceptance_criteria[0] if story.acceptance_criteria else ""
+        
+        requirements_generated = generate_requirements_with_llm(story_title=story_title, story_description=story_description)
         
         persisted_requirements = []
         for req_util in requirements_generated:
@@ -166,7 +181,15 @@ async def generate_requirements(request: GenerateRequirementsRequest, db: Sessio
             db.add(new_req)
             db.commit()
             db.refresh(new_req)
-            persisted_requirements.append(new_req.__dict__)
+            persisted_requirements.append({
+                "requirement_id": new_req.requirement_id,
+                "story_id": new_req.story_id,
+                "description": new_req.description,
+                "priority": new_req.priority,
+                "status": new_req.status,
+                "created_by": new_req.created_by,
+                "created_at": new_req.created_at
+            })
             
         return LLMResponse(
             content=persisted_requirements,

@@ -108,9 +108,7 @@ def delete_review_comment(
 
 @router.post("/{entity_type}/{entity_id}/action")
 @handle_errors
-@track_revisions
 @logging_aspect
-@notification_aspect
 def perform_review_action(
     entity_type: str,
     entity_id: int,
@@ -176,7 +174,6 @@ def perform_review_action(
 
 @router.put("/{entity_type}/{entity_id}/status")
 @handle_errors
-@track_revisions
 @logging_aspect
 @notification_aspect
 def update_review_status(
@@ -338,10 +335,21 @@ def _get_entity(db: Session, entity_type: str, entity_id: int):
         "backlog": Backlog,
     }
     
+    id_field_map = {
+        "epic": "epic_id",
+        "user_story": "story_id", 
+        "requirement": "requirement_id",
+        "backlog": "backlog_id",
+    }
+    
     model_class = entity_map.get(entity_type)
     if not model_class:
         raise HTTPException(status_code=400, detail="Tipo de entidade inválido")
     
+    id_field = id_field_map.get(entity_type)
+    if not id_field:
+        raise HTTPException(status_code=400, detail="Campo ID não encontrado para o tipo de entidade")
+    
     return db.query(model_class).filter(
-        getattr(model_class, f"{entity_type.split('_')[0]}_id") == entity_id
+        getattr(model_class, id_field) == entity_id
     ).first() 

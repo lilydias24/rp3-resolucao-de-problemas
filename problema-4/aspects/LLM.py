@@ -45,7 +45,13 @@ def llm_aspect(func):
         client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
         resp = client.chat.completions.create(
             model="llama3-8b-8192",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Você é um assistente especializado em Product Management. IMPORTANTE: Sempre responda em PORTUGUÊS BRASILEIRO. Nunca use inglês em suas respostas."
+                },
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=2048,
             temperature=0.2
         )
@@ -69,6 +75,8 @@ def llm_aspect(func):
 @llm_aspect
 def generate_epics_with_llm(product_info: dict):
     prompt = f"""
+        IMPORTANTE: Gere todo o conteúdo em PORTUGUÊS BRASILEIRO.
+        
         Considere o seguinte produto:
         Nome: {product_info.get('nome', '')}
         Descrição: {product_info.get('descricao', '')}
@@ -76,6 +84,8 @@ def generate_epics_with_llm(product_info: dict):
         Proposta de valor: {product_info.get('proposta_valor', '')}
 
         Gere 5 épicos (título e descrição) para esse produto, em formato JSON.
+        IMPORTANTE: Todos os títulos e descrições devem estar em PORTUGUÊS BRASILEIRO.
+        
         Exemplo de resposta:
         [
             {{"title": "Título do épico 1", "description": "Descrição do épico 1"}},
@@ -87,11 +97,14 @@ def generate_epics_with_llm(product_info: dict):
 @llm_aspect
 def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
     prompt = f"""
+        IMPORTANTE: Gere todo o conteúdo em PORTUGUÊS BRASILEIRO.
+        
         Considerando os seguintes épicos:
         {epics}
         
         Gere 2 histórias de usuário para cada épico, em formato JSON.
         Exiba apenas o título e a descrição de cada história.
+        IMPORTANTE: Todos os títulos e descrições devem estar em PORTUGUÊS BRASILEIRO.
         {custom_prompt or ''}
         
         Exemplo de resposta:
@@ -105,11 +118,14 @@ def generate_user_stories_with_llm(epics: str, custom_prompt: str = None):
 @llm_aspect
 def generate_requirements_with_llm(story_title: str, story_description: str):
     prompt = f"""
+        IMPORTANTE: Gere todo o conteúdo em PORTUGUÊS BRASILEIRO.
+        
         Baseado na seguinte história de usuário:
         Título: {story_title}
         Descrição: {story_description}
         
         Gere 3 requisitos funcionais detalhados em formato JSON.
+        IMPORTANTE: Todos os títulos e descrições devem estar em PORTUGUÊS BRASILEIRO.
         
         Exemplo de resposta:
         [

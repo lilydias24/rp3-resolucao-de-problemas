@@ -969,7 +969,7 @@ def backlogs_menu():
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "3":
             bid = typer.prompt("ID do backlog")
-            resp = requests.get(f"{API_URL}/backlogs/{bid}", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
             if resp.status_code == 200:
                 b = resp.json()
                 print_section_header("Detalhes do Backlog")
@@ -993,14 +993,14 @@ def backlogs_menu():
             if name: data["name"] = name
             if description: data["description"] = description
             if version: data["version"] = version
-            resp = requests.put(f"{API_URL}/backlogs/{bid}", json=data, headers=auth_headers())
+            resp = requests.put(f"{API_URL}/products/backlogs/{bid}", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 print_success("Backlog atualizado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "5":
             bid = typer.prompt("ID do backlog a remover")
-            resp = requests.delete(f"{API_URL}/backlogs/{bid}", headers=auth_headers())
+            resp = requests.delete(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
             if resp.status_code == 204:
                 print_success("Backlog removido!")
             else:
@@ -1052,7 +1052,7 @@ def backlogs_menu():
                 "auto_prioritize": True
             }
             
-            resp = requests.post(f"{API_URL}/backlog-generation/generate", json=data, headers=auth_headers())
+            resp = requests.post(f"{API_URL}/backlog-generation/generate/quick?product_id={pid}&name={name}&description={description if description else ''}", headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
                 print_success(f"\nBacklog gerado com sucesso!")
@@ -1168,25 +1168,138 @@ def itens_backlog_menu():
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
             bid = typer.prompt("ID do backlog")
-            resp = requests.get(f"{API_URL}/backlogs/{bid}/items", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}/items", headers=auth_headers())
             if resp.status_code == 200:
                 for i in resp.json():
-                    typer.echo(f"{format_id(str(i['item_id']))} | {format_name(i['title'])} | {format_description(i['description'])}")
+                    # Buscar título e descrição da história ou requisito associado
+                    title = ""
+                    description = ""
+                    if i.get("story_id"):
+                        resp_story = requests.get(f"{API_URL}/products/stories/{i['story_id']}", headers=auth_headers())
+                        if resp_story.status_code == 200:
+                            story = resp_story.json()
+                            title = f"{story['as_a']} | {story['i_want']}"
+                            description = story['so_that']
+                        else:
+                            title = "História não encontrada"
+                            description = ""
+                    elif i.get("requirement_id"):
+                        resp_req = requests.get(f"{API_URL}/products/requirements/{i['requirement_id']}", headers=auth_headers())
+                        if resp_req.status_code == 200:
+                            req = resp_req.json()
+                            title = req['description']
+                            description = req.get('technical_details', '')
+                        else:
+                            title = "Requisito não encontrado"
+                            description = ""
+                    else:
+                        title = "Sem referência"
+                        description = ""
+                    typer.echo(f"{format_id(str(i['item_id']))} | {format_name(title)} | {format_description(description)}")
             else:
                 print_error("Erro ao listar itens.")
         elif opt == "2":
+            # Primeiro listar backlogs disponíveis
+            print_info("Backlogs disponíveis:")
+            resp_backlogs = requests.get(f"{API_URL}/products", headers=auth_headers())
+            if resp_backlogs.status_code == 200:
+                products = resp_backlogs.json()
+                for product in products:
+                    resp_product_backlogs = requests.get(f"{API_URL}/products/{product['product_id']}/backlogs", headers=auth_headers())
+                    if resp_product_backlogs.status_code == 200:
+                        backlogs = resp_product_backlogs.json()
+                        for backlog in backlogs:
+                            typer.echo(f"ID: {backlog['backlog_id']} | Produto: {product['name']} (ID: {product['product_id']}) | Nome: {backlog['name']}")
+            
             bid = typer.prompt("ID do backlog")
-            title = typer.prompt("Título do item")
-            description = typer.prompt("Descrição do item")
-            data = {"title": title, "description": description}
-            resp = requests.post(f"{API_URL}/backlogs/{bid}/items", json=data, headers=auth_headers())
+            # Perguntar tipo de item
+            tipo = typer.prompt("Tipo de item (1=História, 2=Requisito)")
+            # Listar opções disponíveis
+            if tipo == "1":
+                # Listar histórias disponíveis para o backlog
+                # Primeiro, obter o backlog para saber o product_id
+                resp_backlog = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
+                if resp_backlog.status_code != 200:
+                    print_error("Backlog não encontrado!")
+                    return
+                backlog = resp_backlog.json()
+                product_id = backlog["product_id"]
+                print_info(f"Backlog '{backlog['name']}' pertence ao produto ID: {product_id}")
+                
+                # Listar épicos do produto
+                resp_epics = requests.get(f"{API_URL}/products/{product_id}/epics", headers=auth_headers())
+                if resp_epics.status_code != 200:
+                    print_error("Não foi possível listar épicos.")
+                    return
+                epics = resp_epics.json()
+                stories = []
+                for epic in epics:
+                    resp_stories = requests.get(f"{API_URL}/products/{epic['epic_id']}/stories", headers=auth_headers())
+                    if resp_stories.status_code == 200:
+                        for s in resp_stories.json():
+                            stories.append(s)
+                if not stories:
+                    print_error(f"Nenhuma história disponível para o produto {product_id}.")
+                    print_info("Dica: Crie histórias de usuário primeiro ou escolha um backlog de outro produto.")
+                    return
+                print_info("Histórias disponíveis:")
+                for s in stories:
+                    typer.echo(f"ID: {s['story_id']} | {s['as_a']} | {s['i_want']} | {s['so_that']}")
+                story_id = typer.prompt("ID da história de usuário a adicionar ao backlog")
+                data = {
+                    "backlog_id": int(bid),
+                    "story_id": int(story_id),
+                    "position": 1  # ou calcule a próxima posição
+                }
+            elif tipo == "2":
+                # Listar requisitos disponíveis para o backlog
+                resp_backlog = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
+                if resp_backlog.status_code != 200:
+                    print_error("Backlog não encontrado!")
+                    return
+                backlog = resp_backlog.json()
+                product_id = backlog["product_id"]
+                print_info(f"Backlog '{backlog['name']}' pertence ao produto ID: {product_id}")
+                
+                # Listar épicos do produto
+                resp_epics = requests.get(f"{API_URL}/products/{product_id}/epics", headers=auth_headers())
+                if resp_epics.status_code != 200:
+                    print_error("Não foi possível listar épicos.")
+                    return
+                epics = resp_epics.json()
+                requirements = []
+                for epic in epics:
+                    resp_stories = requests.get(f"{API_URL}/products/{epic['epic_id']}/stories", headers=auth_headers())
+                    if resp_stories.status_code == 200:
+                        for s in resp_stories.json():
+                            resp_reqs = requests.get(f"{API_URL}/products/stories/{s['story_id']}/requirements", headers=auth_headers())
+                            if resp_reqs.status_code == 200:
+                                for r in resp_reqs.json():
+                                    requirements.append(r)
+                if not requirements:
+                    print_error(f"Nenhum requisito disponível para o produto {product_id}.")
+                    print_info("Dica: Crie requisitos primeiro ou escolha um backlog de outro produto.")
+                    return
+                print_info("Requisitos disponíveis:")
+                for r in requirements:
+                    typer.echo(f"ID: {r['requirement_id']} | {r['description']}")
+                requirement_id = typer.prompt("ID do requisito a adicionar ao backlog")
+                data = {
+                    "backlog_id": int(bid),
+                    "requirement_id": int(requirement_id),
+                    "position": 1  # ou calcule a próxima posição
+                }
+            else:
+                print_error("Tipo inválido!")
+                return
+            resp = requests.post(f"{API_URL}/products/backlogs/{bid}/items", json=data, headers=auth_headers())
             if resp.status_code == 200 or resp.status_code == 201:
-                print_success(f"Item criado: {resp.json()['title']} (ID: {resp.json()['item_id']})")
+                print_success("Item criado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "3":
             iid = typer.prompt("ID do item")
-            resp = requests.get(f"{API_URL}/backlog-items/{iid}", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlog-items/{iid}", headers=auth_headers())
             if resp.status_code == 200:
                 i = resp.json()
                 print_section_header("Detalhes do Item")
@@ -1208,14 +1321,14 @@ def itens_backlog_menu():
             data = {}
             if title: data["title"] = title
             if description: data["description"] = description
-            resp = requests.put(f"{API_URL}/backlog-items/{iid}", json=data, headers=auth_headers())
+            resp = requests.put(f"{API_URL}/products/backlog-items/{iid}", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 print_success("Item atualizado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "5":
             iid = typer.prompt("ID do item a remover")
-            resp = requests.delete(f"{API_URL}/backlog-items/{iid}", headers=auth_headers())
+            resp = requests.delete(f"{API_URL}/products/backlog-items/{iid}", headers=auth_headers())
             if resp.status_code == 204:
                 print_success("Item removido!")
             else:
@@ -1246,7 +1359,7 @@ def revisar_backlogs_menu():
                 print_error("Erro ao listar backlogs.")
         elif opt == "2":
             bid = typer.prompt("ID do backlog")
-            resp = requests.get(f"{API_URL}/backlogs/{bid}", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
             if resp.status_code == 200:
                 b = resp.json()
                 print_section_header("Detalhes do Backlog")
@@ -1255,7 +1368,7 @@ def revisar_backlogs_menu():
                 typer.echo(f"Descrição: {b.get('description', 'N/A')}")
                 typer.echo(f"Versão: {b.get('version', 'N/A')}")
                 # Listar itens do backlog
-                items = requests.get(f"{API_URL}/backlogs/{bid}/items", headers=auth_headers())
+                items = requests.get(f"{API_URL}/products/backlogs/{bid}/items", headers=auth_headers())
                 if items.status_code == 200:
                     print_info("Itens do backlog:")
                     for i in items.json():
@@ -1378,26 +1491,26 @@ def llm_menu():
                 result = resp.json()
                 print_success("Histórias de usuário geradas e salvas com sucesso!")
                 for story in result["content"]:
-                    typer.echo(f"ID: {story['user_story_id']} | {story['title']}\n  {story['description']}")
+                    typer.echo(f"ID: {story['story_id']} | Como {story['as_a']}, quero {story['i_want']}, para que {story['so_that']}")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
         elif opt == "3":
             print_section_header("Geração de Requisitos via LLM")
-            stories_info = typer.prompt("Informações das histórias de usuário (JSON ou texto descritivo)")
+            story_id = typer.prompt("ID da história de usuário para gerar requisitos")
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
             
             data = {
-                "prompt": stories_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "story_id": int(story_id),
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
             
             resp = requests.post(f"{API_URL}/llm-project/generate-requirements", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
                 print_success("Requisitos gerados com sucesso!")
-                print_info(f"Resposta: {result['response']}")
-                print_info(f"Tokens utilizados: {result.get('tokens_used', 'N/A')}")
+                for req in result["content"]:
+                    typer.echo(f"ID: {req['requirement_id']} | {req['description']}")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
