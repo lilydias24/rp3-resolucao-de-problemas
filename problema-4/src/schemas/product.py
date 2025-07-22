@@ -15,6 +15,10 @@ class ProductBase(BaseModel):
         max_length=2000,
         json_schema_extra={"example": "Um sistema para gerenciar histórias de usuário"}
     )
+    personas: Optional[List[str]] = Field(
+        default=None,
+        json_schema_extra={"example": ["Desenvolvedor", "Product Owner", "Usuário Final"]}
+    )
     value_proposition: Optional[str] = Field(
         None,
         alias="valueProposition",
@@ -46,6 +50,7 @@ class ProductUpdate(BaseModel):
     """Schema para atualização de produto (campos opcionais)"""
     name: Optional[str] = Field(None, min_length=3, max_length=255)
     description: Optional[str] = None
+    personas: Optional[List[str]] = None
     value_proposition: Optional[str] = Field(None, alias="valueProposition")
     platforms: Optional[List[str]] = None
 

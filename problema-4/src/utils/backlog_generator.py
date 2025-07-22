@@ -178,7 +178,10 @@ class BacklogGenerator:
             
             # Bônus para itens recentes
             if options.recent_bonus > 0:
-                days_old = (datetime.utcnow() - item['created_at']).days
+                # Garantir que ambas as datas tenham timezone
+                now = datetime.utcnow().replace(tzinfo=None)
+                created_at = item['created_at'].replace(tzinfo=None) if item['created_at'].tzinfo else item['created_at']
+                days_old = (now - created_at).days
                 if days_old <= 7:  # Itens da última semana
                     score += options.recent_bonus
             

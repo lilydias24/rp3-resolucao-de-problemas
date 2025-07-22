@@ -1,9 +1,15 @@
-from fastapi import APIRouter, HTTPException, status
-from src.schemas.llm import LLMRequest, LLMResponse
-from src.utils.LLM import LLM
-from aspects.logging import logging_aspect
-from aspects.error_handling import handle_errors
-from aspects.notification import notification_aspect
+from fastapi import APIRouter, HTTPException, status, Depends, Body
+from src.schemas.llm import LLMRequest, LLMResponse, GenerateEpicsRequest, GenerateUserStoriesRequest, GenerateRequirementsRequest
+from src.utils.epics import Epic as EpicUtil
+from aspects.LLM import generate_epics_with_llm, generate_user_stories_with_llm, generate_requirements_with_llm, log_llm_interaction
+from sqlalchemy.orm import Session
+from src.db.session import get_db
+from src.routers.auth import get_current_user
+from src.db.models import Epic, UserStory, Requirement, Product, User
+from src.schemas.epic import EpicCreate
+from src.schemas.story import UserStoryCreate
+from src.schemas.requirement import RequirementCreate
+import logging
 
 router = APIRouter(
     prefix="/llm-project",
@@ -14,156 +20,185 @@ router = APIRouter(
 )
 
 @router.post("/generate-epics", response_model=LLMResponse)
-@handle_errors
-@logging_aspect
-@notification_aspect
-async def generate_epics(request: LLMRequest):
+async def generate_epics(request: GenerateEpicsRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Gera épicos baseados nas informações do produto
+    Gera épicos baseados nas informações do produto, salva no banco e retorna os épicos persistidos.
     """
     try:
-        prompt = f"""
-        Com base nas seguintes informações do produto, gere uma lista detalhada de épicos:
-        
-        {request.productInfo}
-        
-        {request.userPromptAdjustment or ''}
-        
-        Por favor, gere épicos bem estruturados e organizados.
-        """
-        
-        # Usar a função LLM real
-        LLM(prompt)
-        
-        # Por enquanto, retornar um exemplo estruturado
-        content = f"""Épico 1: Definição da Arquitetura do Sistema
-Descrição: Estabelecer a arquitetura técnica base do sistema, incluindo escolha de tecnologias, padrões de design e estrutura de dados.
+        product = db.query(Product).filter(Product.product_id == request.product_id).first()
+        if not product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produto não encontrado")
 
-Épico 2: Implementação do Sistema de Autenticação
-Descrição: Desenvolver sistema completo de autenticação e autorização de usuários com diferentes níveis de acesso.
+        product_info = {
+            'nome': product.name,
+            'descricao': product.description,
+            'personas': product.personas,
+            'proposta_valor': product.value_proposition,
+        }
 
-Épico 3: Interface do Usuário Principal
-Descrição: Criar interface principal do sistema com navegação intuitiva e responsiva para diferentes dispositivos.
+        epics_generated = generate_epics_with_llm(product_info=product_info)
 
-Épico 4: Sistema de Geração de Conteúdo
-Descrição: Implementar funcionalidades de geração automática de conteúdo usando IA e LLMs.
+        persisted_epics = []
+        for epic_util in epics_generated:
+            epic_create = EpicCreate(title=epic_util.title, description=epic_util.description)
+            new_epic = Epic(
+                **epic_create.model_dump(),
+                product_id=request.product_id,
+                created_by=current_user.user_id
+            )
+            db.add(new_epic)
+            db.commit()
+            db.refresh(new_epic)
+            persisted_epics.append({
+                "epic_id": new_epic.epic_id,
+                "title": new_epic.title,
+                "description": new_epic.description,
+                "product_id": new_epic.product_id
+            })
 
-Épico 5: Gestão de Projetos e Backlog
-Descrição: Desenvolver sistema completo de gestão de projetos, épicos, histórias e backlog."""
-        
+        log_llm_interaction(
+            db=db,
+            user_id=current_user.user_id,
+            product_id=request.product_id,
+            prompt=str(product_info),
+            response=str(persisted_epics),
+            model_used="llama3-8b-8192",
+            entity_type="epic",
+        )
+
         return LLMResponse(
-            content=content,
+            content=persisted_epics,
             success=True,
-            message="Épicos gerados com sucesso"
+            message="Épicos gerados e salvos com sucesso!"
         )
     except Exception as e:
-        logging.error(f"Erro ao gerar épicos: {str(e)}")
+        logging.error(f"Erro ao gerar/salvar épicos: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao gerar épicos: {str(e)}"
+            detail=f"Erro ao gerar/salvar épicos: {str(e)}"
         )
+
 
 @router.post("/generate-user-stories", response_model=LLMResponse)
-@handle_errors
-@logging_aspect
-@notification_aspect
-async def generate_user_stories(request: LLMRequest):
+async def generate_user_stories(request: GenerateUserStoriesRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Gera histórias de usuário baseadas nos épicos
+    Gera histórias de usuário baseadas nos épicos, salva no banco e retorna as histórias persistidas.
     """
     try:
-        prompt = f"""
-        Com base nas seguintes informações, gere histórias de usuário detalhadas:
-        
-        Informações do Produto: {request.productInfo}
-        Épicos: {request.epicsSummary or 'Não fornecidos'}
-        
-        {request.userPromptAdjustment or ''}
-        
-        Por favor, gere histórias de usuário bem estruturadas seguindo o formato: "Como [persona], eu quero [objetivo] para que [benefício]"
-        """
-        
-        # Usar a função LLM real
-        LLM(prompt)
-        
-        # Por enquanto, retornar um exemplo estruturado
-        content = f"""Como Product Owner, eu quero definir épicos claros para que a equipe tenha visão macro do projeto.
+        product = db.query(Product).filter(Product.product_id == request.product_id).first()
+        if not product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produto não encontrado")
 
-Como Desenvolvedor, eu quero acessar especificações técnicas detalhadas para que possa implementar funcionalidades corretamente.
+        epics = db.query(Epic).filter(Epic.product_id == request.product_id).all()
+        if not epics:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nenhum épico encontrado para este produto.")
+            
+        epics_summary = "\n".join([f"- {e.title}: {e.description}" for e in epics])
 
-Como Scrum Master, eu quero visualizar o backlog organizado para que possa facilitar o planejamento das sprints.
+        user_stories_generated = generate_user_stories_with_llm(epics=epics_summary, custom_prompt=request.userPromptAdjustment)
 
-Como QA Tester, eu quero critérios de aceitação claros para que possa criar testes efetivos.
+        persisted_stories = []
+        for story_util in user_stories_generated:
+            # Assumindo que a LLM retorna um título que pode ser dividido em "como, quero, para"
+            parts = story_util.title.split(',')
+            if len(parts) >= 3:
+                as_a = parts[0].replace("Como ", "").strip()
+                i_want = parts[1].replace(" quero ", "").strip()
+                so_that = parts[2].replace(" para que ", "").strip()
+            else:
+                as_a = "Usuário"
+                i_want = story_util.title
+                so_that = story_util.description
 
-Como Stakeholder, eu quero acompanhar o progresso do projeto para que possa tomar decisões informadas."""
-        
+            story_create = UserStoryCreate(
+                epic_id=epics[0].epic_id, # Simplificação: associar ao primeiro épico
+                as_a=as_a,
+                i_want=i_want,
+                so_that=so_that,
+                acceptance_criteria=[story_util.description] if hasattr(story_util, 'description') and story_util.description else None,
+            )
+            new_story = UserStory(
+                **story_create.model_dump(),
+                created_by=current_user.user_id
+            )
+            db.add(new_story)
+            db.commit()
+            db.refresh(new_story)
+            persisted_stories.append({
+                "story_id": new_story.story_id,
+                "epic_id": new_story.epic_id,
+                "as_a": new_story.as_a,
+                "i_want": new_story.i_want,
+                "so_that": new_story.so_that,
+                "acceptance_criteria": new_story.acceptance_criteria,
+                "priority": new_story.priority,
+                "status": new_story.status,
+                "created_by": new_story.created_by,
+                "created_at": new_story.created_at
+            })
+
         return LLMResponse(
-            content=content,
+            content=persisted_stories,
             success=True,
-            message="Histórias de usuário geradas com sucesso"
+            message="Histórias de usuário geradas com sucesso!"
         )
+
     except Exception as e:
-        logging.error(f"Erro ao gerar histórias de usuário: {str(e)}")
+        logging.error(f"Erro ao gerar/salvar histórias de usuário: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao gerar histórias de usuário: {str(e)}"
+            detail=f"Erro ao gerar/salvar histórias de usuário: {str(e)}"
         )
+
 
 @router.post("/generate-requirements", response_model=LLMResponse)
-@handle_errors
-@logging_aspect
-@notification_aspect
-async def generate_requirements(request: LLMRequest):
+async def generate_requirements(request: GenerateRequirementsRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    Gera requisitos funcionais baseados nas histórias de usuário
+    Gera requisitos funcionais baseados nas histórias de usuário aprovadas.
     """
     try:
-        prompt = f"""
-        Com base nas seguintes informações, gere requisitos funcionais detalhados:
+        story = db.query(UserStory).filter(UserStory.story_id == request.story_id).first()
+        if not story:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="História de usuário não encontrada")
+
+        # Construir título e descrição da história a partir dos campos disponíveis
+        story_title = f"Como {story.as_a}, quero {story.i_want}, para que {story.so_that}"
+        story_description = story.acceptance_criteria[0] if story.acceptance_criteria else ""
         
-        Informações do Produto: {request.productInfo}
-        Histórias de Usuário: {request.userStories or 'Não fornecidas'}
+        requirements_generated = generate_requirements_with_llm(story_title=story_title, story_description=story_description)
         
-        {request.userPromptAdjustment or ''}
-        
-        Por favor, gere requisitos funcionais bem estruturados e organizados.
-        """
-        
-        # Usar a função LLM real
-        LLM(prompt)
-        
-        # Por enquanto, retornar um exemplo estruturado
-        content = [
-            {
-                "id": "REQ-001",
-                "descricao": "O sistema deve permitir autenticação de usuários via email e senha",
-                "prioridade": "Alta"
-            },
-            {
-                "id": "REQ-002", 
-                "descricao": "O sistema deve gerar épicos automaticamente baseado em informações do produto",
-                "prioridade": "Alta"
-            },
-            {
-                "id": "REQ-003",
-                "descricao": "O sistema deve permitir edição e revisão de histórias de usuário",
-                "prioridade": "Média"
-            },
-            {
-                "id": "REQ-004",
-                "descricao": "O sistema deve exportar relatórios em formato CSV e JSON",
-                "prioridade": "Baixa"
-            }
-        ]
-        
+        persisted_requirements = []
+        for req_util in requirements_generated:
+            req_create = RequirementCreate(
+                story_id=request.story_id,
+                description=req_util.description,
+                priority=3 # Prioridade padrão
+            )
+            new_req = Requirement(
+                **req_create.model_dump(),
+                created_by=current_user.user_id
+            )
+            db.add(new_req)
+            db.commit()
+            db.refresh(new_req)
+            persisted_requirements.append({
+                "requirement_id": new_req.requirement_id,
+                "story_id": new_req.story_id,
+                "description": new_req.description,
+                "priority": new_req.priority,
+                "status": new_req.status,
+                "created_by": new_req.created_by,
+                "created_at": new_req.created_at
+            })
+            
         return LLMResponse(
-            content=content,
+            content=persisted_requirements,
             success=True,
-            message="Requisitos funcionais gerados com sucesso"
+            message="Requisitos gerados com sucesso!"
         )
     except Exception as e:
-        logging.error(f"Erro ao gerar requisitos: {str(e)}")
+        logging.error(f"Erro ao gerar/salvar requisitos: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao gerar requisitos: {str(e)}"
+            detail=f"Erro ao gerar/salvar requisitos: {str(e)}"
         )

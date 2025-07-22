@@ -13,7 +13,7 @@ from aspects.revision_tracking import track_revisions, get_revision_history
 from src.schemas.epic import EpicCreate, EpicInDB
 from src.schemas.story import UserStoryCreate, UserStoryInDB
 from src.schemas.requirement import RequirementCreate, RequirementInDB
-from src.schemas.backlog import BacklogCreate, BacklogInDB, BacklogItemCreate, BacklogItemInDB
+from src.schemas.backlog import BacklogCreate, BacklogUpdate, BacklogInDB, BacklogItemCreate, BacklogItemInDB
 from src.schemas.product import ProductUpdate
 
 """
@@ -206,6 +206,16 @@ def get_requirement_revisions(requirement_id: int, db: Session = Depends(get_db)
     revisions = get_revision_history(db, "requirement", requirement_id)
     return revisions
 
+@router.get("/backlogs/{backlog_id}/revisions")
+@handle_errors
+@logging_aspect
+def get_backlog_revisions(backlog_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Obtém o histórico de revisões de um backlog.
+    """
+    revisions = get_revision_history(db, "backlog", backlog_id)
+    return revisions
+
 # --- USER STORIES ---
 @router.post("/{epic_id}/stories", response_model=UserStoryInDB)
 @handle_errors
@@ -353,7 +363,7 @@ def create_backlog(product_id: int, backlog: BacklogCreate, db: Session = Depend
     """
     Cria um novo backlog para um produto.
     """
-    new_backlog = Backlog(**backlog.dict(), product_id=product_id, created_by=current_user.user_id)
+    new_backlog = Backlog(**backlog.dict(), created_by=current_user.user_id)
     db.add(new_backlog)
     db.commit()
     db.refresh(new_backlog)
@@ -382,9 +392,10 @@ def get_backlog(backlog_id: int, db: Session = Depends(get_db), current_user: Us
 
 @router.put("/backlogs/{backlog_id}", response_model=BacklogInDB)
 @handle_errors
+@track_revisions("backlog")
 @logging_aspect
 @notification_aspect
-def update_backlog(backlog_id: int, backlog: BacklogCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_backlog(backlog_id: int, backlog: BacklogUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Atualiza um backlog existente.
     """
@@ -421,7 +432,8 @@ def create_backlog_item(backlog_id: int, item: BacklogItemCreate, db: Session = 
     """
     Cria um novo item em um backlog.
     """
-    new_item = BacklogItem(**item.dict(), backlog_id=backlog_id)
+    data = item.dict(exclude={"backlog_id"})
+    new_item = BacklogItem(**data, backlog_id=backlog_id)
     db.add(new_item)
     db.commit()
     db.refresh(new_item)

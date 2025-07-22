@@ -16,6 +16,12 @@ class BacklogCreate(BaseModel):
     description: Optional[str] = None
     version: Optional[str] = None
 
+class BacklogUpdate(BaseModel):
+    """Dados necessários para atualizar um backlog."""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    version: Optional[str] = None
+
 class BacklogInDB(BacklogCreate):
     """Representação de um backlog armazenado no banco de dados."""
     backlog_id: int

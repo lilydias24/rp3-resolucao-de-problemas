@@ -48,6 +48,7 @@ def register():
     resp = requests.post(f"{API_URL}/auth/register", json=data)
     if resp.status_code == 201:
         print_success("Usuário registrado com sucesso!")
+        menu()
     else:
         print_error(f"Erro: {resp.json().get('detail', resp.text)}")
 
@@ -63,6 +64,7 @@ def login():
         token = resp.json()["access_token"]
         save_token(token)
         print_success("Login realizado com sucesso!")
+        menu()
     else:
         print_error(f"Erro: {resp.json().get('detail', resp.text)}")
 
@@ -88,13 +90,16 @@ def produtos_menu():
         elif opt == "2":
             name = typer.prompt("Nome do produto (deve conter espaço)")
             description = typer.prompt("Descrição do produto")
+            personas = typer.prompt("Personas envolvidas (separe por vírgula)")
+            personas = [p.strip() for p in personas.split(",") if p.strip()]
             value_proposition = typer.prompt("Proposta de valor")
             platforms = typer.prompt("Plataformas (web, mobile, desktop, api) [separe por vírgula]")
             platforms = [p.strip() for p in platforms.split(",") if p.strip()]
             data = {
                 "name": name,
                 "description": description,
-                "valueProposition": value_proposition,
+                "personas": personas,
+                "value_proposition": value_proposition,
                 "platforms": platforms
             }
             resp = requests.post(f"{API_URL}/products/", json=data, headers=auth_headers())
@@ -111,6 +116,8 @@ def produtos_menu():
                 typer.echo(f"{format_id(str(p.get('product_id', p.get('id', 'N/A'))))}")
                 typer.echo(f"{format_name(p.get('name', 'N/A'))}")
                 typer.echo(f"{format_description(p.get('description', 'N/A'))}")
+                if 'personas' in p and p['personas']:
+                    typer.echo(f"Personas: {', '.join(p['personas'])}")
                 if 'value_proposition' in p:
                     typer.echo(f"{print_field_label('Proposta de Valor')} {print_field_value(p['value_proposition'])}")
                 if 'platforms' in p:
@@ -121,12 +128,14 @@ def produtos_menu():
             pid = typer.prompt("ID do produto a editar")
             name = typer.prompt("Novo nome", default="")
             description = typer.prompt("Nova descrição", default="")
+            personas = typer.prompt("Novas personas (separe por vírgula)", default="")
             value_proposition = typer.prompt("Nova proposta de valor", default="")
             platforms = typer.prompt("Novas plataformas (separe por vírgula)", default="")
             data = {}
             if name: data["name"] = name
             if description: data["description"] = description
-            if value_proposition: data["valueProposition"] = value_proposition
+            if personas: data["personas"] = [p.strip() for p in personas.split(",") if p.strip()]
+            if value_proposition: data["value_proposition"] = value_proposition
             if platforms: data["platforms"] = [p.strip() for p in platforms.split(",") if p.strip()]
             resp = requests.put(f"{API_URL}/products/{pid}", json=data, headers=auth_headers())
             if resp.status_code == 200:
@@ -156,6 +165,7 @@ def epicos_menu():
         print_menu_option("\t 5", "Remover épico")
         print_menu_option("\t 6", "Visualizar histórico de revisões")
         print_menu_option("\t 7", "Gerenciar revisões")
+        print_menu_option("\t 8", "Revisar épicos")
         print_menu_option("\t 0", "Voltar")
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
@@ -334,6 +344,135 @@ def epicos_menu():
                 continue
             else:
                 print_warning("Opção inválida!")
+        elif opt == "8":
+            revisar_epicos_menu()
+        elif opt == "0":
+            break
+        else:
+            print_warning("Opção inválida!")
+
+def revisar_epicos_menu():
+    while True:
+        print_menu_title("Revisão de Épicos")
+        print_menu_option("1", "Listar épicos de um produto")
+        print_menu_option("2", "Visualizar detalhes e revisão de um épico")
+        print_menu_option("3", "Editar épico")
+        print_menu_option("4", "Adicionar comentário/sugestão")
+        print_menu_option("5", "Executar ação de revisão (aprovar, rejeitar, etc.)")
+        print_menu_option("6", "Visualizar histórico de revisões do épico")
+        print_menu_option("0", "Voltar")
+        opt = typer.prompt(">>> Opção : ")
+        if opt == "1":
+            pid = typer.prompt("ID do produto")
+            resp = requests.get(f"{API_URL}/products/{pid}/epics", headers=auth_headers())
+            if resp.status_code == 200:
+                for e in resp.json():
+                    typer.echo(f"ID: {e['epic_id']} | {e['title']}\n  {e['description']}")
+            else:
+                print_error("Erro ao listar épicos.")
+        elif opt == "2":
+            eid = typer.prompt("ID do épico")
+            resp = requests.get(f"{API_URL}/products/epics/{eid}", headers=auth_headers())
+            if resp.status_code == 200:
+                e = resp.json()
+                print_section_header("Detalhes do Épico")
+                typer.echo(f"ID: {e.get('epic_id', 'N/A')}")
+                typer.echo(f"Título: {e.get('title', 'N/A')}")
+                typer.echo(f"Descrição: {e.get('description', 'N/A')}")
+                # Status de revisão
+                info = requests.get(f"{API_URL}/review/epic/{eid}/info", headers=auth_headers())
+                if info.status_code == 200:
+                    i = info.json()
+                    typer.echo(f"Status: {i['current_status']}")
+                    typer.echo(f"Total de comentários: {i['total_comments']}")
+                    typer.echo(f"Revisões pendentes: {i['pending_reviews']}")
+                    if i['last_review_date']:
+                        typer.echo(f"Última revisão: {i['last_review_date']} por {i['reviewed_by']}")
+                # Comentários
+                comments = requests.get(f"{API_URL}/review/comments/epic/{eid}", headers=auth_headers())
+                if comments.status_code == 200:
+                    print_info("Comentários:")
+                    for c in comments.json():
+                        typer.echo(f"- {c['comment']} (Sugestão: {'Sim' if c['is_suggestion'] else 'Não'})")
+                else:
+                    print_info("Nenhum comentário.")
+            else:
+                print_error("Épico não encontrado.")
+        elif opt == "3":
+            eid = typer.prompt("ID do épico a editar")
+            title = typer.prompt("Novo título", default="")
+            description = typer.prompt("Nova descrição", default="")
+            data = {}
+            if title: data["title"] = title
+            if description: data["description"] = description
+            resp = requests.put(f"{API_URL}/products/epics/{eid}", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Épico atualizado!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "4":
+            eid = typer.prompt("ID do épico")
+            comment = typer.prompt("Comentário")
+            is_suggestion = typer.confirm("É uma sugestão de melhoria?")
+            suggested_changes = ""
+            if is_suggestion:
+                suggested_changes = typer.prompt("Sugestões específicas de mudanças")
+            data = {
+                "entity_type": "epic",
+                "entity_id": int(eid),
+                "comment": comment,
+                "is_suggestion": is_suggestion,
+                "suggested_changes": suggested_changes
+            }
+            resp = requests.post(f"{API_URL}/review/comments", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Comentário adicionado com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "5":
+            eid = typer.prompt("ID do épico")
+            typer.echo("Ações disponíveis: 1-Aprovar, 2-Rejeitar, 3-Solicitar revisão, 4-Marcar como implementado")
+            action_opt = typer.prompt("Escolha a ação")
+            action_map = {
+                "1": "approve",
+                "2": "reject",
+                "3": "request_revision",
+                "4": "mark_implemented"
+            }
+            action = action_map.get(action_opt)
+            if not action:
+                print_warning("Ação inválida!")
+                continue
+            comment = typer.prompt("Comentário (opcional)", default="")
+            reason = typer.prompt("Motivo (opcional)", default="")
+            data = {
+                "action": action,
+                "comment": comment if comment else None,
+                "reason": reason if reason else None
+            }
+            resp = requests.post(f"{API_URL}/review/epic/{eid}/action", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success(f"Ação '{action}' executada com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "6":
+            eid = typer.prompt("ID do épico")
+            resp = requests.get(f"{API_URL}/products/epics/{eid}/revisions", headers=auth_headers())
+            if resp.status_code == 200:
+                revisions = resp.json()
+                if revisions:
+                    print_section_header(f"Histórico de revisões do épico {eid}")
+                    for rev in revisions:
+                        typer.echo(f"{print_field_label('Campo')} {print_field_value(rev['field_changed'])}")
+                        typer.echo(f"{print_field_label('Antes')} {print_muted(str(rev['old_value']))}")
+                        typer.echo(f"{print_field_label('Depois')} {print_highlight(str(rev['new_value']))}")
+                        typer.echo(f"{print_field_label('Data')} {format_timestamp(rev['changed_at'])}")
+                        typer.echo(f"{print_field_label('Motivo')} {print_accent(str(rev['change_reason']))}")
+                        print_separator()
+                else:
+                    print_info("Nenhuma revisão encontrada para este épico.")
+            else:
+                print_error("Erro ao obter histórico de revisões.")
         elif opt == "0":
             break
         else:
@@ -349,6 +488,7 @@ def historias_menu():
         print_menu_option("\t 4", "Editar história")
         print_menu_option("\t 5", "Remover história")
         print_menu_option("\t 6", "Visualizar histórico de revisões")
+        print_menu_option("\t 7", "Revisar histórias")
         print_menu_option("\t 0", "Voltar")
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
@@ -423,6 +563,135 @@ def historias_menu():
                     print_info("Nenhuma revisão encontrada para esta história.")
             else:
                 print_error("Erro ao obter histórico de revisões.")
+        elif opt == "7":
+            revisar_historias_menu()
+        elif opt == "0":
+            break
+        else:
+            print_warning("Opção inválida!")
+
+def revisar_historias_menu():
+    while True:
+        print_menu_title("Revisão de Histórias de Usuário")
+        print_menu_option("1", "Listar histórias de um épico")
+        print_menu_option("2", "Visualizar detalhes e revisão de uma história")
+        print_menu_option("3", "Editar história")
+        print_menu_option("4", "Adicionar comentário/sugestão")
+        print_menu_option("5", "Executar ação de revisão (aprovar, rejeitar, etc.)")
+        print_menu_option("6", "Visualizar histórico de revisões da história")
+        print_menu_option("0", "Voltar")
+        opt = typer.prompt(">>> Opção : ")
+        if opt == "1":
+            eid = typer.prompt("ID do épico")
+            resp = requests.get(f"{API_URL}/epics/{eid}/user-stories", headers=auth_headers())
+            if resp.status_code == 200:
+                for hs in resp.json():
+                    typer.echo(f"ID: {hs['user_story_id']} | {hs['title']}\n  {hs['description']}")
+            else:
+                print_error("Erro ao listar histórias.")
+        elif opt == "2":
+            hs_id = typer.prompt("ID da história")
+            resp = requests.get(f"{API_URL}/user-stories/{hs_id}", headers=auth_headers())
+            if resp.status_code == 200:
+                hs = resp.json()
+                print_section_header("Detalhes da História")
+                typer.echo(f"ID: {hs.get('user_story_id', 'N/A')}")
+                typer.echo(f"Título: {hs.get('title', 'N/A')}")
+                typer.echo(f"Descrição: {hs.get('description', 'N/A')}")
+                # Status de revisão
+                info = requests.get(f"{API_URL}/review/user_story/{hs_id}/info", headers=auth_headers())
+                if info.status_code == 200:
+                    i = info.json()
+                    typer.echo(f"Status: {i['current_status']}")
+                    typer.echo(f"Total de comentários: {i['total_comments']}")
+                    typer.echo(f"Revisões pendentes: {i['pending_reviews']}")
+                    if i['last_review_date']:
+                        typer.echo(f"Última revisão: {i['last_review_date']} por {i['reviewed_by']}")
+                # Comentários
+                comments = requests.get(f"{API_URL}/review/comments/user_story/{hs_id}", headers=auth_headers())
+                if comments.status_code == 200:
+                    print_info("Comentários:")
+                    for c in comments.json():
+                        typer.echo(f"- {c['comment']} (Sugestão: {'Sim' if c['is_suggestion'] else 'Não'})")
+                else:
+                    print_info("Nenhum comentário.")
+            else:
+                print_error("História não encontrada.")
+        elif opt == "3":
+            hs_id = typer.prompt("ID da história a editar")
+            title = typer.prompt("Novo título", default="")
+            description = typer.prompt("Nova descrição", default="")
+            data = {}
+            if title: data["title"] = title
+            if description: data["description"] = description
+            resp = requests.put(f"{API_URL}/user-stories/{hs_id}", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("História atualizada!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "4":
+            hs_id = typer.prompt("ID da história")
+            comment = typer.prompt("Comentário")
+            is_suggestion = typer.confirm("É uma sugestão de melhoria?")
+            suggested_changes = ""
+            if is_suggestion:
+                suggested_changes = typer.prompt("Sugestões específicas de mudanças")
+            data = {
+                "entity_type": "user_story",
+                "entity_id": int(hs_id),
+                "comment": comment,
+                "is_suggestion": is_suggestion,
+                "suggested_changes": suggested_changes
+            }
+            resp = requests.post(f"{API_URL}/review/comments", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Comentário adicionado com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "5":
+            hs_id = typer.prompt("ID da história")
+            typer.echo("Ações disponíveis: 1-Aprovar, 2-Rejeitar, 3-Solicitar revisão, 4-Marcar como implementado")
+            action_opt = typer.prompt("Escolha a ação")
+            action_map = {
+                "1": "approve",
+                "2": "reject",
+                "3": "request_revision",
+                "4": "mark_implemented"
+            }
+            action = action_map.get(action_opt)
+            if not action:
+                print_warning("Ação inválida!")
+                continue
+            comment = typer.prompt("Comentário (opcional)", default="")
+            reason = typer.prompt("Motivo (opcional)", default="")
+            data = {
+                "action": action,
+                "comment": comment if comment else None,
+                "reason": reason if reason else None
+            }
+            resp = requests.post(f"{API_URL}/review/user_story/{hs_id}/action", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success(f"Ação '{action}' executada com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "6":
+            hs_id = typer.prompt("ID da história")
+            resp = requests.get(f"{API_URL}/products/stories/{hs_id}/revisions", headers=auth_headers())
+            if resp.status_code == 200:
+                revisions = resp.json()
+                if revisions:
+                    print_section_header(f"Histórico de revisões da história {hs_id}")
+                    for rev in revisions:
+                        typer.echo(f"{print_field_label('Campo')} {print_field_value(rev['field_changed'])}")
+                        typer.echo(f"{print_field_label('Antes')} {print_muted(str(rev['old_value']))}")
+                        typer.echo(f"{print_field_label('Depois')} {print_highlight(str(rev['new_value']))}")
+                        typer.echo(f"{print_field_label('Data')} {format_timestamp(rev['changed_at'])}")
+                        typer.echo(f"{print_field_label('Motivo')} {print_accent(str(rev['change_reason']))}")
+                        print_separator()
+                else:
+                    print_info("Nenhuma revisão encontrada para esta história.")
+            else:
+                print_error("Erro ao obter histórico de revisões.")
         elif opt == "0":
             break
         else:
@@ -438,6 +707,8 @@ def requisitos_menu():
         print_menu_option("\t 4", "Editar requisito")
         print_menu_option("\t 5", "Remover requisito")
         print_menu_option("\t 6", "Visualizar histórico de revisões")
+        print_menu_option("\t 7", "Gerar requisitos via LLM")
+        print_menu_option("\t 8", "Revisar requisitos")
         print_menu_option("\t 0", "Voltar")
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
@@ -512,6 +783,151 @@ def requisitos_menu():
                     print_info("Nenhuma revisão encontrada para este requisito.")
             else:
                 print_error("Erro ao obter histórico de revisões.")
+        elif opt == "7":
+            print_section_header("Geração de Requisitos Funcionais via LLM")
+            product_id = typer.prompt("ID do produto para gerar requisitos")
+            custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
+            data = {
+                "product_id": int(product_id),
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
+            }
+            resp = requests.post(f"{API_URL}/llm-project/generate-requirements", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                result = resp.json()
+                print_success("Requisitos funcionais gerados e salvos com sucesso!")
+                for req in result["content"]:
+                    typer.echo(f"ID: {req['requirement_id']} | Prioridade: {req['priority']}\n  {req['description']}")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "8":
+            revisar_requisitos_menu()
+        elif opt == "0":
+            break
+        else:
+            print_warning("Opção inválida!")
+
+def revisar_requisitos_menu():
+    while True:
+        print_menu_title("Revisão de Requisitos Funcionais")
+        print_menu_option("1", "Listar requisitos de uma história")
+        print_menu_option("2", "Visualizar detalhes e revisão de um requisito")
+        print_menu_option("3", "Editar requisito")
+        print_menu_option("4", "Adicionar comentário/sugestão")
+        print_menu_option("5", "Executar ação de revisão (aprovar, rejeitar, etc.)")
+        print_menu_option("6", "Visualizar histórico de revisões do requisito")
+        print_menu_option("0", "Voltar")
+        opt = typer.prompt(">>> Opção : ")
+        if opt == "1":
+            hs_id = typer.prompt("ID da história de usuário")
+            resp = requests.get(f"{API_URL}/stories/{hs_id}/requirements", headers=auth_headers())
+            if resp.status_code == 200:
+                for req in resp.json():
+                    typer.echo(f"ID: {req['requirement_id']} | Prioridade: {req.get('priority', 'N/A')}\n  {req['description']}")
+            else:
+                print_error("Erro ao listar requisitos.")
+        elif opt == "2":
+            req_id = typer.prompt("ID do requisito")
+            resp = requests.get(f"{API_URL}/requirements/{req_id}", headers=auth_headers())
+            if resp.status_code == 200:
+                req = resp.json()
+                print_section_header("Detalhes do Requisito")
+                typer.echo(f"ID: {req.get('requirement_id', 'N/A')}")
+                typer.echo(f"Descrição: {req.get('description', 'N/A')}")
+                typer.echo(f"Prioridade: {req.get('priority', 'N/A')}")
+                # Status de revisão
+                info = requests.get(f"{API_URL}/review/requirement/{req_id}/info", headers=auth_headers())
+                if info.status_code == 200:
+                    i = info.json()
+                    typer.echo(f"Status: {i['current_status']}")
+                    typer.echo(f"Total de comentários: {i['total_comments']}")
+                    typer.echo(f"Revisões pendentes: {i['pending_reviews']}")
+                    if i['last_review_date']:
+                        typer.echo(f"Última revisão: {i['last_review_date']} por {i['reviewed_by']}")
+                # Comentários
+                comments = requests.get(f"{API_URL}/review/comments/requirement/{req_id}", headers=auth_headers())
+                if comments.status_code == 200:
+                    print_info("Comentários:")
+                    for c in comments.json():
+                        typer.echo(f"- {c['comment']} (Sugestão: {'Sim' if c['is_suggestion'] else 'Não'})")
+                else:
+                    print_info("Nenhum comentário.")
+            else:
+                print_error("Requisito não encontrado.")
+        elif opt == "3":
+            req_id = typer.prompt("ID do requisito a editar")
+            description = typer.prompt("Nova descrição", default="")
+            priority = typer.prompt("Nova prioridade (Alta/Média/Baixa)", default="")
+            data = {}
+            if description: data["description"] = description
+            if priority: data["priority"] = priority
+            resp = requests.put(f"{API_URL}/requirements/{req_id}", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Requisito atualizado!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "4":
+            req_id = typer.prompt("ID do requisito")
+            comment = typer.prompt("Comentário")
+            is_suggestion = typer.confirm("É uma sugestão de melhoria?")
+            suggested_changes = ""
+            if is_suggestion:
+                suggested_changes = typer.prompt("Sugestões específicas de mudanças")
+            data = {
+                "entity_type": "requirement",
+                "entity_id": int(req_id),
+                "comment": comment,
+                "is_suggestion": is_suggestion,
+                "suggested_changes": suggested_changes
+            }
+            resp = requests.post(f"{API_URL}/review/comments", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Comentário adicionado com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "5":
+            req_id = typer.prompt("ID do requisito")
+            typer.echo("Ações disponíveis: 1-Aprovar, 2-Rejeitar, 3-Solicitar revisão, 4-Marcar como implementado")
+            action_opt = typer.prompt("Escolha a ação")
+            action_map = {
+                "1": "approve",
+                "2": "reject",
+                "3": "request_revision",
+                "4": "mark_implemented"
+            }
+            action = action_map.get(action_opt)
+            if not action:
+                print_warning("Ação inválida!")
+                continue
+            comment = typer.prompt("Comentário (opcional)", default="")
+            reason = typer.prompt("Motivo (opcional)", default="")
+            data = {
+                "action": action,
+                "comment": comment if comment else None,
+                "reason": reason if reason else None
+            }
+            resp = requests.post(f"{API_URL}/review/requirement/{req_id}/action", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success(f"Ação '{action}' executada com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "6":
+            req_id = typer.prompt("ID do requisito")
+            resp = requests.get(f"{API_URL}/products/requirements/{req_id}/revisions", headers=auth_headers())
+            if resp.status_code == 200:
+                revisions = resp.json()
+                if revisions:
+                    print_section_header(f"Histórico de revisões do requisito {req_id}")
+                    for rev in revisions:
+                        typer.echo(f"{print_field_label('Campo')} {print_field_value(rev['field_changed'])}")
+                        typer.echo(f"{print_field_label('Antes')} {print_muted(str(rev['old_value']))}")
+                        typer.echo(f"{print_field_label('Depois')} {print_highlight(str(rev['new_value']))}")
+                        typer.echo(f"{print_field_label('Data')} {format_timestamp(rev['changed_at'])}")
+                        typer.echo(f"{print_field_label('Motivo')} {print_accent(str(rev['change_reason']))}")
+                        print_separator()
+                else:
+                    print_info("Nenhuma revisão encontrada para este requisito.")
+            else:
+                print_error("Erro ao obter histórico de revisões.")
         elif opt == "0":
             break
         else:
@@ -529,6 +945,7 @@ def backlogs_menu():
         print_menu_option("\t 6", "Gerar backlog automaticamente")
         print_menu_option("\t 7", "Preview de geração de backlog")
         print_menu_option("\t 8", "Ver itens aprovados")
+        print_menu_option("\t 9", "Revisar backlogs gerados")
         print_menu_option("\t 0", "Voltar")
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
@@ -552,7 +969,7 @@ def backlogs_menu():
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "3":
             bid = typer.prompt("ID do backlog")
-            resp = requests.get(f"{API_URL}/backlogs/{bid}", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
             if resp.status_code == 200:
                 b = resp.json()
                 print_section_header("Detalhes do Backlog")
@@ -576,14 +993,14 @@ def backlogs_menu():
             if name: data["name"] = name
             if description: data["description"] = description
             if version: data["version"] = version
-            resp = requests.put(f"{API_URL}/backlogs/{bid}", json=data, headers=auth_headers())
+            resp = requests.put(f"{API_URL}/products/backlogs/{bid}", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 print_success("Backlog atualizado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "5":
             bid = typer.prompt("ID do backlog a remover")
-            resp = requests.delete(f"{API_URL}/backlogs/{bid}", headers=auth_headers())
+            resp = requests.delete(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
             if resp.status_code == 204:
                 print_success("Backlog removido!")
             else:
@@ -635,7 +1052,7 @@ def backlogs_menu():
                 "auto_prioritize": True
             }
             
-            resp = requests.post(f"{API_URL}/backlog-generation/generate", json=data, headers=auth_headers())
+            resp = requests.post(f"{API_URL}/backlog-generation/generate/quick?product_id={pid}&name={name}&description={description if description else ''}", headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
                 print_success(f"\nBacklog gerado com sucesso!")
@@ -730,6 +1147,9 @@ def backlogs_menu():
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
+        elif opt == "9":
+            revisar_backlogs_menu()
+        
         elif opt == "0":
             break
         else:
@@ -748,25 +1168,138 @@ def itens_backlog_menu():
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
             bid = typer.prompt("ID do backlog")
-            resp = requests.get(f"{API_URL}/backlogs/{bid}/items", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}/items", headers=auth_headers())
             if resp.status_code == 200:
                 for i in resp.json():
-                    typer.echo(f"{format_id(str(i['item_id']))} | {format_name(i['title'])} | {format_description(i['description'])}")
+                    # Buscar título e descrição da história ou requisito associado
+                    title = ""
+                    description = ""
+                    if i.get("story_id"):
+                        resp_story = requests.get(f"{API_URL}/products/stories/{i['story_id']}", headers=auth_headers())
+                        if resp_story.status_code == 200:
+                            story = resp_story.json()
+                            title = f"{story['as_a']} | {story['i_want']}"
+                            description = story['so_that']
+                        else:
+                            title = "História não encontrada"
+                            description = ""
+                    elif i.get("requirement_id"):
+                        resp_req = requests.get(f"{API_URL}/products/requirements/{i['requirement_id']}", headers=auth_headers())
+                        if resp_req.status_code == 200:
+                            req = resp_req.json()
+                            title = req['description']
+                            description = req.get('technical_details', '')
+                        else:
+                            title = "Requisito não encontrado"
+                            description = ""
+                    else:
+                        title = "Sem referência"
+                        description = ""
+                    typer.echo(f"{format_id(str(i['item_id']))} | {format_name(title)} | {format_description(description)}")
             else:
                 print_error("Erro ao listar itens.")
         elif opt == "2":
+            # Primeiro listar backlogs disponíveis
+            print_info("Backlogs disponíveis:")
+            resp_backlogs = requests.get(f"{API_URL}/products", headers=auth_headers())
+            if resp_backlogs.status_code == 200:
+                products = resp_backlogs.json()
+                for product in products:
+                    resp_product_backlogs = requests.get(f"{API_URL}/products/{product['product_id']}/backlogs", headers=auth_headers())
+                    if resp_product_backlogs.status_code == 200:
+                        backlogs = resp_product_backlogs.json()
+                        for backlog in backlogs:
+                            typer.echo(f"ID: {backlog['backlog_id']} | Produto: {product['name']} (ID: {product['product_id']}) | Nome: {backlog['name']}")
+            
             bid = typer.prompt("ID do backlog")
-            title = typer.prompt("Título do item")
-            description = typer.prompt("Descrição do item")
-            data = {"title": title, "description": description}
-            resp = requests.post(f"{API_URL}/backlogs/{bid}/items", json=data, headers=auth_headers())
+            # Perguntar tipo de item
+            tipo = typer.prompt("Tipo de item (1=História, 2=Requisito)")
+            # Listar opções disponíveis
+            if tipo == "1":
+                # Listar histórias disponíveis para o backlog
+                # Primeiro, obter o backlog para saber o product_id
+                resp_backlog = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
+                if resp_backlog.status_code != 200:
+                    print_error("Backlog não encontrado!")
+                    return
+                backlog = resp_backlog.json()
+                product_id = backlog["product_id"]
+                print_info(f"Backlog '{backlog['name']}' pertence ao produto ID: {product_id}")
+                
+                # Listar épicos do produto
+                resp_epics = requests.get(f"{API_URL}/products/{product_id}/epics", headers=auth_headers())
+                if resp_epics.status_code != 200:
+                    print_error("Não foi possível listar épicos.")
+                    return
+                epics = resp_epics.json()
+                stories = []
+                for epic in epics:
+                    resp_stories = requests.get(f"{API_URL}/products/{epic['epic_id']}/stories", headers=auth_headers())
+                    if resp_stories.status_code == 200:
+                        for s in resp_stories.json():
+                            stories.append(s)
+                if not stories:
+                    print_error(f"Nenhuma história disponível para o produto {product_id}.")
+                    print_info("Dica: Crie histórias de usuário primeiro ou escolha um backlog de outro produto.")
+                    return
+                print_info("Histórias disponíveis:")
+                for s in stories:
+                    typer.echo(f"ID: {s['story_id']} | {s['as_a']} | {s['i_want']} | {s['so_that']}")
+                story_id = typer.prompt("ID da história de usuário a adicionar ao backlog")
+                data = {
+                    "backlog_id": int(bid),
+                    "story_id": int(story_id),
+                    "position": 1  # ou calcule a próxima posição
+                }
+            elif tipo == "2":
+                # Listar requisitos disponíveis para o backlog
+                resp_backlog = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
+                if resp_backlog.status_code != 200:
+                    print_error("Backlog não encontrado!")
+                    return
+                backlog = resp_backlog.json()
+                product_id = backlog["product_id"]
+                print_info(f"Backlog '{backlog['name']}' pertence ao produto ID: {product_id}")
+                
+                # Listar épicos do produto
+                resp_epics = requests.get(f"{API_URL}/products/{product_id}/epics", headers=auth_headers())
+                if resp_epics.status_code != 200:
+                    print_error("Não foi possível listar épicos.")
+                    return
+                epics = resp_epics.json()
+                requirements = []
+                for epic in epics:
+                    resp_stories = requests.get(f"{API_URL}/products/{epic['epic_id']}/stories", headers=auth_headers())
+                    if resp_stories.status_code == 200:
+                        for s in resp_stories.json():
+                            resp_reqs = requests.get(f"{API_URL}/products/stories/{s['story_id']}/requirements", headers=auth_headers())
+                            if resp_reqs.status_code == 200:
+                                for r in resp_reqs.json():
+                                    requirements.append(r)
+                if not requirements:
+                    print_error(f"Nenhum requisito disponível para o produto {product_id}.")
+                    print_info("Dica: Crie requisitos primeiro ou escolha um backlog de outro produto.")
+                    return
+                print_info("Requisitos disponíveis:")
+                for r in requirements:
+                    typer.echo(f"ID: {r['requirement_id']} | {r['description']}")
+                requirement_id = typer.prompt("ID do requisito a adicionar ao backlog")
+                data = {
+                    "backlog_id": int(bid),
+                    "requirement_id": int(requirement_id),
+                    "position": 1  # ou calcule a próxima posição
+                }
+            else:
+                print_error("Tipo inválido!")
+                return
+            resp = requests.post(f"{API_URL}/products/backlogs/{bid}/items", json=data, headers=auth_headers())
             if resp.status_code == 200 or resp.status_code == 201:
-                print_success(f"Item criado: {resp.json()['title']} (ID: {resp.json()['item_id']})")
+                print_success("Item criado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "3":
             iid = typer.prompt("ID do item")
-            resp = requests.get(f"{API_URL}/backlog-items/{iid}", headers=auth_headers())
+            resp = requests.get(f"{API_URL}/products/backlog-items/{iid}", headers=auth_headers())
             if resp.status_code == 200:
                 i = resp.json()
                 print_section_header("Detalhes do Item")
@@ -788,18 +1321,125 @@ def itens_backlog_menu():
             data = {}
             if title: data["title"] = title
             if description: data["description"] = description
-            resp = requests.put(f"{API_URL}/backlog-items/{iid}", json=data, headers=auth_headers())
+            resp = requests.put(f"{API_URL}/products/backlog-items/{iid}", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 print_success("Item atualizado!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         elif opt == "5":
             iid = typer.prompt("ID do item a remover")
-            resp = requests.delete(f"{API_URL}/backlog-items/{iid}", headers=auth_headers())
+            resp = requests.delete(f"{API_URL}/products/backlog-items/{iid}", headers=auth_headers())
             if resp.status_code == 204:
                 print_success("Item removido!")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "0":
+            break
+        else:
+            print_warning("Opção inválida!")
+
+# --- REVISÃO DE BACKLOGS ---
+def revisar_backlogs_menu():
+    while True:
+        print_menu_title("Revisão de Backlogs")
+        print_menu_option("1", "Listar backlogs de um produto")
+        print_menu_option("2", "Visualizar detalhes e itens de um backlog")
+        print_menu_option("3", "Adicionar comentário/sugestão")
+        print_menu_option("4", "Executar ação de revisão (aprovar, rejeitar, etc.)")
+        print_menu_option("5", "Visualizar histórico de revisões do backlog")
+        print_menu_option("0", "Voltar")
+        opt = typer.prompt(">>> Opção : ")
+        if opt == "1":
+            pid = typer.prompt("ID do produto")
+            resp = requests.get(f"{API_URL}/products/{pid}/backlogs", headers=auth_headers())
+            if resp.status_code == 200:
+                for b in resp.json():
+                    typer.echo(f"ID: {b['backlog_id']} | {b['name']}\n  {b['description']}")
+            else:
+                print_error("Erro ao listar backlogs.")
+        elif opt == "2":
+            bid = typer.prompt("ID do backlog")
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}", headers=auth_headers())
+            if resp.status_code == 200:
+                b = resp.json()
+                print_section_header("Detalhes do Backlog")
+                typer.echo(f"ID: {b.get('backlog_id', 'N/A')}")
+                typer.echo(f"Nome: {b.get('name', 'N/A')}")
+                typer.echo(f"Descrição: {b.get('description', 'N/A')}")
+                typer.echo(f"Versão: {b.get('version', 'N/A')}")
+                # Listar itens do backlog
+                items = requests.get(f"{API_URL}/products/backlogs/{bid}/items", headers=auth_headers())
+                if items.status_code == 200:
+                    print_info("Itens do backlog:")
+                    for i in items.json():
+                        typer.echo(f"- {i['title']} | {i['description']} | Status: {i.get('status', 'N/A')}")
+                else:
+                    print_info("Nenhum item encontrado.")
+            else:
+                print_error("Backlog não encontrado.")
+        elif opt == "3":
+            bid = typer.prompt("ID do backlog")
+            comment = typer.prompt("Comentário")
+            is_suggestion = typer.confirm("É uma sugestão de melhoria?")
+            suggested_changes = ""
+            if is_suggestion:
+                suggested_changes = typer.prompt("Sugestões específicas de mudanças")
+            data = {
+                "entity_type": "backlog",
+                "entity_id": int(bid),
+                "comment": comment,
+                "is_suggestion": is_suggestion,
+                "suggested_changes": suggested_changes
+            }
+            resp = requests.post(f"{API_URL}/review/comments", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success("Comentário adicionado com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "4":
+            bid = typer.prompt("ID do backlog")
+            typer.echo("Ações disponíveis: 1-Aprovar, 2-Rejeitar, 3-Solicitar revisão, 4-Marcar como implementado")
+            action_opt = typer.prompt("Escolha a ação")
+            action_map = {
+                "1": "approve",
+                "2": "reject",
+                "3": "request_revision",
+                "4": "mark_implemented"
+            }
+            action = action_map.get(action_opt)
+            if not action:
+                print_warning("Ação inválida!")
+                continue
+            comment = typer.prompt("Comentário (opcional)", default="")
+            reason = typer.prompt("Motivo (opcional)", default="")
+            data = {
+                "action": action,
+                "comment": comment if comment else None,
+                "reason": reason if reason else None
+            }
+            resp = requests.post(f"{API_URL}/review/backlog/{bid}/action", json=data, headers=auth_headers())
+            if resp.status_code == 200:
+                print_success(f"Ação '{action}' executada com sucesso!")
+            else:
+                print_error(f"Erro: {resp.json().get('detail', resp.text)}")
+        elif opt == "5":
+            bid = typer.prompt("ID do backlog")
+            resp = requests.get(f"{API_URL}/products/backlogs/{bid}/revisions", headers=auth_headers())
+            if resp.status_code == 200:
+                revisions = resp.json()
+                if revisions:
+                    print_section_header(f"Histórico de revisões do backlog {bid}")
+                    for rev in revisions:
+                        typer.echo(f"{print_field_label('Campo')} {print_field_value(rev['field_changed'])}")
+                        typer.echo(f"{print_field_label('Antes')} {print_muted(str(rev['old_value']))}")
+                        typer.echo(f"{print_field_label('Depois')} {print_highlight(str(rev['new_value']))}")
+                        typer.echo(f"{print_field_label('Data')} {format_timestamp(rev['changed_at'])}")
+                        typer.echo(f"{print_field_label('Motivo')} {print_accent(str(rev['change_reason']))}")
+                        print_separator()
+                else:
+                    print_info("Nenhuma revisão encontrada para este backlog.")
+            else:
+                print_error("Erro ao obter histórico de revisões.")
         elif opt == "0":
             break
         else:
@@ -816,58 +1456,61 @@ def llm_menu():
         opt = typer.prompt(">>> Opção : ")
         if opt == "1":
             print_section_header("Geração de Épicos via LLM")
+            product_id = typer.prompt("ID do produto para gerar épicos")
             product_info = typer.prompt("Informações do produto (JSON ou texto descritivo)")
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
-            
             data = {
-                "prompt": product_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "product_id": int(product_id),
+                "productInfo": product_info,
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
-            
             resp = requests.post(f"{API_URL}/llm-project/generate-epics", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
-                print_success("Épicos gerados com sucesso!")
-                print_info(f"Resposta: {result['response']}")
-                print_info(f"Tokens utilizados: {result.get('tokens_used', 'N/A')}")
+                print_success("Épicos gerados e salvos com sucesso!")
+                for epic in result["content"]:
+                    typer.echo(f"ID: {epic['epic_id']} | {epic['title']}\n  {epic['description']}")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
         elif opt == "2":
             print_section_header("Geração de Histórias de Usuário via LLM")
-            epics_info = typer.prompt("Informações dos épicos (JSON ou texto descritivo)")
+            product_id = typer.prompt("ID do produto para gerar histórias")
+            epic_ids_str = typer.prompt("IDs dos épicos para gerar histórias (separe por vírgula)", default="")
+            epic_ids = [int(e.strip()) for e in epic_ids_str.split(",") if e.strip()] if epic_ids_str else None
+            product_info = typer.prompt("Informações do produto (JSON ou texto descritivo)")
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
-            
             data = {
-                "prompt": epics_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "product_id": int(product_id),
+                "epic_ids": epic_ids,
+                "productInfo": product_info,
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
-            
             resp = requests.post(f"{API_URL}/llm-project/generate-user-stories", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
-                print_success("Histórias de usuário geradas com sucesso!")
-                print_info(f"Resposta: {result['response']}")
-                print_info(f"Tokens utilizados: {result.get('tokens_used', 'N/A')}")
+                print_success("Histórias de usuário geradas e salvas com sucesso!")
+                for story in result["content"]:
+                    typer.echo(f"ID: {story['story_id']} | Como {story['as_a']}, quero {story['i_want']}, para que {story['so_that']}")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
         elif opt == "3":
             print_section_header("Geração de Requisitos via LLM")
-            stories_info = typer.prompt("Informações das histórias de usuário (JSON ou texto descritivo)")
+            story_id = typer.prompt("ID da história de usuário para gerar requisitos")
             custom_prompt = typer.prompt("Prompt customizado (opcional)", default="")
             
             data = {
-                "prompt": stories_info,
-                "custom_prompt": custom_prompt if custom_prompt else None
+                "story_id": int(story_id),
+                "userPromptAdjustment": custom_prompt if custom_prompt else None
             }
             
             resp = requests.post(f"{API_URL}/llm-project/generate-requirements", json=data, headers=auth_headers())
             if resp.status_code == 200:
                 result = resp.json()
                 print_success("Requisitos gerados com sucesso!")
-                print_info(f"Resposta: {result['response']}")
-                print_info(f"Tokens utilizados: {result.get('tokens_used', 'N/A')}")
+                for req in result["content"]:
+                    typer.echo(f"ID: {req['requirement_id']} | {req['description']}")
             else:
                 print_error(f"Erro: {resp.json().get('detail', resp.text)}")
         
