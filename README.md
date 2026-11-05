@@ -37,6 +37,7 @@ Para publicação, o histórico foi filtrado:
 - um arquivo `.env` com credencial foi removido;
 - os datasets `dataset_saude.csv` (78 MB e 120 MB) do Problema 2 foram removidos por
   excederem o limite do GitHub. O próprio sistema gera datasets sintéticos para testes;
+- arquivos gerados (`node_modules` e logs de execução do Problema 4) foram removidos;
 - os e-mails dos colaboradores foram anonimizados (os nomes foram mantidos).
 
 **Equipe:** Emilly Nascimento Dias, Eric Santos de Moraes, Matheus Domingues Cabral,
