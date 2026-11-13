@@ -142,7 +142,7 @@ def create_epic(product_id: int, epic: EpicCreate, db: Session = Depends(get_db)
     """
     Cria um novo épico para um produto específico.
     """
-    new_epic = Epic(**epic.dict(), product_id=product_id)
+    new_epic = Epic(**epic.dict(), product_id=product_id, created_by=current_user.user_id)
     db.add(new_epic)
     db.commit()
     db.refresh(new_epic)
@@ -225,7 +225,8 @@ def create_story(epic_id: int, story: UserStoryCreate, db: Session = Depends(get
     """
     Cria uma nova história de usuário para um épico.
     """
-    new_story = UserStory(**story.dict(), epic_id=epic_id, created_by=current_user.user_id)
+    # The epic comes from the URL; the body's epic_id would be passed twice.
+    new_story = UserStory(**story.dict(exclude={"epic_id"}), epic_id=epic_id, created_by=current_user.user_id)
     db.add(new_story)
     db.commit()
     db.refresh(new_story)
