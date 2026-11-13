@@ -11,6 +11,12 @@ independente, com documentação própria na sua pasta.
 | [Problema 3](problema-3/) | Recomendação de carreiras | Regras lógicas no estilo Prolog em Python, SQLite, justificativas explicáveis |
 | [Problema 4](problema-4/) | Histórias de usuário com LLMs | API FastAPI, SQLAlchemy/Alembic, programação orientada a aspectos, CLI com Typer, front em Next.js |
 
+### Problema 4 em imagens
+
+| API (FastAPI / Swagger) | Interface: configuração da geração por LLM |
+| --- | --- |
+| ![Documentação interativa da API com as rotas de produtos, épicos, histórias e requisitos](docs/img/problema-4-api.png) | ![Tela do front-end React perguntando se a geração por LLM usa o prompt padrão ou um personalizado](docs/img/problema-4-geracao-llm.png) |
+
 ## Minha contribuição
 
 Fui autora de 146 dos 323 commits do repositório, com participação nos quatro problemas:
